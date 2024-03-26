@@ -9,7 +9,8 @@ import (
 
 type User struct {
 	Id        int64     `gorm:"primaryKey" json:"id"`
-	Username  string    `gorm:"type:varchar(30);unique" json:"username" binding:"required"`
+	Name      string    `gorm:"type:varchar(30)" json:"name" binding:"required"`
+	Email     string    `gorm:"type:varchar(50);unique" json:"email" binding:"required,email"`
 	Password  string    `gorm:"type:varchar(255)" json:"password,omitempty" binding:"required"`
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedAt time.Time `json:"created_at"`

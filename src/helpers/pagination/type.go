@@ -10,7 +10,7 @@ type Meta struct {
 }
 
 type Pagination struct {
-	Meta Meta        `json:"meta"`
+	Meta *Meta       `json:"meta"`
 	Data interface{} `json:"data"`
 }
 

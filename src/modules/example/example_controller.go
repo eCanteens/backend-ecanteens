@@ -3,6 +3,7 @@ package example
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/gin-gonic/gin"
 )
@@ -32,10 +33,19 @@ func TestPOST(ctx *gin.Context) {
 
 	// Validate body
 	if err := ctx.ShouldBind(&user); err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"message": err.Error(),
-		})
-		return
+		parsed, parseErr := helpers.ParseError(err)
+
+		if parseErr == nil {
+			ctx.AbortWithStatusJSON(400, gin.H{
+				"error": &parsed,
+			})
+			return
+		} else {
+			ctx.AbortWithStatusJSON(400, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 	}
 
 	if err := config.DB.Create(&user).Error; err != nil {
