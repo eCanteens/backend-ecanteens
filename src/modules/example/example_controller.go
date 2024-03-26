@@ -9,9 +9,9 @@ import (
 
 func Test(ctx *gin.Context) {
 	var users []models.User
-	var _pagination models.Pagination
+	var _pagination pagination.Pagination
 
-	if err := pagination.Paginate(&users, &_pagination, &pagination.Params{
+	if err := _pagination.Paginate(&users, &pagination.Params{
 		Query: config.DB.Where("username ILIKE ?", "%"+ctx.Query("search")+"%"),
 		Page:  ctx.Query("page"),
 		Limit: ctx.Query("limit"),

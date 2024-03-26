@@ -5,11 +5,10 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"gorm.io/gorm"
 )
 
-func Paginate(value interface{}, pagination *models.Pagination, params *Params) *gorm.DB {
+func (pagination *Pagination) Paginate(value interface{}, params *Params) *gorm.DB {
 	if params.Query == nil {
 		params.Query = config.DB
 	}
@@ -45,11 +44,11 @@ func Paginate(value interface{}, pagination *models.Pagination, params *Params) 
 	}
 
 	var totalData int64
-	params.Query.Model(value).Count(&totalData)	
+	params.Query.Model(value).Count(&totalData)
 	offset := (pagination.Meta.CurrentPage - 1) * pagination.Meta.PerPage
 
 	pagination.Meta.Total = totalData
-    pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))     
+	pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))
 	pagination.Data = value
 
 	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction)
