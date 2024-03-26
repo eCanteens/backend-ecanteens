@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -8,7 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func Paginate(value interface{}, pagination *models.Pagination, params *Params) func(db *gorm.DB) *gorm.DB {
+func Paginate(value interface{}, pagination *models.Pagination, params *Params) *gorm.DB {
+	if params.Query == nil {
+		params.Query = config.DB
+	}
+
 	if params.Page == "" || params.Page == nil {
 		pagination.Meta.CurrentPage = 1
 	} else {
@@ -31,15 +36,21 @@ func Paginate(value interface{}, pagination *models.Pagination, params *Params) 
 		}
 	}
 
-	var totalData int64
-	config.DB.Model(value).Count(&totalData)
-	pagination.Meta.Total = totalData
+	if params.Order == "" {
+		params.Order = "created_at"
+	}
 
+	if params.Direction == "" {
+		params.Direction = "DESC"
+	}
+
+	var totalData int64
+	params.Query.Model(value).Count(&totalData)	
 	offset := (pagination.Meta.CurrentPage - 1) * pagination.Meta.PerPage
 
+	pagination.Meta.Total = totalData
+    pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))     
 	pagination.Data = value
 
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Offset(offset).Limit(pagination.Meta.PerPage)
-	}
+	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction)
 }

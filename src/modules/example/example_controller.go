@@ -5,19 +5,19 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func Test(ctx *gin.Context) {
 	var users []models.User
 	var _pagination models.Pagination
-	var page = ctx.Query("page")
-	var limit = ctx.Query("limit")
 
-	if err := config.DB.Scopes(pagination.Paginate(&users, &_pagination, &pagination.Params{
-		Page:  page,
-		Limit: limit,
-	})).Where("username ILIKE ?", "%"+ctx.Query("search")+"%").Find(&users).Error; err != nil {
+	if err := pagination.Paginate(&users, &_pagination, &pagination.Params{
+		Query: config.DB.Where("username ILIKE ?", "%"+ctx.Query("search")+"%"),
+		Page:  ctx.Query("page"),
+		Limit: ctx.Query("limit"),
+		Order: ctx.Query("order"),
+		Direction: ctx.Query("direction"),
+	}).Find(&users).Error; err != nil {
 		ctx.AbortWithStatusJSON(500, gin.H{
 			"error": err.Error(),
 		})
@@ -37,9 +37,6 @@ func TestPOST(ctx *gin.Context) {
 		})
 		return
 	}
-
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	user.Password = string(hashed)
 
 	if err := config.DB.Create(&user).Error; err != nil {
 		ctx.AbortWithStatusJSON(400, gin.H{
