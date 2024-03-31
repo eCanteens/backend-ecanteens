@@ -22,6 +22,12 @@ func ConnectDB() {
 
 	database.AutoMigrate(
 		&models.User{},
+		&models.Location{},
+		&models.RestaurantCategory{},
+		&models.Restaurant{},
+		&models.ProductCategory{},
+		&models.Product{},
+		&models.Review{},
 	)
 
 	DB = database
