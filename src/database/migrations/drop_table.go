@@ -9,7 +9,7 @@ import (
 
 func init() {
 	config.LoadEnvVariables()
-	config.ConnectDB()
+	config.ConnectDB(false)
 }
 
 func main() {
@@ -21,6 +21,7 @@ func main() {
 		&models.ProductCategory{},
 		&models.Product{},
 		&models.Review{},
+		&models.Favorite{},
 	)
 
 	fmt.Println("Tables Dropped")

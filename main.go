@@ -9,7 +9,7 @@ import (
 
 func init() {
 	config.LoadEnvVariables()
-	config.ConnectDB()
+	config.ConnectDB(true)
 }
 
 func main() {

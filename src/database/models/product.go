@@ -2,16 +2,16 @@ package models
 
 type Product struct {
 	Id
-	RestaurantId uint   `gorm:"type:bigint unsigned" json:"-"`
+	RestaurantId uint   `gorm:"type:bigint" json:"-"`
 	Name         string `gorm:"type:varchar(100)" json:"name"`
 	Description  string `gorm:"type:text" json:"description"`
 	Image        string `gorm:"type:varchar(255)" json:"image"`
-	CategoryId   uint   `gorm:"type:bigint unsigned" json:"-"`
-	Price        uint   `gorm:"type:int(10)" json:"price"`
-	Stock        uint   `gorm:"type:int(10)" json:"stock"`
-	Sold         uint   `gorm:"type:int(10)" json:"sold"`
-	Like         uint   `gorm:"type:int(10)" json:"like"`
-	Dislike      uint   `gorm:"type:int(10)" json:"dislike"`
+	CategoryId   uint   `gorm:"type:bigint" json:"-"`
+	Price        uint   `gorm:"type:int" json:"price"`
+	Stock        uint   `gorm:"type:int" json:"stock"`
+	Sold         uint   `gorm:"type:int" json:"sold"`
+	Like         uint   `gorm:"type:int" json:"like"`
+	Dislike      uint   `gorm:"type:int" json:"dislike"`
 	Timestamps
 
 	// Relations

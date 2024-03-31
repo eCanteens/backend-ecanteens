@@ -4,10 +4,10 @@ type Restaurant struct {
 	Id
 	Name       string `gorm:"type:varchar(30)" json:"name" binding:"required"`
 	Phone      string `gorm:"type:varchar(20);unique" json:"phone" binding:"required"`
-	LocationId uint   `gorm:"type:bigint unsigned" json:"-"`
+	LocationId uint   `gorm:"type:bigint" json:"-"`
 	Banner     string `gorm:"type:varchar(255)" json:"banner"`
-	Balance    int    `gorm:"type:int(10)" json:"balance"`
-	CategoryId uint   `gorm:"type:bigint unsigned" json:"-"`
+	Balance    int    `gorm:"type:int" json:"balance"`
+	CategoryId uint   `gorm:"type:bigint" json:"-"`
 	Timestamps
 
 	// Relation

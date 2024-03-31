@@ -13,7 +13,7 @@ func Test(ctx *gin.Context) {
 	var _pagination pagination.Pagination
 
 	if err := _pagination.Paginate(&users, &pagination.Params{
-		Query: config.DB.Where("name LIKE ?", "%"+ctx.Query("search")+"%"),
+		Query: config.DB.Where("name ILIKE ?", "%"+ctx.Query("search")+"%"),
 		Page:  ctx.Query("page"),
 		Limit: ctx.Query("limit"),
 		Order: ctx.Query("order"),
