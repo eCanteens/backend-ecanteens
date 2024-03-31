@@ -5,18 +5,14 @@ import (
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/joho/godotenv"
 )
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		panic("Error loading env")
-	}
+	config.LoadEnvVariables()
+	config.ConnectDB()
 }
 
 func main() {
-	config.ConnectDB()
-
 	config.DB.Migrator().DropTable(
 		&models.User{},
 		&models.Location{},
