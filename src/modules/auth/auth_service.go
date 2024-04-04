@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 	"time"
@@ -90,7 +91,8 @@ func ForgotService(body *ForgotSchema) error {
 		return err
 	}
 
-	t, _ := template.ParseFiles("./src/templates/reset-password.html")
+	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
+	t, _ := template.ParseFiles(absPath)
 
 	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
 		Subject:     "Forgot Password",
