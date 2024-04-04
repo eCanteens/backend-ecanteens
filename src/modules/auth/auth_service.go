@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
@@ -66,7 +67,19 @@ func LoginService(body *LoginSchema) (*string, error) {
 	return &tokenString, nil
 }
 
+type ResetPasswordProps struct {
+	LOGO string
+	URL  string
+	NAME string
+}
+
 func ForgotService(body *ForgotSchema) error {
+	var user models.User
+
+	if err := FindByEmail(&user, body.Email); err != nil {
+		return err
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": body.Email,
 		"exp":   float64(time.Now().Add(time.Minute * 5).Unix()),
@@ -77,14 +90,17 @@ func ForgotService(body *ForgotSchema) error {
 		return err
 	}
 
+	t, _ := template.ParseFiles("./src/templates/reset-password.html")
+
 	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
 		Subject:     "Forgot Password",
 		ContentType: helpers.HTML,
-		Body: fmt.Sprintf(
-			"<html><body><a href=\"%s/api/auth/reset-password/%s\">Reset Password</a></body></html>",
-			os.Getenv("BASE_URL"),
-			tokenString,
-		),
+		HtmlBody:    t,
+		HTMLProps: &ResetPasswordProps{
+			LOGO: fmt.Sprintf("%s/assets/logo.svg", os.Getenv("BASE_URL")),
+			URL:  fmt.Sprintf("%s/api/auth/reset-password/%s", os.Getenv("BASE_URL"), tokenString),
+			NAME: user.Name,
+		},
 	})
 }
 

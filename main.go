@@ -16,6 +16,8 @@ func init() {
 func main() {
 	router := gin.Default()
 
+	router.Static("/assets", "./public/assets")
+
 	router.Use(cors.Default())
 
 	router.GET("/", func(c *gin.Context) {
@@ -23,7 +25,7 @@ func main() {
 	})
 
 	router.GET("/api", func(c *gin.Context) {
-		c.Redirect(301, "https://documenter.getpostman.com")
+		c.Redirect(301, "https://documenter.getpostman.com/view/24844734/2sA35LUeTt")
 	})
 
 	// routes

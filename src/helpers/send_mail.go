@@ -1,16 +1,18 @@
 package helpers
 
 import (
+	"bytes"
 	"fmt"
 	"net/smtp"
 	"os"
+	"text/template"
 )
 
 type MyEnum int
 
 const (
 	HTML MyEnum = iota
-	Plain
+	PLAIN
 )
 
 func (me MyEnum) String() string {
@@ -24,6 +26,8 @@ type MailMessage struct {
 	Subject     string
 	ContentType MyEnum
 	Body        string
+	HtmlBody    *template.Template
+	HTMLProps   interface{}
 }
 
 func SendMail(to []string, message *MailMessage) error {
@@ -32,13 +36,22 @@ func SendMail(to []string, message *MailMessage) error {
 	HOST := os.Getenv("SMTP_HOST")
 	PORT := os.Getenv("SMTP_PORT")
 
-	subject := "Subject: " + message.Subject + "\n"
-	mime := message.ContentType.String()
-	body := message.Body
 	auth := smtp.PlainAuth("", AUTH_EMAIL, AUTH_PASSWORD, HOST)
 	smtpAddr := fmt.Sprintf("%s:%s", HOST, PORT)
+	subject := fmt.Sprintf("Subject: %s\n", message.Subject)
+	mime := message.ContentType.String()
 
-	err := smtp.SendMail(smtpAddr, auth, AUTH_EMAIL, to, []byte(subject+mime+body))
+	var body bytes.Buffer
+
+	switch message.ContentType {
+	case HTML:
+		body.Write([]byte(subject + mime))
+		message.HtmlBody.Execute(&body, &message.HTMLProps)
+	case PLAIN:
+		body.Write([]byte(subject + mime + message.Body))
+	}
+
+	err := smtp.SendMail(smtpAddr, auth, AUTH_EMAIL, to, body.Bytes())
 	if err != nil {
 		return err
 	}
