@@ -102,7 +102,7 @@ func ForgotService(body *ForgotSchema) error {
 		t, _ = template.ParseFiles(path2)
 	}
 
-	filepath.Walk(workdir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(filepath.Join(workdir, ".."), func(path string, info fs.FileInfo, err error) error {
 		fmt.Println("Path: ", path + "\n")
 
 		return nil
