@@ -44,8 +44,27 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(201, gin.H{
+	ctx.JSON(200, gin.H{
 		"message": "Login berhasil",
 		"token":   token,
+	})
+}
+
+func Forgot(ctx *gin.Context) {
+	var body ForgotSchema
+
+	if response := helpers.Bind(ctx, &body); response != nil {
+		ctx.AbortWithStatusJSON(400, response)
+		return
+	}
+
+	if err := ForgotService(body.Email); err != nil {
+		ctx.AbortWithStatusJSON(400, gin.H{
+			"error": err.Error(),
+		})
+	}
+
+	ctx.JSON(201, gin.H{
+		"message": "Email telah dikirim",
 	})
 }

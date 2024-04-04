@@ -2,11 +2,11 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -43,8 +43,6 @@ func LoginService(body *LoginSchema) (*string, error) {
 		return nil, errors.New("bad credentials")
 	}
 
-	fmt.Println(user)
-
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
 		return nil, errors.New("bad credentials")
 	}
@@ -59,4 +57,12 @@ func LoginService(body *LoginSchema) (*string, error) {
 	}
 
 	return &tokenString, nil
+}
+
+func ForgotService(email string) error {
+	return helpers.SendMail([]string{email}, &helpers.MailMessage{
+		Subject: "Forgot Password",
+		ContentType: helpers.HTML,
+		Body: "<html><body><h1>Hello World!</h1></body></html>",
+	})
 }
