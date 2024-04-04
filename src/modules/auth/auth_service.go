@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -101,12 +100,6 @@ func ForgotService(body *ForgotSchema) error {
 		path2 := filepath.Join(workdir, "./src/templates/reset-password.html")
 		t, _ = template.ParseFiles(path2)
 	}
-
-	filepath.Walk(filepath.Join(workdir, ".."), func(path string, info fs.FileInfo, err error) error {
-		fmt.Println("Path: ", path + "\n")
-
-		return nil
-	})
 
 	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
 		Subject:     "Forgot Password",
