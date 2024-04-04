@@ -6,6 +6,6 @@ import (
 
 func LoadEnvVariables() {
 	if err := godotenv.Load(); err != nil {
-		panic("Error loading env")
+		panic(err.Error())
 	}
 }
