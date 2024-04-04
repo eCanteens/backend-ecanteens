@@ -14,7 +14,7 @@ func Auth(ctx *gin.Context) {
 
 	if token == "" {
 		ctx.AbortWithStatusJSON(401, gin.H{
-			"error": "Unauthorized",
+			"error": "Anda belum login!",
 		})
 		return
 	}
@@ -24,7 +24,7 @@ func Auth(ctx *gin.Context) {
 	claim, err := helpers.ParseJwt(token)
 	if err != nil {
 		ctx.AbortWithStatusJSON(401, gin.H{
-			"error": err.Error(),
+			"error": "Anda belum login!",
 		})
 		return
 	}

@@ -65,7 +65,7 @@ func Forgot(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(201, gin.H{
+	ctx.JSON(200, gin.H{
 		"message": "Email telah dikirim",
 	})
 }

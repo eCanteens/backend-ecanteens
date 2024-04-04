@@ -42,11 +42,11 @@ func LoginService(body *LoginSchema) (*string, error) {
 	var user models.User
 
 	if err := FindByEmail(&user, body.Email); err != nil {
-		return nil, errors.New("bad credentials")
+		return nil, errors.New("email atau password salah")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return nil, errors.New("bad credentials")
+		return nil, errors.New("email atau password salah")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
