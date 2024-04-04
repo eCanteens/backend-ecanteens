@@ -2,8 +2,10 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
@@ -48,7 +50,12 @@ func LoginService(body *LoginSchema) (*string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": user.Email,
+		"name":    user.Name,
+		"email":   user.Email,
+		"phone":   user.Phone,
+		"avatar":  user.Avatar,
+		"balance": user.Balance,
+		"exp":     float64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
@@ -59,10 +66,36 @@ func LoginService(body *LoginSchema) (*string, error) {
 	return &tokenString, nil
 }
 
-func ForgotService(email string) error {
-	return helpers.SendMail([]string{email}, &helpers.MailMessage{
-		Subject: "Forgot Password",
-		ContentType: helpers.HTML,
-		Body: "<html><body><h1>Hello World!</h1></body></html>",
+func ForgotService(body *ForgotSchema) error {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": body.Email,
+		"exp":   float64(time.Now().Add(time.Minute * 5).Unix()),
 	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
+	if err != nil {
+		return err
+	}
+
+	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
+		Subject:     "Forgot Password",
+		ContentType: helpers.HTML,
+		Body: fmt.Sprintf(
+			"<html><body><a href=\"%s/api/auth/reset-password/%s\">Reset Password</a></body></html>",
+			os.Getenv("BASE_URL"),
+			tokenString,
+		),
+	})
+}
+
+func ResetService(body *ResetSchema, token string) error {
+	claim, err := helpers.ParseJwt(token)
+
+	if err != nil {
+		return err
+	}
+
+	user := models.User{Password: body.Password}
+
+	return UpdatePassword(&user, claim["email"].(string))
 }

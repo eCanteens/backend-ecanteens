@@ -39,7 +39,7 @@ func Login(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, gin.H{
-			"message": err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
@@ -58,13 +58,43 @@ func Forgot(ctx *gin.Context) {
 		return
 	}
 
-	if err := ForgotService(body.Email); err != nil {
+	if err := ForgotService(&body); err != nil {
 		ctx.AbortWithStatusJSON(400, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	ctx.JSON(201, gin.H{
 		"message": "Email telah dikirim",
+	})
+}
+
+func Reset(ctx *gin.Context) {
+	var body ResetSchema
+	token := ctx.Param("token")
+
+	if response := helpers.Bind(ctx, &body); response != nil {
+		ctx.AbortWithStatusJSON(400, response)
+		return
+	}
+
+	if err := ResetService(&body, token); err != nil {
+		ctx.AbortWithStatusJSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"message": "Password berhasil direset",
+	})
+}
+
+func Profile(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+
+	ctx.JSON(200, gin.H{
+		"data": user,
 	})
 }

@@ -24,3 +24,7 @@ func CheckEmailAndPhone(user *models.User) []models.User {
 func FindByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).First(user).Error
 }
+
+func UpdatePassword(user *models.User, email string) error {
+	return config.DB.Where("email = ?", email).Updates(user).Error
+}

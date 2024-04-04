@@ -8,3 +8,7 @@ type LoginSchema struct {
 type ForgotSchema struct {
 	Email    string `binding:"required"`
 }
+
+type ResetSchema struct {
+	Password    string `binding:"required,min=8"`
+}

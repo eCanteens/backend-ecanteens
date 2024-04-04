@@ -14,7 +14,10 @@ const (
 )
 
 func (me MyEnum) String() string {
-	return [...]string{"MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n", ""}[me]
+	return [...]string{
+		"MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n",
+		"",
+	}[me]
 }
 
 type MailMessage struct {

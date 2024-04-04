@@ -4,7 +4,6 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
-	"github.com/eCanteens/backend-ecanteens/src/helpers/validation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,36 +25,4 @@ func Test(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, _pagination)
-}
-
-func TestPOST(ctx *gin.Context) {
-	var user models.User
-
-	// Validate body
-	if err := ctx.ShouldBind(&user); err != nil {
-		parsed, parseErr := validation.ParseError(err)
-
-		if parseErr == nil {
-			ctx.AbortWithStatusJSON(400, gin.H{
-				"error": &parsed,
-			})
-			return
-		} else {
-			ctx.AbortWithStatusJSON(400, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-	}
-
-	if err := config.DB.Create(&user).Error; err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-
-	ctx.JSON(201, gin.H{
-		"data": user,
-	})
 }
