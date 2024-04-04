@@ -91,7 +91,7 @@ func ForgotService(body *ForgotSchema) error {
 		return err
 	}
 
-	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
+	absPath, _ := filepath.Abs("../../templates/reset-password.html")
 	t, _ := template.ParseFiles(absPath)
 
 	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
