@@ -1,4 +1,4 @@
-package helpers
+package validation
 
 import (
 	"errors"
@@ -19,32 +19,11 @@ func ParseError(err error) ([]ApiError, error) {
 		for i, fe := range ve {
 			out[i] = ApiError{
 				Field: fe.Field(),
-				Msg:   msgForTag(fe.Tag(), fe.Field()),
+				Msg:   MsgForTag(fe.Tag(), fe.Field(), fe.Param()),
 			}
 		}
 		return out, nil
 	}
 
 	return nil, err
-}
-
-func msgForTag(tag string, field string) string {
-	var intlField string
-
-	switch field {
-	case "Name":
-		intlField = "Nama"
-	case "Email":
-		intlField = "Email"
-	case "Password":
-		intlField = "Kata Sandi"
-	}
-
-	switch tag {
-	case "required":
-		return "Kolom " + intlField + " harus diisi"
-	case "email":
-		return "Email tidak valid"
-	}
-	return ""
 }

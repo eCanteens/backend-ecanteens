@@ -2,7 +2,7 @@ package example
 
 import "github.com/gin-gonic/gin"
 
-func Route(router *gin.RouterGroup) {
+func Routes(router *gin.RouterGroup) {
 	router.GET("/", Test)
 	router.POST("/", TestPOST)
 }

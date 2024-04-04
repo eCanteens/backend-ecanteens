@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
+	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/example"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,8 @@ func main() {
 	})
 
 	// routes
-	example.Route(router.Group("/api/example"))
+	example.Routes(router.Group("/api/example"))
+	auth.Routes(router.Group("/api/auth"))
 
 	router.Run()
 }

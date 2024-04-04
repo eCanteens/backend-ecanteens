@@ -7,7 +7,7 @@ import (
 )
 
 type Id struct {
-	Id uint `gorm:"type:bigint;primaryKey" json:"id"`
+	Id *uint `gorm:"type:bigint;primaryKey" json:"id"`
 }
 
 type Timestamps struct {
