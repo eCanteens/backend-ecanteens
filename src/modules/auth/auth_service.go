@@ -91,10 +91,15 @@ func ForgotService(body *ForgotSchema) error {
 		return err
 	}
 
+	workdir, _ := os.Getwd()
+
+	fmt.Println(filepath.Join(workdir, "./src/templates/reset-password.html"))
 	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
-	absPath2, _ := filepath.Abs(".")
-	fmt.Println(absPath2)
-	t, _ := template.ParseFiles(absPath)
+	t, err := template.ParseFiles(absPath)
+	if err != nil {
+		path2 := filepath.Join(workdir, "./src/templates/reset-password.html")
+		t, _ = template.ParseFiles(path2)
+	}
 
 	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
 		Subject:     "Forgot Password",
