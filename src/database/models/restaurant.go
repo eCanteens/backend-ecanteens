@@ -6,6 +6,7 @@ type Restaurant struct {
 	Phone      string `gorm:"type:varchar(20);unique" json:"phone" binding:"required"`
 	LocationId uint   `gorm:"type:bigint" json:"-"`
 	Banner     string `gorm:"type:varchar(255)" json:"banner"`
+	Avatar     string `gorm:"type:varchar(255)" json:"avatar"`
 	Balance    int    `gorm:"type:int" json:"balance"`
 	CategoryId uint   `gorm:"type:bigint" json:"-"`
 	Timestamps

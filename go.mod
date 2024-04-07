@@ -1,6 +1,6 @@
 module github.com/eCanteens/backend-ecanteens
 
-go 1.21.4
+go 1.22.0
 
 require (
 	github.com/gin-contrib/cors v1.7.1
@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.0.2 // indirect
 	github.com/bytedance/sonic v1.11.3 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect

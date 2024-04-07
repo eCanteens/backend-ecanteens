@@ -1,1 +1,0 @@
-go run src/database/migrations/drop_table.go

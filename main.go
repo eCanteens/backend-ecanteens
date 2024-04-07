@@ -16,7 +16,7 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	router.Static("/assets", "./public/assets")
+	router.Static("/public", "./public")
 
 	router.Use(cors.Default())
 

@@ -25,4 +25,17 @@ func main() {
 	)
 
 	fmt.Println("Tables Dropped")
+
+	config.DB.Migrator().CreateTable(
+		&models.User{},
+		&models.Location{},
+		&models.RestaurantCategory{},
+		&models.Restaurant{},
+		&models.ProductCategory{},
+		&models.Product{},
+		&models.Review{},
+		&models.Favorite{},
+	)
+
+	fmt.Println("Tables Created")
 }
