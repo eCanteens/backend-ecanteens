@@ -7,12 +7,13 @@ import (
 
 func init() {
 	config.LoadEnvVariables()
-	config.ConnectDB(false)
+	config.ConnectDB()
 }
 
 func main() {
 	seeders.LocationSeeder()
-	seeders.RestaurantCategorySeeder()
 	seeders.RestaurantSeeder()
 	seeders.UserSeeder()
+	seeders.ReviewSeeder()
+	seeders.FavoriteSeeder()
 }

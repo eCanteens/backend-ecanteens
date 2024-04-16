@@ -68,12 +68,6 @@ func LoginService(body *LoginSchema) (*string, error) {
 	return &tokenString, nil
 }
 
-type ResetPasswordProps struct {
-	LOGO string
-	URL  string
-	NAME string
-}
-
 func ForgotService(body *ForgotSchema) error {
 	var user models.User
 
@@ -95,6 +89,12 @@ func ForgotService(body *ForgotSchema) error {
 	t, err := template.ParseFiles(absPath)
 	if err != nil {
 		return err
+	}
+
+	type ResetPasswordProps struct {
+		LOGO string
+		URL  string
+		NAME string
 	}
 
 	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{

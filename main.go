@@ -4,13 +4,14 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/example"
+	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func init() {
 	// config.LoadEnvVariables()
-	config.ConnectDB(true)
+	config.ConnectDB()
 }
 
 func main() {
@@ -31,6 +32,7 @@ func main() {
 	// routes
 	example.Routes(router.Group("/api/example"))
 	auth.Routes(router.Group("/api/auth"))
+	restaurant.Routes(router.Group("/api/restaurant"))
 
 	router.Run()
 }

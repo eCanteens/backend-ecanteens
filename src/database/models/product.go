@@ -2,11 +2,11 @@ package models
 
 type Product struct {
 	Id
-	RestaurantId uint   `gorm:"type:bigint" json:"-"`
+	RestaurantId uint   `gorm:"type:bigint" json:"restaurant_id"`
 	Name         string `gorm:"type:varchar(100)" json:"name"`
 	Description  string `gorm:"type:text" json:"description"`
 	Image        string `gorm:"type:varchar(255)" json:"image"`
-	CategoryId   uint   `gorm:"type:bigint" json:"-"`
+	CategoryId   uint   `gorm:"type:bigint" json:"category_id"`
 	Price        uint   `gorm:"type:int" json:"price"`
 	Stock        uint   `gorm:"type:int" json:"stock"`
 	Sold         uint   `gorm:"type:int" json:"sold"`

@@ -3,8 +3,8 @@ package models
 type Review struct {
 	Id
 	Rating       uint `gorm:"type:int" json:"rating"`
-	UserId       uint `gorm:"type:bigint" json:"-"`
-	RestaurantId uint `gorm:"type:bigint" json:"-"`
+	UserId       uint `gorm:"type:bigint" json:"user_id"`
+	RestaurantId uint `gorm:"type:bigint" json:"restaurant_id"`
 	Timestamps
 
 	// Relation
