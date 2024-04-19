@@ -28,7 +28,7 @@ func RestaurantSeeder() {
 			LocationId: 1,
 			Avatar:     "/public/uploads/dummy/avatar_resto.png",
 			Banner:     "/public/uploads/dummy/banner.jpeg",
-			Balance:    (gofakeit.Number(100_000, 2_000_000) / 100) * 100,
+			Balance:    (gofakeit.UintRange(100_000, 2_000_000) / 100) * 100,
 			CategoryId: 1,
 		})
 	}

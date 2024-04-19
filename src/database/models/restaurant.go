@@ -14,14 +14,14 @@ type Restaurant struct {
 	LocationId uint   `gorm:"type:bigint" json:"location_id"`
 	Banner     string `gorm:"type:varchar(255)" json:"banner"`
 	Avatar     string `gorm:"type:varchar(255)" json:"avatar"`
-	Balance    int    `gorm:"type:int" json:"balance"`
+	Balance    uint    `gorm:"type:int" json:"balance"`
 	CategoryId uint   `gorm:"type:bigint" json:"category_id"`
 	Timestamps
 
 	// Relation
-	Location *Location           `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:location_id" json:"location"`
-	Category *RestaurantCategory `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:category_id" json:"category"`
-	Reviews  []*Review           `gorm:"foreignKey:restaurant_id" json:"reviews"`
+	Location *Location           `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:location_id" json:"location,omitempty"`
+	Category *RestaurantCategory `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:category_id" json:"category,omitempty"`
+	Reviews  []*Review           `gorm:"foreignKey:restaurant_id" json:"reviews,omitempty"`
 
 	// Extra
 	Rating float32 `gorm:"-" json:"rating"`

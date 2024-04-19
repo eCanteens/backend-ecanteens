@@ -14,6 +14,9 @@ type User struct {
 	Avatar   *string `gorm:"type:varchar(255)" json:"avatar"`
 	Balance  int     `gorm:"type:int; not null" json:"balance"`
 	Timestamps
+
+	// Relations
+	FavoriteRestaurant []Restaurant `gorm:"many2many:favorites;" json:"favorite_restaurant,omitempty"`
 }
 
 func (u *User) BeforeSave(tx *gorm.DB) (err error) {

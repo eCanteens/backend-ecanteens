@@ -10,5 +10,8 @@ func Routes(router *gin.RouterGroup) {
 	authorized.Use(middleware.Auth)
 	{
 		authorized.GET("/favorites", GetFavoriteResto)
+		authorized.GET("/", GetAllResto)
+		authorized.GET("/:id/products", GetRestosProducts)
+		authorized.GET("/:id", GetDetailResto)
 	}
 }

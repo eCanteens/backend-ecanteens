@@ -5,10 +5,9 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"gorm.io/gorm"
 )
 
-func (pagination *Pagination) Paginate(value interface{}, params *Params) *gorm.DB {
+func (pagination *Pagination) Paginate(value interface{}, params *Params) error {
 	if params.Query == nil {
 		params.Query = config.DB
 	}
@@ -40,7 +39,7 @@ func (pagination *Pagination) Paginate(value interface{}, params *Params) *gorm.
 	}
 
 	if params.Direction == "" {
-		params.Direction = "DESC"
+		params.Direction = "desc"
 	}
 
 	var totalData int64
@@ -51,5 +50,5 @@ func (pagination *Pagination) Paginate(value interface{}, params *Params) *gorm.
 	pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))
 	pagination.Data = value
 
-	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction)
+	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(value).Error
 }
