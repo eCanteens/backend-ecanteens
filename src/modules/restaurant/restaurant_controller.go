@@ -2,6 +2,7 @@ package restaurant
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,9 +15,7 @@ func GetFavoriteResto(ctx *gin.Context) {
 	data, err := GetFavoriteRestoService(*user.(models.User).Id.Id, query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
@@ -31,11 +30,9 @@ func GetAllResto(ctx *gin.Context) {
 	ctx.BindQuery(query)
 
 	data, err := GetAllRestoService(query)
-	
+
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
@@ -48,9 +45,7 @@ func GetDetailResto(ctx *gin.Context) {
 	data, err := GetDetailRestoService(id)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
@@ -68,9 +63,7 @@ func GetRestosProducts(ctx *gin.Context) {
 	data, err := GetRestosProductsService(id, query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 

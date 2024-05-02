@@ -10,13 +10,9 @@ func Bind(ctx *gin.Context, model interface{}) *gin.H {
 		parsed, parseErr := validation.ParseError(err)
 
 		if parseErr == nil {
-			return &gin.H{
-				"error": &parsed,
-			}
+			return ErrorResponse(&parsed)
 		} else {
-			return &gin.H{
-				"error": err.Error(),
-			}
+			return ErrorResponse(err.Error())
 		}
 	}
 

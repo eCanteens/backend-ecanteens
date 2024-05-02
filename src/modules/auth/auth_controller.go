@@ -15,16 +15,11 @@ func Register(ctx *gin.Context) {
 	}
 
 	if err := RegisterService(&user); err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(201, gin.H{
-		"message": "Register berhasil",
-		"data":    &user,
-	})
+	ctx.JSON(201, helpers.SuccessResponse("Register berhasil", helpers.Data{"data": &user}))
 }
 
 func Login(ctx *gin.Context) {
@@ -38,16 +33,11 @@ func Login(ctx *gin.Context) {
 	token, err := LoginService(&body)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"message": "Login berhasil",
-		"token":   token,
-	})
+	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token}))
 }
 
 func Forgot(ctx *gin.Context) {
@@ -59,15 +49,11 @@ func Forgot(ctx *gin.Context) {
 	}
 
 	if err := ForgotService(&body); err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"message": "Email telah dikirim",
-	})
+	ctx.JSON(200, helpers.SuccessResponse("Email telah dikirim"))
 }
 
 func Reset(ctx *gin.Context) {
@@ -80,15 +66,11 @@ func Reset(ctx *gin.Context) {
 	}
 
 	if err := ResetService(&body, token); err != nil {
-		ctx.AbortWithStatusJSON(400, gin.H{
-			"error": err.Error(),
-		})
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"message": "Password berhasil direset",
-	})
+	ctx.JSON(200, helpers.SuccessResponse("Password berhasil direset"))
 }
 
 func Profile(ctx *gin.Context) {
