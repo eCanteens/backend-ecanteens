@@ -11,7 +11,7 @@ import (
 func FavoriteSeeder() {
 	var favorites []*models.Favorite
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 11; i++ {
 		favorites = append(favorites, &models.Favorite{
 			UserId:       uint(i) + 1,
 			RestaurantId: gofakeit.UintRange(1, 10),

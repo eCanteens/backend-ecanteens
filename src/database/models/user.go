@@ -8,7 +8,7 @@ import (
 type User struct {
 	Id
 	Name     string  `gorm:"type:varchar(30);not null" json:"name" binding:"required"`
-	Email    string  `gorm:"type:varchar(50);not null;unique" json:"email" binding:"email"`
+	Email    string  `gorm:"type:varchar(50);not null;unique" json:"email" binding:"required,email"`
 	Phone    *string `gorm:"type:varchar(20);unique" json:"phone"`
 	Password string  `gorm:"type:varchar(255);not null" json:"password,omitempty" binding:"required,min=8"`
 	Avatar   *string `gorm:"type:varchar(255)" json:"avatar"`

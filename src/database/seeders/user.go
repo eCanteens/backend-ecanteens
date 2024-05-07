@@ -12,7 +12,7 @@ func UserSeeder() {
 	var users []*models.User
 
 	for i := 0; i < 9; i++ {
-		phone := gofakeit.Numerify("08##########")
+		phone := "08" + gofakeit.Numerify("##########")
 		avatar := "/public/uploads/dummy/avatar_user.png"
 
 		users = append(users, &models.User{
@@ -25,15 +25,17 @@ func UserSeeder() {
 		})
 	}
 
-	phone := "081234567890"
-	avatar := "/public/uploads/dummy/avatar_user.png"
-
 	users = append(users, &models.User{
 		Name:     "Test",
 		Email:    "test@gmail.com",
-		Phone:    &phone,
 		Password: "password",
-		Avatar:   &avatar,
+		Balance:  100_000,
+	})
+
+	users = append(users, &models.User{
+		Name:     "Chandra",
+		Email:    "chandra123@gmail.com",
+		Password: "chandra123",
 		Balance:  100_000,
 	})
 

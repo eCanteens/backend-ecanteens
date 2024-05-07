@@ -13,7 +13,7 @@ func init() {
 }
 
 func main() {
-	config.DB.Migrator().DropTable(
+	tables := []interface{}{
 		&models.User{},
 		&models.Location{},
 		&models.RestaurantCategory{},
@@ -22,20 +22,13 @@ func main() {
 		&models.Product{},
 		&models.Review{},
 		&models.Favorite{},
-	)
+	}
+
+	config.DB.Migrator().DropTable(tables...)
 
 	fmt.Println("Tables Dropped")
 
-	config.DB.Migrator().CreateTable(
-		&models.User{},
-		&models.Location{},
-		&models.RestaurantCategory{},
-		&models.Restaurant{},
-		&models.ProductCategory{},
-		&models.Product{},
-		&models.Review{},
-		&models.Favorite{},
-	)
+	config.DB.Migrator().CreateTable(tables...)
 
 	fmt.Println("Tables Created")
 }

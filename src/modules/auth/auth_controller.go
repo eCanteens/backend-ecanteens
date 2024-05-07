@@ -7,14 +7,16 @@ import (
 )
 
 func Register(ctx *gin.Context) {
-	var user models.User
+	var body RegisterSchema
 
-	if response := helpers.Bind(ctx, &user); response != nil {
+	if response := helpers.Bind(ctx, &body); response != nil {
 		ctx.AbortWithStatusJSON(400, response)
 		return
 	}
 
-	if err := RegisterService(&user); err != nil {
+	user, err := RegisterService(&body)
+
+	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
@@ -79,4 +81,23 @@ func Profile(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{
 		"data": user,
 	})
+}
+
+func UpdateProfile(ctx *gin.Context) {
+	var body UpdateSchema
+	user, _ := ctx.Get("user")
+
+	if response := helpers.Bind(ctx, &body); response != nil {
+		ctx.AbortWithStatusJSON(400, response)
+		return
+	}
+
+	_user, err := UpdateProfileService(user.(models.User).Id.Id, &body)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": _user}))
 }

@@ -9,11 +9,12 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/forgot-password", Forgot)
-	router.PATCH("/reset-password/:token", Reset)
+	router.PUT("/reset-password/:token", Reset)
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
 		authorized.GET("/profile", Profile)
+		authorized.PUT("/profile", UpdateProfile)
 	}
 }

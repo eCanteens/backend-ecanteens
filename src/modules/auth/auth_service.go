@@ -15,11 +15,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterService(user *models.User) error {
+func RegisterService(body *RegisterSchema) (*models.User, error) {
+	user := &models.User{
+		Name: body.Name,
+		Email: body.Email,
+		Password: body.Password,
+	}
+
 	sameUser := CheckEmailAndPhone(user)
 
 	if len(sameUser) > 1 {
-		return errors.New("email dan nomor telepon sudah digunakan")
+		return nil, errors.New("email dan nomor telepon sudah digunakan")
 	} else if len(sameUser) == 1 {
 		var fields []string
 
@@ -34,10 +40,14 @@ func RegisterService(user *models.User) error {
 		}
 
 		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
-		return errors.New(errMsg)
+		return nil, errors.New(errMsg)
 	}
 
-	return RegisterRepo(user)
+	if err := Create(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 func LoginService(body *LoginSchema) (*string, error) {
@@ -116,7 +126,42 @@ func ResetService(body *ResetSchema, token string) error {
 		return err
 	}
 
-	user := models.User{Password: body.Password}
+	user := &models.User{Password: body.Password}
 
-	return UpdatePassword(&user, claim["email"].(string))
+	return UpdatePassword(user, claim["email"].(string))
+}
+
+func UpdateProfileService(userId *uint, body *UpdateSchema) (*models.User, error) {
+	user := &models.User{
+		Email: body.Email,
+		Name:  body.Name,
+		Phone: &body.Phone,
+	}
+
+	sameUser := CheckEmailAndPhone(user, userId)
+
+	if len(sameUser) > 1 {
+		return nil, errors.New("email dan nomor telepon sudah digunakan")
+	} else if len(sameUser) == 1 {
+		var fields []string
+
+		if sameUser[0].Email == user.Email {
+			fields = append(fields, "email")
+		}
+
+		if sameUser[0].Phone != nil && user.Phone != nil {
+			if *sameUser[0].Phone == *user.Phone {
+				fields = append(fields, "phone")
+			}
+		}
+
+		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
+		return nil, errors.New(errMsg)
+	}
+
+	if err := Update(userId, user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
