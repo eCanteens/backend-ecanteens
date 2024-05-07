@@ -1,11 +1,14 @@
 package restaurant
 
 import (
+	"errors"
+	"strconv"
+
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func GetFavoriteRestoService(userId uint, query map[string]string) (*[]models.Restaurant, error) {
+func getFavoriteService(userId uint, query map[string]string) (*[]models.Restaurant, error) {
 	var user models.User
 
 	if query["order"] == "" {
@@ -16,41 +19,88 @@ func GetFavoriteRestoService(userId uint, query map[string]string) (*[]models.Re
 		query["direction"] = "desc"
 	}
 
-	if err := FindFavoriteResto(&user, userId, query); err != nil {
+	if err := findFavorite(&user, userId, query); err != nil {
 		return nil, err
 	}
 
 	return &user.FavoriteRestaurant, nil
 }
 
-func GetAllRestoService(query map[string]string) (*pagination.Pagination, error) {
+func getAllService(query map[string]string) (*pagination.Pagination, error) {
 	var restoPagination pagination.Pagination
 	var restaurants []models.Restaurant
 
-	if err := FindResto(&restoPagination, &restaurants, query); err != nil {
+	if err := find(&restoPagination, &restaurants, query); err != nil {
 		return nil, err
 	}
 
 	return &restoPagination, nil
 }
 
-func GetDetailRestoService(id string) (*models.Restaurant, error) {
+func getDetailService(id string) (*models.Restaurant, error) {
 	var restaurant models.Restaurant
 
-	if err := FindOneResto(&restaurant, id); err != nil {
+	if err := findOne(&restaurant, id); err != nil {
 		return nil, err
 	}
 
 	return &restaurant, nil
 }
 
-func GetRestosProductsService(id string, query map[string]string) (*pagination.Pagination, error) {
+func getRestosProductsService(id string, query map[string]string) (*pagination.Pagination, error) {
 	var productsPagination pagination.Pagination
 	var products []models.Product
 
-	if err := FindRestosProducts(&productsPagination, &products, id, query); err != nil {
+	if err := findRestosProducts(&productsPagination, &products, id, query); err != nil {
 		return nil, err
 	}
 
 	return &productsPagination, nil
+}
+
+func addFavoriteService(userId *uint, restaurantId string) error {
+	id, err := strconv.ParseUint(restaurantId, 10, 32)
+	uintid := uint(id)
+
+	if err != nil {
+		return err
+	}
+
+	favorites := checkFavorite(userId, &uintid)
+
+	if len(*favorites) > 0 {
+		return errors.New("restoran sudah di dalam list favorit anda")
+	}
+
+	favorite := &models.Favorite{
+		UserId: *userId,
+		RestaurantId: uint(id),
+	}
+
+	if err := createFavorite(favorite); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func removeFavoriteService(userId *uint, restaurantId string) error {
+	id, err := strconv.ParseUint(restaurantId, 10, 32)
+	uintid := uint(id)
+
+	if err != nil {
+		return err
+	}
+
+	favorites := checkFavorite(userId, &uintid)
+
+	if len(*favorites) == 0 {
+		return errors.New("restoran tidak ada di dalam list favorit anda")
+	}
+
+	if err := deleteFavorite(userId, &uintid); err != nil {
+		return err
+	}
+
+	return nil
 }

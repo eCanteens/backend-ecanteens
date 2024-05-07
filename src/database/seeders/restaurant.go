@@ -24,7 +24,7 @@ func RestaurantSeeder() {
 	for i := 0; i < 10; i++ {
 		restaurants = append(restaurants, &models.Restaurant{
 			Name:       gofakeit.AppName(),
-			Phone:      gofakeit.Numerify("08##########"),
+			Phone:      "08" + gofakeit.Numerify("##########"),
 			LocationId: 1,
 			Avatar:     "/public/uploads/dummy/avatar_resto.png",
 			Banner:     "/public/uploads/dummy/banner.jpeg",

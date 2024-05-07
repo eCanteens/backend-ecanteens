@@ -9,9 +9,12 @@ func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.GET("/favorites", GetFavoriteResto)
-		authorized.GET("/", GetAllResto)
-		authorized.GET("/:id/products", GetRestosProducts)
-		authorized.GET("/:id", GetDetailResto)
+		authorized.GET("/favorites", getFavorite)
+		authorized.GET("/", getAll)
+		authorized.GET("/:id/products", getRestosProducts)
+		authorized.GET("/:id", getDetail)
+		
+		authorized.POST("/:id/favorite", addFavorite)
+		authorized.DELETE("/:id/favorite", removeFavorite)
 	}
 }

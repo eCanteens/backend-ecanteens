@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Register(ctx *gin.Context) {
+func register(ctx *gin.Context) {
 	var body RegisterSchema
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -14,7 +14,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 
-	user, err := RegisterService(&body)
+	user, err := registerService(&body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -24,7 +24,7 @@ func Register(ctx *gin.Context) {
 	ctx.JSON(201, helpers.SuccessResponse("Register berhasil", helpers.Data{"data": &user}))
 }
 
-func Login(ctx *gin.Context) {
+func login(ctx *gin.Context) {
 	var body LoginSchema
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -32,7 +32,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	token, err := LoginService(&body)
+	token, err := loginService(&body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -42,7 +42,7 @@ func Login(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token}))
 }
 
-func Forgot(ctx *gin.Context) {
+func forgot(ctx *gin.Context) {
 	var body ForgotSchema
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -50,7 +50,7 @@ func Forgot(ctx *gin.Context) {
 		return
 	}
 
-	if err := ForgotService(&body); err != nil {
+	if err := forgotService(&body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
@@ -58,7 +58,7 @@ func Forgot(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Email telah dikirim"))
 }
 
-func Reset(ctx *gin.Context) {
+func reset(ctx *gin.Context) {
 	var body ResetSchema
 	token := ctx.Param("token")
 
@@ -67,7 +67,7 @@ func Reset(ctx *gin.Context) {
 		return
 	}
 
-	if err := ResetService(&body, token); err != nil {
+	if err := resetService(&body, token); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
@@ -75,7 +75,7 @@ func Reset(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Password berhasil direset"))
 }
 
-func Profile(ctx *gin.Context) {
+func profile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 
 	ctx.JSON(200, gin.H{
@@ -83,7 +83,7 @@ func Profile(ctx *gin.Context) {
 	})
 }
 
-func UpdateProfile(ctx *gin.Context) {
+func updateProfile(ctx *gin.Context) {
 	var body UpdateSchema
 	user, _ := ctx.Get("user")
 
@@ -92,7 +92,7 @@ func UpdateProfile(ctx *gin.Context) {
 		return
 	}
 
-	_user, err := UpdateProfileService(user.(models.User).Id.Id, &body)
+	_user, err := updateProfileService(user.(models.User).Id.Id, &body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))

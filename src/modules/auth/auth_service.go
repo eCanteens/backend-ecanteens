@@ -15,14 +15,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func RegisterService(body *RegisterSchema) (*models.User, error) {
+func registerService(body *RegisterSchema) (*models.User, error) {
 	user := &models.User{
 		Name: body.Name,
 		Email: body.Email,
 		Password: body.Password,
 	}
 
-	sameUser := CheckEmailAndPhone(user)
+	sameUser := checkEmailAndPhone(user)
 
 	if len(sameUser) > 1 {
 		return nil, errors.New("email dan nomor telepon sudah digunakan")
@@ -43,17 +43,17 @@ func RegisterService(body *RegisterSchema) (*models.User, error) {
 		return nil, errors.New(errMsg)
 	}
 
-	if err := Create(user); err != nil {
+	if err := create(user); err != nil {
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func LoginService(body *LoginSchema) (*string, error) {
+func loginService(body *LoginSchema) (*string, error) {
 	var user models.User
 
-	if err := FindByEmail(&user, body.Email); err != nil {
+	if err := findByEmail(&user, body.Email); err != nil {
 		return nil, errors.New("email atau password salah")
 	}
 
@@ -78,10 +78,10 @@ func LoginService(body *LoginSchema) (*string, error) {
 	return &tokenString, nil
 }
 
-func ForgotService(body *ForgotSchema) error {
+func forgotService(body *ForgotSchema) error {
 	var user models.User
 
-	if err := FindByEmail(&user, body.Email); err != nil {
+	if err := findByEmail(&user, body.Email); err != nil {
 		return err
 	}
 
@@ -119,7 +119,7 @@ func ForgotService(body *ForgotSchema) error {
 	})
 }
 
-func ResetService(body *ResetSchema, token string) error {
+func resetService(body *ResetSchema, token string) error {
 	claim, err := helpers.ParseJwt(token)
 
 	if err != nil {
@@ -128,17 +128,17 @@ func ResetService(body *ResetSchema, token string) error {
 
 	user := &models.User{Password: body.Password}
 
-	return UpdatePassword(user, claim["email"].(string))
+	return updatePassword(user, claim["email"].(string))
 }
 
-func UpdateProfileService(userId *uint, body *UpdateSchema) (*models.User, error) {
+func updateProfileService(userId *uint, body *UpdateSchema) (*models.User, error) {
 	user := &models.User{
 		Email: body.Email,
 		Name:  body.Name,
 		Phone: &body.Phone,
 	}
 
-	sameUser := CheckEmailAndPhone(user, userId)
+	sameUser := checkEmailAndPhone(user, userId)
 
 	if len(sameUser) > 1 {
 		return nil, errors.New("email dan nomor telepon sudah digunakan")
@@ -159,7 +159,7 @@ func UpdateProfileService(userId *uint, body *UpdateSchema) (*models.User, error
 		return nil, errors.New(errMsg)
 	}
 
-	if err := Update(userId, user); err != nil {
+	if err := update(userId, user); err != nil {
 		return nil, err
 	}
 

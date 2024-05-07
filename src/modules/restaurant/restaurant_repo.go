@@ -7,13 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func FindFavoriteResto(user *models.User, id uint, query map[string]string) error {
+func findFavorite(user *models.User, id uint, query map[string]string) error {
 	return config.DB.Where("id = ?", id).Preload("FavoriteRestaurant", func(db *gorm.DB) *gorm.DB {
 		return db.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category").Order(query["order"] + " " + query["direction"])
 	}).Find(user).Error
 }
 
-func FindResto(_pagination *pagination.Pagination, restaurants *[]models.Restaurant, query map[string]string) error {
+func find(_pagination *pagination.Pagination, restaurants *[]models.Restaurant, query map[string]string) error {
 	return _pagination.Paginate(restaurants, &pagination.Params{
 		Query:     config.DB.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category"),
 		Page:      query["page"],
@@ -23,11 +23,11 @@ func FindResto(_pagination *pagination.Pagination, restaurants *[]models.Restaur
 	})
 }
 
-func FindOneResto(restaurant *models.Restaurant, id string) error {
+func findOne(restaurant *models.Restaurant, id string) error {
 	return config.DB.Where("id = ?", id).Preload("Category").Preload("Location").First(restaurant).Error
 }
 
-func FindRestosProducts(_pagination *pagination.Pagination, products *[]models.Product, id string, query map[string]string) error {
+func findRestosProducts(_pagination *pagination.Pagination, products *[]models.Product, id string, query map[string]string) error {
 	return _pagination.Paginate(products, &pagination.Params{
 		Query:     config.DB.Where("restaurant_id = ?", id),
 		Page:      query["page"],
@@ -35,4 +35,20 @@ func FindRestosProducts(_pagination *pagination.Pagination, products *[]models.P
 		Order:     query["order"],
 		Direction: query["direction"],
 	})
+}
+
+func checkFavorite(userId *uint, restaurantId *uint) *[]models.Favorite {
+	var favorites []models.Favorite
+
+	config.DB.Where("user_id = ?", *userId).Where("restaurant_id = ?", *restaurantId).Find(&favorites)
+
+	return &favorites
+}
+
+func createFavorite(favorite *models.Favorite) error {
+	return config.DB.Create(favorite).Error
+}
+
+func deleteFavorite(userId *uint, restaurantId *uint) error {
+	return config.DB.Unscoped().Where("user_id = ?", *userId).Where("restaurant_id = ?", restaurantId).Delete(&models.Favorite{}).Error
 }
