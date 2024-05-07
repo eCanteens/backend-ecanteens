@@ -20,6 +20,8 @@ func main() {
 
 	router.Use(cors.Default())
 
+	router.Use(config.RateLimiter)
+
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "API Docs on /api"})
 	})
