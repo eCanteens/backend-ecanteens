@@ -16,7 +16,7 @@ func checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, erro
 }
 
 func updateFeedback(id uint, body *FeedbackScheme) error {
-	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("like", *body.Like).Error
+	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.Like).Error
 }
 
 func createFeedback(feedback *models.ProductFeedback) error {
@@ -25,12 +25,4 @@ func createFeedback(feedback *models.ProductFeedback) error {
 
 func deleteFeedback(userId uint, productId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.ProductFeedback{}).Error
-}
-
-func CountLike(productId uint, count *int64) error {
-	return config.DB.Where("product_id = ?", productId).Where("like = ?", true).Count(count).Error
-}
-
-func CountDislike(productId uint, count *int64) error {
-	return config.DB.Where("product_id = ?", productId).Where("like = ?", false).Count(count).Error
 }

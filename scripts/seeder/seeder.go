@@ -17,4 +17,5 @@ func main() {
 	seeders.ReviewSeeder()
 	seeders.FavoriteSeeder()
 	seeders.ProductSeeder()
+	seeders.ProductFeedbackSeeder()
 }

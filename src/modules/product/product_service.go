@@ -25,7 +25,7 @@ func addFeedbackService(body *FeedbackScheme, userId uint, productId string) err
 		feedback := &models.ProductFeedback{
 			UserId: userId,
 			ProductId: uint(id),
-			Like: *body.Like,
+			IsLike: *body.Like,
 		}
 
 		return createFeedback(feedback)

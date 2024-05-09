@@ -4,7 +4,7 @@ type ProductFeedback struct {
 	Id
 	ProductId uint `gorm:"type:bigint" json:"product_id"`
 	UserId    uint `gorm:"type:bigint" json:"user_id"`
-	Like      bool `gorm:"type:bool" json:"like"`
+	IsLike    bool `gorm:"type:bool" json:"is_like"`
 	Timestamps
 
 	// Relations

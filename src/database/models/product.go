@@ -1,8 +1,15 @@
 package models
 
 import (
-// "gorm.io/gorm"
+	"github.com/eCanteens/backend-ecanteens/src/config"
+
+	"gorm.io/gorm"
 )
+
+type FeedbackResult struct {
+	Like    int
+	Dislike int
+}
 
 type Product struct {
 	Id
@@ -19,17 +26,36 @@ type Product struct {
 	// Relations
 	Restaurant *Restaurant      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:restaurant_id" json:"restaurant,omitempty"`
 	Category   *ProductCategory `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:category_id" json:"category,omitempty"`
-	Feedbacks  []User           `gorm:"many2many:product_feedbacks;" json:"feedbacks,omitempty"`
 
 	// Extra
-	Like    uint `gorm:"-" json:"like"`
-	Dislike uint `gorm:"-" json:"dislike"`
+	Feedback *FeedbackResult `gorm:"-" json:"feedback"`
 }
 
-// func (p *Product) AfterFind(tx *gorm.DB) (err error) {
-// 	tx.Preload("Feedback", func(db *gorm.DB) *gorm.DB {
-// 		return db.Where("like = ?", true)
-// 	})
+func (p *Product) AfterFind(tx *gorm.DB) (err error) {
+	var result FeedbackResult
 
-// 	return nil
-// }
+	rows, _ := config.DB.Table("product_feedbacks").
+		Select("CASE WHEN is_like = true THEN 'like' ELSE 'dislike' END AS feedback_type, COUNT(*) AS count").
+		Where("product_id = ?", p.Id.Id).
+		Group("feedback_type").
+		Rows()
+
+	defer rows.Close()
+
+	for rows.Next() {
+        var feedbackType string
+        var count int
+        if err := rows.Scan(&feedbackType, &count); err != nil {
+            return err
+        }
+        if feedbackType == "like" {
+            result.Like = count
+        } else {
+            result.Dislike = count
+        }
+    }
+
+	p.Feedback = &result
+
+	return nil
+}
