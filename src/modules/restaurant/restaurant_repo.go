@@ -8,7 +8,7 @@ import (
 )
 
 func findFavorite(user *models.User, id uint, query map[string]string) error {
-	return config.DB.Where("id = ?", id).Preload("FavoriteRestaurant", func(db *gorm.DB) *gorm.DB {
+	return config.DB.Where("id = ?", id).Preload("FavoriteRestaurants", func(db *gorm.DB) *gorm.DB {
 		return db.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category").Order(query["order"] + " " + query["direction"])
 	}).Find(user).Error
 }
@@ -37,18 +37,18 @@ func findRestosProducts(_pagination *pagination.Pagination, products *[]models.P
 	})
 }
 
-func checkFavorite(userId uint, restaurantId uint) *[]models.Favorite {
-	var favorites []models.Favorite
+func checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant {
+	var favorites []models.FavoriteRestaurant
 
 	config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Find(&favorites)
 
 	return &favorites
 }
 
-func createFavorite(favorite *models.Favorite) error {
+func createFavorite(favorite *models.FavoriteRestaurant) error {
 	return config.DB.Create(favorite).Error
 }
 
 func deleteFavorite(userId uint, restaurantId uint) error {
-	return config.DB.Unscoped().Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Delete(&models.Favorite{}).Error
+	return config.DB.Unscoped().Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Delete(&models.FavoriteRestaurant{}).Error
 }

@@ -21,8 +21,9 @@ func main() {
 		&models.ProductCategory{},
 		&models.Product{},
 		&models.Review{},
-		&models.Favorite{},
 		&models.ProductFeedback{},
+		&models.FavoriteRestaurant{},
+		&models.FavoriteProduct{},
 	}
 
 	config.DB.Migrator().DropTable(tables...)

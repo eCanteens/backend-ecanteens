@@ -15,7 +15,8 @@ func main() {
 	seeders.RestaurantSeeder()
 	seeders.UserSeeder()
 	seeders.ReviewSeeder()
-	seeders.FavoriteSeeder()
 	seeders.ProductSeeder()
 	seeders.ProductFeedbackSeeder()
+	seeders.FavoriteRestaurantSeeder()
+	seeders.FavoriteProductSeeder()
 }

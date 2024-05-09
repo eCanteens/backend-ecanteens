@@ -8,16 +8,16 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
-func FavoriteSeeder() {
-	var favorites []*models.Favorite
+func FavoriteProductSeeder() {
+	var favorites []*models.FavoriteProduct
 
 	for i := 0; i < 11; i++ {
-		favorites = append(favorites, &models.Favorite{
-			UserId:       uint(i) + 1,
-			RestaurantId: gofakeit.UintRange(1, 10),
+		favorites = append(favorites, &models.FavoriteProduct{
+			UserId:    uint(i) + 1,
+			ProductId: gofakeit.UintRange(1, 50),
 		})
 	}
 
 	config.DB.Create(favorites)
-	fmt.Println("Favorite Seeder created")
+	fmt.Println("Favorite Restaurant Seeder created")
 }

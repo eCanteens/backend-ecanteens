@@ -23,7 +23,7 @@ func getFavoriteService(userId uint, query map[string]string) (*[]models.Restaur
 		return nil, err
 	}
 
-	return &user.FavoriteRestaurant, nil
+	return &user.FavoriteRestaurants, nil
 }
 
 func getAllService(query map[string]string) (*pagination.Pagination, error) {
@@ -70,7 +70,7 @@ func addFavoriteService(userId uint, restaurantId string) error {
 		return errors.New("restoran sudah di dalam list favorit anda")
 	}
 
-	favorite := &models.Favorite{
+	favorite := &models.FavoriteRestaurant{
 		UserId: userId,
 		RestaurantId: uint(id),
 	}

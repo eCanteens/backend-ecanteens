@@ -1,6 +1,6 @@
 package models
 
-type Favorite struct {
+type FavoriteRestaurant struct {
 	Id
 	UserId       uint `gorm:"type:bigint" json:"user_id"`
 	RestaurantId uint `gorm:"type:bigint" json:"restaurant_id"`

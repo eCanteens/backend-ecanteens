@@ -25,14 +25,14 @@ func RestaurantSeeder() {
 		restaurants = append(restaurants, &models.Restaurant{
 			Name:       gofakeit.AppName(),
 			Phone:      "08" + gofakeit.Numerify("##########"),
+			Email:      gofakeit.Email(),
 			LocationId: 1,
 			Avatar:     "/public/uploads/dummy/avatar_resto.png",
 			Banner:     "/public/uploads/dummy/banner.jpeg",
-			Balance:    (gofakeit.UintRange(100_000, 2_000_000) / 100) * 100,
 			CategoryId: 1,
 		})
 	}
-	
+
 	config.DB.Create(restaurants)
 
 	fmt.Println("Restaurant Seeder created")

@@ -21,7 +21,6 @@ func UserSeeder() {
 			Phone:    &phone,
 			Password: "password",
 			Avatar:   &avatar,
-			Balance:  (gofakeit.UintRange(5_000, 200_000) / 100) * 100,
 		})
 	}
 
@@ -29,14 +28,12 @@ func UserSeeder() {
 		Name:     "Test",
 		Email:    "test@gmail.com",
 		Password: "password",
-		Balance:  100_000,
 	})
 
 	users = append(users, &models.User{
 		Name:     "Chandra",
 		Email:    "chandra123@gmail.com",
 		Password: "chandra123",
-		Balance:  100_000,
 	})
 
 	config.DB.Create(users)

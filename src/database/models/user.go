@@ -12,11 +12,11 @@ type User struct {
 	Phone    *string `gorm:"type:varchar(20);unique" json:"phone"`
 	Password string  `gorm:"type:varchar(255);not null" json:"password,omitempty" binding:"required,min=8"`
 	Avatar   *string `gorm:"type:varchar(255)" json:"avatar"`
-	Balance  uint    `gorm:"type:int; not null" json:"balance"`
 	Timestamps
 
 	// Relations
-	FavoriteRestaurant []Restaurant `gorm:"many2many:favorites;" json:"favorite_restaurant,omitempty"`
+	FavoriteRestaurants []Restaurant `gorm:"many2many:favorite_restaurants;" json:"favorite_restaurant,omitempty"`
+	FavoriteProducts    []Product    `gorm:"many2many:favorite_products;" json:"favorite_products,omitempty"`
 }
 
 func (u *User) BeforeSave(tx *gorm.DB) (err error) {
