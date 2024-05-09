@@ -29,10 +29,6 @@ func findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).First(user).Error
 }
 
-func updatePassword(user *models.User, email string) error {
-	return config.DB.Where("email = ?", email).Updates(user).Error
-}
-
-func update(id *uint, user *models.User) error {
+func update(id uint, user *models.User) error {
 	return config.DB.Where("id = ?", id).Updates(user).Error
 }

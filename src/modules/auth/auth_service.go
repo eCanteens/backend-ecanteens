@@ -50,32 +50,30 @@ func registerService(body *RegisterScheme) (*models.User, error) {
 	return user, nil
 }
 
-func loginService(body *LoginScheme) (*string, error) {
+func loginService(body *LoginScheme) (*models.User, *string, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
-		return nil, errors.New("email atau password salah")
+		return nil, nil, errors.New("email atau password salah")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return nil, errors.New("email atau password salah")
+		return nil, nil, errors.New("email atau password salah")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"name":    user.Name,
 		"email":   user.Email,
-		"phone":   user.Phone,
-		"avatar":  user.Avatar,
-		"balance": user.Balance,
 		"exp":     float64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &tokenString, nil
+	user.Password = ""
+
+	return &user, &tokenString, nil
 }
 
 func forgotService(body *ForgotScheme) error {
@@ -86,8 +84,8 @@ func forgotService(body *ForgotScheme) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": body.Email,
-		"exp":   float64(time.Now().Add(time.Minute * 5).Unix()),
+		"user_id":  *user.Id.Id,
+		"exp": float64(time.Now().Add(time.Hour * 100).Unix()),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
@@ -126,19 +124,24 @@ func resetService(body *ResetScheme, token string) error {
 		return err
 	}
 
+	id, ok := claim["user_id"].(float64)
+	if !ok {
+		return errors.New("cant convert claims")
+	}
+
 	user := &models.User{Password: body.Password}
 
-	return updatePassword(user, claim["email"].(string))
+	return update(uint(id), user)
 }
 
-func updateProfileService(userId *uint, body *UpdateScheme) (*models.User, error) {
+func updateProfileService(userId uint, body *UpdateScheme) (*models.User, error) {
 	user := &models.User{
 		Email: body.Email,
 		Name:  body.Name,
 		Phone: &body.Phone,
 	}
 
-	sameUser := checkEmailAndPhone(user, userId)
+	sameUser := checkEmailAndPhone(user, &userId)
 
 	if len(sameUser) > 1 {
 		return nil, errors.New("email dan nomor telepon sudah digunakan")
@@ -164,4 +167,14 @@ func updateProfileService(userId *uint, body *UpdateScheme) (*models.User, error
 	}
 
 	return user, nil
+}
+
+func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error {
+	fmt.Println(user.Password)
+	fmt.Println(body.OldPassword)
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
+		return errors.New("password salah")
+	}
+
+	return update(*user.Id.Id, &models.User{Password: body.NewPassword})
 }

@@ -24,3 +24,8 @@ type UpdateScheme struct {
 	Email string `binding:"required,email"`
 	Phone string `binding:"min=10,max=14,numeric"`
 }
+
+type UpdatePasswordScheme struct {
+	OldPassword string `binding:"required" json:"old_password"`
+	NewPassword string `binding:"required,min=8" json:"new_password"`
+}

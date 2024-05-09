@@ -22,7 +22,7 @@ func addFeedback(ctx *gin.Context) {
 	}
 
 	msg := "Produk berhasil di"
-	if *body.Like {
+	if *body.IsLike {
 		msg += "like"
 	} else {
 		msg += "dislike"

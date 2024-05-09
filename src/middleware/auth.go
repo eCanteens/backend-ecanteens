@@ -29,7 +29,6 @@ func Auth(ctx *gin.Context) {
 
 	var user models.User
 	config.DB.Where("email = ?", claim["email"]).First(&user)
-	user.Password = ""
 
 	ctx.Set("user", user)
 	ctx.Next()

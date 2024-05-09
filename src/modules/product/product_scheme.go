@@ -1,5 +1,5 @@
 package product
 
 type FeedbackScheme struct {
-	Like *bool	`binding:"required"`
+	IsLike *bool	`binding:"required" json:"is_like"`
 }

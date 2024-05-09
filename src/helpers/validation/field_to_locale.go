@@ -6,8 +6,16 @@ func FieldToLocale(field string) (intlField string) {
 		intlField = "Nama"
 	case "Email":
 		intlField = "Email"
+	case "Phone":
+		intlField = "Nomor Telepon"
 	case "Password":
 		intlField = "Kata Sandi"
+	case "OldPassword":
+		intlField = "Password Lama"
+	case "NewPassword":
+		intlField = "Password Baru"
+	case "IsLike":
+		intlField = "IsLike"
 	}
 
 	return

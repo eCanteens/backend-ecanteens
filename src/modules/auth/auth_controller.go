@@ -32,14 +32,14 @@ func login(ctx *gin.Context) {
 		return
 	}
 
-	token, err := loginService(&body)
+	data, token, err := loginService(&body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token}))
+	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
 
 func forgot(ctx *gin.Context) {
@@ -77,9 +77,11 @@ func reset(ctx *gin.Context) {
 
 func profile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+	_user.Password = ""
 
 	ctx.JSON(200, gin.H{
-		"data": user,
+		"data": _user,
 	})
 }
 
@@ -92,7 +94,7 @@ func updateProfile(ctx *gin.Context) {
 		return
 	}
 
-	_user, err := updateProfileService(user.(models.User).Id.Id, &body)
+	_user, err := updateProfileService(*user.(models.User).Id.Id, &body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -100,4 +102,22 @@ func updateProfile(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": _user}))
+}
+
+func updatePassword(ctx *gin.Context)  {
+	var body UpdatePasswordScheme
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if response := helpers.Bind(ctx, &body); response != nil {
+		ctx.AbortWithStatusJSON(400, response)
+		return
+	}
+
+	if err := updatePasswordService(&_user, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
 }
