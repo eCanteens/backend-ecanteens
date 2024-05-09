@@ -5,7 +5,7 @@
         ],
         "target": {
             "namespace": "android_app",
-            "package_name": "com.mobile_ecanteens.app",
+            "package_name": "com.mobile_ecanteens.app.prod",
             "sha256_cert_fingerprints": [
                 "55:62:B7:80:28:94:0A:FC:1E:D8:49:01:5F:FE:82:07:3B:93:A8:29:8E:25:2D:D6:5F:66:EA:AA:18:69:17:69"
             ]
