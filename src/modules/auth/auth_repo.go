@@ -26,7 +26,7 @@ func checkEmailAndPhone(user *models.User, id ...*uint) []models.User {
 }
 
 func findByEmail(user *models.User, email string) error {
-	return config.DB.Where("email = ?", email).First(user).Error
+	return config.DB.Where("email = ?", email).Preload("Wallet").First(user).Error
 }
 
 func update(id uint, user *models.User) error {

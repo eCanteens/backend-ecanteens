@@ -57,5 +57,5 @@ func (p *Product) AfterFind(tx *gorm.DB) (err error) {
 
 	p.Feedback = &result
 
-	return nil
+	return
 }

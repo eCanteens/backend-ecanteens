@@ -13,7 +13,18 @@ func init() {
 }
 
 func main() {
-	tables := []interface{}{
+	tables, _ := config.DB.Migrator().GetTables()
+
+	_tables := []interface{}{}
+	for _, v := range tables {
+		_tables = append(_tables, v)
+	}
+	config.DB.Migrator().DropTable(_tables...)
+
+	fmt.Println("Tables Dropped")
+
+	config.DB.Migrator().CreateTable(
+		&models.Wallet{},
 		&models.User{},
 		&models.Location{},
 		&models.RestaurantCategory{},
@@ -24,13 +35,10 @@ func main() {
 		&models.ProductFeedback{},
 		&models.FavoriteRestaurant{},
 		&models.FavoriteProduct{},
-	}
-
-	config.DB.Migrator().DropTable(tables...)
-
-	fmt.Println("Tables Dropped")
-
-	config.DB.Migrator().CreateTable(tables...)
+		&models.Cart{},
+		&models.Order{},
+		&models.Transaction{},
+	)
 
 	fmt.Println("Tables Created")
 }
