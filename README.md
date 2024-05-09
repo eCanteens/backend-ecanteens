@@ -1,5 +1,5 @@
 
-![Logo](https://lh3.google.com/u/0/d/1kUI5BW1buCOtOxzLK-Xp405uiqyWKP4e=w1607-h970-iv1)
+![Logo](https://raw.githubusercontent.com/eCanteens/backend-ecanteens/main/public/assets/logo_long.png)
 
 
 # eCanteens Backend
