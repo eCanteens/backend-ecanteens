@@ -4,6 +4,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
+	"github.com/eCanteens/backend-ecanteens/src/modules/product"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,7 @@ func main() {
 	router := gin.Default()
 
 	router.Static("/public", "./public")
+	router.Static("/.well-known", "./.well-known")
 
 	router.Use(cors.Default())
 
@@ -33,6 +35,7 @@ func main() {
 	// routes
 	auth.Routes(router.Group("/api/auth"))
 	restaurant.Routes(router.Group("/api/restaurants"))
+	product.Routes(router.Group("/api/products"))
 
 	router.Run()
 }

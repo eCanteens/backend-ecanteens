@@ -21,7 +21,7 @@ func UserSeeder() {
 			Phone:    &phone,
 			Password: "password",
 			Avatar:   &avatar,
-			Balance:  (gofakeit.Number(5_000, 200_000) / 100) * 100,
+			Balance:  (gofakeit.UintRange(5_000, 200_000) / 100) * 100,
 		})
 	}
 

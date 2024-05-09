@@ -58,22 +58,20 @@ func getRestosProductsService(id string, query map[string]string) (*pagination.P
 	return &productsPagination, nil
 }
 
-func addFavoriteService(userId *uint, restaurantId string) error {
+func addFavoriteService(userId uint, restaurantId string) error {
 	id, err := strconv.ParseUint(restaurantId, 10, 32)
-	uintid := uint(id)
-
 	if err != nil {
 		return err
 	}
 
-	favorites := checkFavorite(userId, &uintid)
+	favorites := checkFavorite(userId, uint(id))
 
 	if len(*favorites) > 0 {
 		return errors.New("restoran sudah di dalam list favorit anda")
 	}
 
 	favorite := &models.Favorite{
-		UserId: *userId,
+		UserId: userId,
 		RestaurantId: uint(id),
 	}
 
@@ -84,21 +82,19 @@ func addFavoriteService(userId *uint, restaurantId string) error {
 	return nil
 }
 
-func removeFavoriteService(userId *uint, restaurantId string) error {
+func removeFavoriteService(userId uint, restaurantId string) error {
 	id, err := strconv.ParseUint(restaurantId, 10, 32)
-	uintid := uint(id)
-
 	if err != nil {
 		return err
 	}
 
-	favorites := checkFavorite(userId, &uintid)
+	favorites := checkFavorite(userId, uint(id))
 
 	if len(*favorites) == 0 {
 		return errors.New("restoran tidak ada di dalam list favorit anda")
 	}
 
-	if err := deleteFavorite(userId, &uintid); err != nil {
+	if err := deleteFavorite(userId, uint(id)); err != nil {
 		return err
 	}
 

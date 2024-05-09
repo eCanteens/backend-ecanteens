@@ -31,8 +31,6 @@ func ProductSeeder() {
 			Price: (gofakeit.UintRange(1_000, 20_000) / 100) * 100,
 			Stock: gofakeit.UintRange(0, 20),
 			Sold: gofakeit.UintRange(0, 200),
-			Like: gofakeit.UintRange(0, 200),
-			Dislike: gofakeit.UintRange(0, 200),
 		})
 	}
 

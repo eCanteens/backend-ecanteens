@@ -15,10 +15,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func registerService(body *RegisterSchema) (*models.User, error) {
+func registerService(body *RegisterScheme) (*models.User, error) {
 	user := &models.User{
-		Name: body.Name,
-		Email: body.Email,
+		Name:     body.Name,
+		Email:    body.Email,
 		Password: body.Password,
 	}
 
@@ -50,7 +50,7 @@ func registerService(body *RegisterSchema) (*models.User, error) {
 	return user, nil
 }
 
-func loginService(body *LoginSchema) (*string, error) {
+func loginService(body *LoginScheme) (*string, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
@@ -78,7 +78,7 @@ func loginService(body *LoginSchema) (*string, error) {
 	return &tokenString, nil
 }
 
-func forgotService(body *ForgotSchema) error {
+func forgotService(body *ForgotScheme) error {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
@@ -112,14 +112,14 @@ func forgotService(body *ForgotSchema) error {
 		ContentType: helpers.HTML,
 		HtmlBody:    t,
 		HTMLProps: &ResetPasswordProps{
-			LOGO: fmt.Sprintf("%s/public/assets/logo.svg", os.Getenv("BASE_URL")),
+			LOGO: fmt.Sprintf("%s/public/assets/logo.png", os.Getenv("BASE_URL")),
 			URL:  fmt.Sprintf("%s/api/auth/reset-password/%s", os.Getenv("BASE_URL"), tokenString),
 			NAME: user.Name,
 		},
 	})
 }
 
-func resetService(body *ResetSchema, token string) error {
+func resetService(body *ResetScheme, token string) error {
 	claim, err := helpers.ParseJwt(token)
 
 	if err != nil {
@@ -131,7 +131,7 @@ func resetService(body *ResetSchema, token string) error {
 	return updatePassword(user, claim["email"].(string))
 }
 
-func updateProfileService(userId *uint, body *UpdateSchema) (*models.User, error) {
+func updateProfileService(userId *uint, body *UpdateScheme) (*models.User, error) {
 	user := &models.User{
 		Email: body.Email,
 		Name:  body.Name,

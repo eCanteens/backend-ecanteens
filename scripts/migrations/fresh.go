@@ -22,6 +22,7 @@ func main() {
 		&models.Product{},
 		&models.Review{},
 		&models.Favorite{},
+		&models.ProductFeedback{},
 	}
 
 	config.DB.Migrator().DropTable(tables...)

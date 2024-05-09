@@ -37,10 +37,10 @@ func findRestosProducts(_pagination *pagination.Pagination, products *[]models.P
 	})
 }
 
-func checkFavorite(userId *uint, restaurantId *uint) *[]models.Favorite {
+func checkFavorite(userId uint, restaurantId uint) *[]models.Favorite {
 	var favorites []models.Favorite
 
-	config.DB.Where("user_id = ?", *userId).Where("restaurant_id = ?", *restaurantId).Find(&favorites)
+	config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Find(&favorites)
 
 	return &favorites
 }
@@ -49,6 +49,6 @@ func createFavorite(favorite *models.Favorite) error {
 	return config.DB.Create(favorite).Error
 }
 
-func deleteFavorite(userId *uint, restaurantId *uint) error {
-	return config.DB.Unscoped().Where("user_id = ?", *userId).Where("restaurant_id = ?", restaurantId).Delete(&models.Favorite{}).Error
+func deleteFavorite(userId uint, restaurantId uint) error {
+	return config.DB.Unscoped().Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Delete(&models.Favorite{}).Error
 }

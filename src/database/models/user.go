@@ -12,7 +12,7 @@ type User struct {
 	Phone    *string `gorm:"type:varchar(20);unique" json:"phone"`
 	Password string  `gorm:"type:varchar(255);not null" json:"password,omitempty" binding:"required,min=8"`
 	Avatar   *string `gorm:"type:varchar(255)" json:"avatar"`
-	Balance  int     `gorm:"type:int; not null" json:"balance"`
+	Balance  uint     `gorm:"type:int; not null" json:"balance"`
 	Timestamps
 
 	// Relations

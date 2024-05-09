@@ -1,25 +1,25 @@
 package auth
 
-type RegisterSchema struct {
+type RegisterScheme struct {
 	Name     string `binding:"required"`
 	Email    string `binding:"required,email"`
 	Password string `binding:"required,min=8"`
 }
 
-type LoginSchema struct {
+type LoginScheme struct {
 	Email    string `binding:"required,email"`
 	Password string `binding:"required"`
 }
 
-type ForgotSchema struct {
+type ForgotScheme struct {
 	Email string `binding:"required,email"`
 }
 
-type ResetSchema struct {
+type ResetScheme struct {
 	Password string `binding:"required,min=8"`
 }
 
-type UpdateSchema struct {
+type UpdateScheme struct {
 	Name  string `binding:"required"`
 	Email string `binding:"required,email"`
 	Phone string `binding:"min=10,max=14,numeric"`

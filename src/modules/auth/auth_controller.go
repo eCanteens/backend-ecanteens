@@ -7,7 +7,7 @@ import (
 )
 
 func register(ctx *gin.Context) {
-	var body RegisterSchema
+	var body RegisterScheme
 
 	if response := helpers.Bind(ctx, &body); response != nil {
 		ctx.AbortWithStatusJSON(400, response)
@@ -25,7 +25,7 @@ func register(ctx *gin.Context) {
 }
 
 func login(ctx *gin.Context) {
-	var body LoginSchema
+	var body LoginScheme
 
 	if response := helpers.Bind(ctx, &body); response != nil {
 		ctx.AbortWithStatusJSON(400, response)
@@ -43,7 +43,7 @@ func login(ctx *gin.Context) {
 }
 
 func forgot(ctx *gin.Context) {
-	var body ForgotSchema
+	var body ForgotScheme
 
 	if response := helpers.Bind(ctx, &body); response != nil {
 		ctx.AbortWithStatusJSON(400, response)
@@ -59,7 +59,7 @@ func forgot(ctx *gin.Context) {
 }
 
 func reset(ctx *gin.Context) {
-	var body ResetSchema
+	var body ResetScheme
 	token := ctx.Param("token")
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -84,7 +84,7 @@ func profile(ctx *gin.Context) {
 }
 
 func updateProfile(ctx *gin.Context) {
-	var body UpdateSchema
+	var body UpdateScheme
 	user, _ := ctx.Get("user")
 
 	if response := helpers.Bind(ctx, &body); response != nil {

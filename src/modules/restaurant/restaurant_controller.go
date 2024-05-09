@@ -74,7 +74,7 @@ func addFavorite(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
-	if err := addFavoriteService(user.(models.User).Id.Id, id); err != nil {
+	if err := addFavoriteService(*user.(models.User).Id.Id, id); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
@@ -86,7 +86,7 @@ func removeFavorite(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
-	if err := removeFavoriteService(user.(models.User).Id.Id, id); err != nil {
+	if err := removeFavoriteService(*user.(models.User).Id.Id, id); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
