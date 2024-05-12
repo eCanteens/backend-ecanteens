@@ -9,8 +9,8 @@ import (
 func handleRegister(ctx *gin.Context) {
 	var body RegisterScheme
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -27,8 +27,8 @@ func handleRegister(ctx *gin.Context) {
 func handleLogin(ctx *gin.Context) {
 	var body LoginScheme
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -45,8 +45,8 @@ func handleLogin(ctx *gin.Context) {
 func handleForgot(ctx *gin.Context) {
 	var body ForgotScheme
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -62,8 +62,8 @@ func handleReset(ctx *gin.Context) {
 	var body ResetScheme
 	token := ctx.Param("token")
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -91,8 +91,8 @@ func handleUpdateProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -106,13 +106,13 @@ func handleUpdateProfile(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": __user}))
 }
 
-func handleUpdatePassword(ctx *gin.Context)  {
+func handleUpdatePassword(ctx *gin.Context) {
 	var body UpdatePasswordScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -124,13 +124,13 @@ func handleUpdatePassword(ctx *gin.Context)  {
 	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
 }
 
-func handleCheckPin(ctx *gin.Context)  {
+func handleCheckPin(ctx *gin.Context) {
 	var body CheckPinScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -142,13 +142,13 @@ func handleCheckPin(ctx *gin.Context)  {
 	ctx.JSON(200, helpers.SuccessResponse("Pin benar"))
 }
 
-func handleUpdatePin(ctx *gin.Context)  {
+func handleUpdatePin(ctx *gin.Context) {
 	var body UpdatePinScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 

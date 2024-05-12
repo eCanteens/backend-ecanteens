@@ -11,8 +11,8 @@ func addFeedback(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
-	if response := helpers.Bind(ctx, &body); response != nil {
-		ctx.AbortWithStatusJSON(400, response)
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
@@ -43,7 +43,7 @@ func removeFeedback(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Produk berhasil diunlike/undislike"))
 }
 
-func getFavorite(ctx *gin.Context)  {
+func getFavorite(ctx *gin.Context) {
 	query := map[string]string{}
 	user, _ := ctx.Get("user")
 
