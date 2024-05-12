@@ -9,17 +9,21 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func registerService(body *RegisterScheme) (*models.User, error) {
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+
 	user := &models.User{
 		Name:     body.Name,
 		Email:    body.Email,
-		Password: body.Password,
+		Password: string(hashed),
 	}
 
 	sameUser := checkEmailAndPhone(user)
@@ -47,6 +51,8 @@ func registerService(body *RegisterScheme) (*models.User, error) {
 		return nil, err
 	}
 
+	user.Password = ""
+
 	return user, nil
 }
 
@@ -72,6 +78,7 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	user.Password = ""
+	user.Pin = ""
 
 	return &user, &tokenString, nil
 }
@@ -131,17 +138,15 @@ func resetService(body *ResetScheme, token string) error {
 
 	user := &models.User{Password: body.Password}
 
-	return update(uint(id), user)
+	return updatePassword(uint(id), user)
 }
 
-func updateProfileService(userId uint, body *UpdateScheme) (*models.User, error) {
-	user := &models.User{
-		Email: body.Email,
-		Name:  body.Name,
-		Phone: &body.Phone,
-	}
+func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateScheme) (*models.User, error) {
+	user.Name = body.Name
+	user.Email = body.Email
+	user.Phone = body.Phone
 
-	sameUser := checkEmailAndPhone(user, &userId)
+	sameUser := checkEmailAndPhone(user, user.Id.Id)
 
 	if len(sameUser) > 1 {
 		return nil, errors.New("email dan nomor telepon sudah digunakan")
@@ -154,7 +159,7 @@ func updateProfileService(userId uint, body *UpdateScheme) (*models.User, error)
 
 		if sameUser[0].Phone != nil && user.Phone != nil {
 			if *sameUser[0].Phone == *user.Phone {
-				fields = append(fields, "phone")
+				fields = append(fields, "nomor telepon")
 			}
 		}
 
@@ -162,19 +167,55 @@ func updateProfileService(userId uint, body *UpdateScheme) (*models.User, error)
 		return nil, errors.New(errMsg)
 	}
 
-	if err := update(userId, user); err != nil {
+	if body.Avatar != nil {
+		filePath := config.UploadPath(body.Avatar.Filename)
+		
+		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
+			return nil, err
+		}
+
+		user.Avatar = &filePath.Url
+	}
+
+	if err := save(user); err != nil {
 		return nil, err
 	}
+
+	user.Password = ""
+	user.Pin = ""
 
 	return user, nil
 }
 
 func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error {
-	fmt.Println(user.Password)
-	fmt.Println(body.OldPassword)
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
 		return errors.New("password salah")
 	}
 
-	return update(*user.Id.Id, &models.User{Password: body.NewPassword})
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+
+	user.Password = string(hashed)
+
+	return save(user)
+}
+
+func checkPinService(user *models.User, body *CheckPinScheme) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Pin), []byte(body.Pin)); err != nil {
+		return errors.New("pin salah")
+	}
+
+	return nil
+}
+
+func updatePinService(user *models.User, body *UpdatePinScheme) error {
+	if user.Pin != "" {
+		if err := checkPinService(user, &CheckPinScheme{Pin: body.OldPin}); err != nil {
+			return err
+		}
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.NewPin), bcrypt.DefaultCost)
+	user.Pin = string(hashed)
+
+	return save(user)
 }

@@ -12,6 +12,8 @@ func MsgForTag(tag string, field string, param string) string {
 		return intlField + " minimal " + param + " karakter"
 	case "max":
 		return intlField + " maximal " + param + " karakter"
+	case "len":
+		return intlField + " harus " + param + " karakter"
 	case "unique":
 		return intlField + " sudah digunakan"
 	case "numeric":

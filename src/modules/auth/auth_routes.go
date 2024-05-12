@@ -6,16 +6,18 @@ import (
 )
 
 func Routes(router *gin.RouterGroup) {
-	router.POST("/register", register)
-	router.POST("/login", login)
-	router.POST("/forgot-password", forgot)
-	router.PUT("/reset-password/:token", reset)
+	router.POST("/register", handleRegister)
+	router.POST("/login", handleLogin)
+	router.POST("/forgot-password", handleForgot)
+	router.PUT("/reset-password/:token", handleReset)
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.GET("/profile", profile)
-		authorized.PUT("/profile", updateProfile)
-		authorized.PUT("/password", updatePassword)
+		authorized.GET("/profile", handleProfile)
+		authorized.PUT("/profile", handleUpdateProfile)
+		authorized.PUT("/password", handleUpdatePassword)
+		authorized.POST("/check-pin", handleCheckPin)
+		authorized.PUT("/pin", handleUpdatePin)
 	}
 }

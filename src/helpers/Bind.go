@@ -6,7 +6,7 @@ import (
 )
 
 func Bind(ctx *gin.Context, model interface{}) *gin.H {
-	if err := ctx.ShouldBindJSON(model); err != nil {
+	if err := ctx.ShouldBind(model); err != nil {
 		parsed, parseErr := validation.ParseError(err)
 
 		if parseErr == nil {

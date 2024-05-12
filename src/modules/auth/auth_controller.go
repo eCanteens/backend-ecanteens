@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func register(ctx *gin.Context) {
+func handleRegister(ctx *gin.Context) {
 	var body RegisterScheme
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -24,7 +24,7 @@ func register(ctx *gin.Context) {
 	ctx.JSON(201, helpers.SuccessResponse("Register berhasil", helpers.Data{"data": &user}))
 }
 
-func login(ctx *gin.Context) {
+func handleLogin(ctx *gin.Context) {
 	var body LoginScheme
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -42,7 +42,7 @@ func login(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
 
-func forgot(ctx *gin.Context) {
+func handleForgot(ctx *gin.Context) {
 	var body ForgotScheme
 
 	if response := helpers.Bind(ctx, &body); response != nil {
@@ -58,7 +58,7 @@ func forgot(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Email telah dikirim"))
 }
 
-func reset(ctx *gin.Context) {
+func handleReset(ctx *gin.Context) {
 	var body ResetScheme
 	token := ctx.Param("token")
 
@@ -75,36 +75,38 @@ func reset(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Password berhasil direset"))
 }
 
-func profile(ctx *gin.Context) {
+func handleProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	_user.Password = ""
+	_user.Pin = ""
 
 	ctx.JSON(200, gin.H{
 		"data": _user,
 	})
 }
 
-func updateProfile(ctx *gin.Context) {
+func handleUpdateProfile(ctx *gin.Context) {
 	var body UpdateScheme
 	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if response := helpers.Bind(ctx, &body); response != nil {
 		ctx.AbortWithStatusJSON(400, response)
 		return
 	}
 
-	_user, err := updateProfileService(*user.(models.User).Id.Id, &body)
+	__user, err := updateProfileService(ctx, &_user, &body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": _user}))
+	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": __user}))
 }
 
-func updatePassword(ctx *gin.Context)  {
+func handleUpdatePassword(ctx *gin.Context)  {
 	var body UpdatePasswordScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
@@ -120,4 +122,40 @@ func updatePassword(ctx *gin.Context)  {
 	}
 
 	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
+}
+
+func handleCheckPin(ctx *gin.Context)  {
+	var body CheckPinScheme
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if response := helpers.Bind(ctx, &body); response != nil {
+		ctx.AbortWithStatusJSON(400, response)
+		return
+	}
+
+	if err := checkPinService(&_user, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Pin benar"))
+}
+
+func handleUpdatePin(ctx *gin.Context)  {
+	var body UpdatePinScheme
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if response := helpers.Bind(ctx, &body); response != nil {
+		ctx.AbortWithStatusJSON(400, response)
+		return
+	}
+
+	if err := updatePinService(&_user, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Pin berhasil diperbarui"))
 }

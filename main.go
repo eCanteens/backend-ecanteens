@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
-	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
 	"github.com/eCanteens/backend-ecanteens/src/modules/product"
+	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -17,16 +17,12 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	router.Static("/public", "./public")
-	router.Static("/.well-known", "./.well-known")
-
+	config.Upload(router)
 	router.Use(cors.Default())
-
 	router.Use(config.RateLimiter)
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "API Docs on /api"})
-	})
+	router.Static("/public", "./public")
+	router.Static("/.well-known", "./.well-known")
 
 	router.GET("/api", func(c *gin.Context) {
 		c.Redirect(301, "https://documenter.getpostman.com/view/24844734/2sA35LUeTt")
@@ -36,6 +32,10 @@ func main() {
 	auth.Routes(router.Group("/api/auth"))
 	restaurant.Routes(router.Group("/api/restaurants"))
 	product.Routes(router.Group("/api/products"))
+
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "API Docs on /api"})
+	})
 
 	router.Run()
 }

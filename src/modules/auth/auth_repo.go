@@ -29,6 +29,10 @@ func findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Preload("Wallet").First(user).Error
 }
 
-func update(id uint, user *models.User) error {
-	return config.DB.Where("id = ?", id).Updates(user).Error
+func save(user *models.User) error {
+	return config.DB.Save(user).Error
+}
+
+func updatePassword(id uint, user *models.User) error {
+	return config.DB.Model("password").Where("id = ?", id).Updates(user).Error
 }
