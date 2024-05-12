@@ -1,37 +1,48 @@
-package pagination
+package helpers
 
 import (
 	"math"
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
+	"gorm.io/gorm"
 )
+
+type meta struct {
+	CurrentPage int   `json:"current_page"`
+	PerPage     int   `json:"per_page"`
+	Total       int64 `json:"total"`
+	LastPage    int   `json:"last_page"`
+}
+
+type Pagination struct {
+	Meta meta        `json:"meta"`
+	Data interface{} `json:"data"`
+}
+
+type Params struct {
+	Query     *gorm.DB
+	Page      string
+	Limit     string
+	Order     string
+	Direction string
+}
 
 func (pagination *Pagination) Paginate(value interface{}, params *Params) error {
 	if params.Query == nil {
 		params.Query = config.DB
 	}
 
-	if params.Page == "" || params.Page == nil {
+	if params.Page == "" {
 		pagination.Meta.CurrentPage = 1
 	} else {
-		switch v := params.Page.(type) {
-		case string:
-			pagination.Meta.CurrentPage, _ = strconv.Atoi(v)
-		case int:
-			pagination.Meta.CurrentPage = v
-		}
+		pagination.Meta.CurrentPage, _ = strconv.Atoi(params.Page)
 	}
 
-	if params.Limit == "" || params.Limit == nil {
+	if params.Limit == "" {
 		pagination.Meta.PerPage = 10
 	} else {
-		switch v := params.Limit.(type) {
-		case string:
-			pagination.Meta.PerPage, _ = strconv.Atoi(v)
-		case int:
-			pagination.Meta.PerPage = v
-		}
+		pagination.Meta.PerPage, _ = strconv.Atoi(params.Limit)
 	}
 
 	if params.Order == "" {

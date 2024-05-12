@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
+	"github.com/eCanteens/backend-ecanteens/src/middleware"
 	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/product"
 	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
+	"github.com/eCanteens/backend-ecanteens/src/modules/transaction"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +21,7 @@ func main() {
 
 	config.Upload(router)
 	router.Use(cors.Default())
-	router.Use(config.RateLimiter)
+	router.Use(middleware.RateLimiter)
 
 	router.Static("/public", "./public")
 	router.Static("/.well-known", "./.well-known")
@@ -32,6 +34,7 @@ func main() {
 	auth.Routes(router.Group("/api/auth"))
 	restaurant.Routes(router.Group("/api/restaurants"))
 	product.Routes(router.Group("/api/products"))
+	transaction.Routes(router.Group("/api/transaction"))
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "API Docs on /api"})

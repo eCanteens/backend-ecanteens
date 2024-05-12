@@ -13,7 +13,7 @@ func UserSeeder() {
 
 	for i := 0; i < 9; i++ {
 		phone := "08" + gofakeit.Numerify("##########")
-		avatar := "/public/uploads/dummy/avatar_user.png"
+		avatar := "/public/dummy/avatar_user.png"
 
 		users = append(users, &models.User{
 			Name:     gofakeit.Name(),

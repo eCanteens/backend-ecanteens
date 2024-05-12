@@ -26,7 +26,7 @@ func ProductSeeder() {
 			RestaurantId: gofakeit.UintRange(1, 10),
 			Name: gofakeit.ProductName(),
 			Description: gofakeit.ProductDescription(),
-			Image: "/public/uploads/dummy/product.png",
+			Image: "/public/dummy/product.png",
 			CategoryId: 1,
 			Price: (gofakeit.UintRange(1_000, 20_000) / 100) * 100,
 			Stock: gofakeit.UintRange(0, 20),

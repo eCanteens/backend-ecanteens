@@ -1,7 +1,7 @@
 package validation
 
-func MsgForTag(tag string, field string, param string) string {
-	intlField := FieldToLocale(field)
+func msgForTag(tag string, field string, param string) string {
+	intlField := fieldToLocale(field)
 
 	switch tag {
 	case "required":

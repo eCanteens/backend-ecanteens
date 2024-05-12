@@ -208,13 +208,7 @@ func checkPinService(user *models.User, body *CheckPinScheme) error {
 }
 
 func updatePinService(user *models.User, body *UpdatePinScheme) error {
-	if user.Pin != "" {
-		if err := checkPinService(user, &CheckPinScheme{Pin: body.OldPin}); err != nil {
-			return err
-		}
-	}
-
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.NewPin), bcrypt.DefaultCost)
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Pin), bcrypt.DefaultCost)
 	user.Pin = string(hashed)
 
 	return save(user)

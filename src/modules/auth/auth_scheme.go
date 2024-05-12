@@ -38,6 +38,5 @@ type CheckPinScheme struct {
 }
 
 type UpdatePinScheme struct {
-	OldPin string `json:"old_pin"`
-	NewPin string `binding:"required,numeric,len=6" json:"new_pin"`
+	Pin string `binding:"required,numeric,len=6" json:"pin"`
 }

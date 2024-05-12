@@ -1,6 +1,6 @@
 package validation
 
-func FieldToLocale(field string) (intlField string) {
+func fieldToLocale(field string) (intlField string) {
 	switch field {
 	case "Name":
 		intlField = "Nama"

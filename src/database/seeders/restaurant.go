@@ -27,8 +27,8 @@ func RestaurantSeeder() {
 			Phone:      "08" + gofakeit.Numerify("##########"),
 			Email:      gofakeit.Email(),
 			LocationId: 1,
-			Avatar:     "/public/uploads/dummy/avatar_resto.png",
-			Banner:     "/public/uploads/dummy/banner.jpeg",
+			Avatar:     "/public/dummy/avatar_resto.png",
+			Banner:     "/public/dummy/banner.jpeg",
 			CategoryId: 1,
 		})
 	}

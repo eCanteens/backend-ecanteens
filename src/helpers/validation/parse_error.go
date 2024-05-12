@@ -19,7 +19,7 @@ func ParseError(err error) ([]ApiError, error) {
 		for i, fe := range ve {
 			out[i] = ApiError{
 				Field: fe.Field(),
-				Msg:   MsgForTag(fe.Tag(), fe.Field(), fe.Param()),
+				Msg:   msgForTag(fe.Tag(), fe.Field(), fe.Param()),
 			}
 		}
 		return out, nil

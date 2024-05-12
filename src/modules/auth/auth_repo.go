@@ -34,5 +34,5 @@ func save(user *models.User) error {
 }
 
 func updatePassword(id uint, user *models.User) error {
-	return config.DB.Model("password").Where("id = ?", id).Updates(user).Error
+	return config.DB.Select("password").Where("id = ?", id).Updates(user).Error
 }
