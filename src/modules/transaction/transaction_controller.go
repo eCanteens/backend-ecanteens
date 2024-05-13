@@ -6,6 +6,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func getCart(ctx *gin.Context)  {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	data, err := getCartService(&_user)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
+}
+
 func addCart(ctx *gin.Context) {
 	var body AddCartScheme
 	user, _ := ctx.Get("user")
@@ -16,7 +32,7 @@ func addCart(ctx *gin.Context) {
 		return
 	}
 
-	if err := AddCartService(&_user, &body); err != nil {
+	if err := addCartService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
 		return
 	}

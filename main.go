@@ -27,14 +27,14 @@ func main() {
 	router.Static("/.well-known", "./.well-known")
 
 	router.GET("/api", func(c *gin.Context) {
-		c.Redirect(301, "https://documenter.getpostman.com/view/24844734/2sA35LUeTt")
+		c.Redirect(301, "https://documenter.getpostman.com/view/34881046/2sA3JNb1JV")
 	})
 
 	// routes
 	auth.Routes(router.Group("/api/auth"))
 	restaurant.Routes(router.Group("/api/restaurants"))
 	product.Routes(router.Group("/api/products"))
-	transaction.Routes(router.Group("/api/transaction"))
+	transaction.Routes(router.Group("/api/transactions"))
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "API Docs on /api"})

@@ -28,8 +28,8 @@ func deleteFeedback(userId uint, productId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.ProductFeedback{}).Error
 }
 
-func findFavorite(user *models.User, id uint, query map[string]string) error {
-	return config.DB.Where("id = ?", id).Preload("FavoriteProducts", func(db *gorm.DB) *gorm.DB {
+func findFavorite(user *models.User, userId uint, query map[string]string) error {
+	return config.DB.Where("id = ?", userId).Preload("FavoriteProducts", func(db *gorm.DB) *gorm.DB {
 		return db.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category").Order(query["order"] + " " + query["direction"])
 	}).Find(user).Error
 }

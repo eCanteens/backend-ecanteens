@@ -1,6 +1,6 @@
-package validation
+package config
 
-func msgForTag(tag string, field string, param string) string {
+func MsgForTag(tag string, field string, param string) string {
 	intlField := fieldToLocale(field)
 
 	switch tag {

@@ -9,7 +9,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/gin-gonic/gin"
@@ -92,7 +91,7 @@ func forgotService(body *ForgotScheme) error {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":  *user.Id.Id,
-		"exp": float64(time.Now().Add(time.Hour * 100).Unix()),
+		"exp": float64(time.Now().Add(time.Minute * 5).Unix()),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
@@ -168,7 +167,8 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	}
 
 	if body.Avatar != nil {
-		filePath := config.UploadPath(body.Avatar.Filename)
+		extracted := helpers.ExtractFileName(body.Avatar.Filename)
+		filePath := helpers.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
 		
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
 			return nil, err

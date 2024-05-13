@@ -1,4 +1,4 @@
-package validation
+package config
 
 func fieldToLocale(field string) (intlField string) {
 	switch field {
@@ -20,6 +20,8 @@ func fieldToLocale(field string) (intlField string) {
 		intlField = "Pin Baru"
 	case "IsLike":
 		intlField = "IsLike"
+	default:
+		intlField = field
 	}
 
 	return
