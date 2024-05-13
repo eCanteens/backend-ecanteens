@@ -1,6 +1,6 @@
 package transaction
 
-type AddCartScheme struct {
+type AddUpdateCartScheme struct {
 	ProductId uint   `binding:"required,numeric" json:"product_id"`
 	Quantity  uint   `binding:"required,numeric" json:"quantity"`
 	Amount    uint   `binding:"required,numeric" json:"amount"`
