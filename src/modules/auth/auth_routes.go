@@ -8,7 +8,7 @@ import (
 func Routes(router *gin.RouterGroup) {
 	router.POST("/register", handleRegister)
 	router.POST("/login", handleLogin)
-	router.POST("/login-admin", handleLoginAdmin)
+	router.POST("/admin/login", handleLoginAdmin)
 	router.POST("/forgot-password", handleForgot)
 	router.PUT("/new-password", handleReset)
 

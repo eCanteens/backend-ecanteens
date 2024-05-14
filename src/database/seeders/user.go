@@ -12,9 +12,16 @@ import (
 func UserSeeder() {
 	var users []*models.User
 
-	hashed, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+	password, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
 	chandra, _ := bcrypt.GenerateFromPassword([]byte("nadia123"), bcrypt.DefaultCost)
 	admin, _ := bcrypt.GenerateFromPassword([]byte("password-admin"), bcrypt.DefaultCost)
+
+	users = append(users, &models.User{
+		Name:     "Admin",
+		Email:    "admin@ecanteens.com",
+		Password: string(admin),
+		RoleId:   1,
+	})
 
 	for i := 0; i < 9; i++ {
 		phone := "08" + gofakeit.Numerify("##########")
@@ -24,7 +31,7 @@ func UserSeeder() {
 			Name:     gofakeit.Name(),
 			Email:    gofakeit.Email(),
 			Phone:    &phone,
-			Password: string(hashed),
+			Password: string(password),
 			Avatar:   &avatar,
 		})
 	}
@@ -33,13 +40,6 @@ func UserSeeder() {
 		Name:     "Chandra",
 		Email:    "mdutchand@gmail.com",
 		Password: string(chandra),
-	})
-
-	users = append(users, &models.User{
-		Name:     "Admin",
-		Email:    "admin@ecanteens.com",
-		Password: string(admin),
-		RoleId:   1,
 	})
 
 	config.DB.Create(users)

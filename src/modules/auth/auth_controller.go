@@ -50,7 +50,7 @@ func handleLoginAdmin(ctx *gin.Context) {
 		return
 	}
 
-	data, token, err := loginService(&body)
+	data, token, err := loginAdminService(&body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
