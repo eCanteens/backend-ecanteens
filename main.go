@@ -4,6 +4,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/middleware"
+	"github.com/eCanteens/backend-ecanteens/src/modules/admin"
 	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/product"
 	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
@@ -40,6 +41,7 @@ func main() {
 	restaurant.Routes(router.Group("/api/restaurants"))
 	product.Routes(router.Group("/api/products"))
 	transaction.Routes(router.Group("/api/transactions"))
+	admin.Routes(router.Group("/api/admin"))
 
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "API Docs on /api"})

@@ -29,10 +29,6 @@ func findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Preload("Wallet").First(user).Error
 }
 
-func findAdminEmail(user *models.User, email string) error {
-	return config.DB.Where("email = ?", email).Where("role_id = ?", 1).Preload("Wallet").First(user).Error
-}
-
 func save(user *models.User) error {
 	return config.DB.Save(user).Error
 }
