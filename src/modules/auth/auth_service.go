@@ -19,31 +19,14 @@ import (
 func registerService(body *RegisterScheme) (*models.User, error) {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 
+	if err := findByEmail(&models.User{}, body.Email); err != nil {
+		return nil, errors.New("email sudah digunakan")
+	}
+
 	user := &models.User{
 		Name:     body.Name,
 		Email:    body.Email,
 		Password: string(hashed),
-	}
-
-	sameUser := checkEmailAndPhone(user)
-
-	if len(sameUser) > 1 {
-		return nil, errors.New("email dan nomor telepon sudah digunakan")
-	} else if len(sameUser) == 1 {
-		var fields []string
-
-		if sameUser[0].Email == user.Email {
-			fields = append(fields, "email")
-		}
-
-		if sameUser[0].Phone != nil && user.Phone != nil {
-			if *sameUser[0].Phone == *user.Phone {
-				fields = append(fields, "phone")
-			}
-		}
-
-		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
-		return nil, errors.New(errMsg)
 	}
 
 	if err := create(user); err != nil {
@@ -66,20 +49,40 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email":   user.Email,
-		"exp":     float64(time.Now().Add(time.Hour * 24).Unix()),
+	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
+		"email": user.Email,
+		"exp":   float64(time.Now().Add(time.Hour * 24).Unix()),
 	})
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
-	if err != nil {
-		return nil, nil, err
-	}
 
 	user.Password = ""
 	user.Pin = nil
 
 	return &user, &tokenString, nil
+}
+
+func googleService(body *GoogleScheme) (*models.User, *string, *bool, error) {
+	var user models.User
+	var isPasswordSet bool
+
+	if err := findByEmail(&user, body.Email); err != nil {
+		isPasswordSet = false
+		user.Name = body.Name
+		user.Email = body.Email
+		*user.Avatar = body.Avatar
+
+		if err := create(&user); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
+	isPasswordSet = user.Password != ""
+
+	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
+		"email": user.Email,
+		"exp":   float64(time.Now().Add(time.Hour * 24).Unix()),
+	})
+
+	return &user, &tokenString, &isPasswordSet, nil
 }
 
 func forgotService(body *ForgotScheme) error {
@@ -89,15 +92,10 @@ func forgotService(body *ForgotScheme) error {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  *user.Id.Id,
-		"exp": float64(time.Now().Add(time.Minute * 5).Unix()),
+	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
+		"user_id": *user.Id.Id,
+		"exp":     float64(time.Now().Add(time.Minute * 10).Unix()),
 	})
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
-	if err != nil {
-		return err
-	}
 
 	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
 	t, err := template.ParseFiles(absPath)
@@ -145,21 +143,24 @@ func resetService(body *ResetScheme) error {
 func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateScheme) (*models.User, error) {
 	user.Name = body.Name
 	user.Email = body.Email
-	user.Phone = body.Phone
+
+	if body.Phone != "" {
+		user.Phone = &body.Phone
+	}
 
 	sameUser := checkEmailAndPhone(user, user.Id.Id)
 
-	if len(sameUser) > 1 {
+	if len(*sameUser) > 1 {
 		return nil, errors.New("email dan nomor telepon sudah digunakan")
-	} else if len(sameUser) == 1 {
+	} else if len(*sameUser) == 1 {
 		var fields []string
 
-		if sameUser[0].Email == user.Email {
+		if (*sameUser)[0].Email == user.Email {
 			fields = append(fields, "email")
 		}
 
-		if sameUser[0].Phone != nil && user.Phone != nil {
-			if *sameUser[0].Phone == *user.Phone {
+		if (*sameUser)[0].Phone != nil && user.Phone != nil {
+			if *(*sameUser)[0].Phone == *user.Phone {
 				fields = append(fields, "nomor telepon")
 			}
 		}
@@ -171,7 +172,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	if body.Avatar != nil {
 		extracted := helpers.ExtractFileName(body.Avatar.Filename)
 		filePath := helpers.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
-		
+
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
 			return nil, err
 		}

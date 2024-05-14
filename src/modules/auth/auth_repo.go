@@ -9,7 +9,7 @@ func create(user *models.User) error {
 	return config.DB.Create(user).Error
 }
 
-func checkEmailAndPhone(user *models.User, id ...*uint) []models.User {
+func checkEmailAndPhone(user *models.User, id ...*uint) *[]models.User {
 	var sameUser []models.User
 
 	query := config.DB.Where(
@@ -22,7 +22,7 @@ func checkEmailAndPhone(user *models.User, id ...*uint) []models.User {
 
 	query.Find(&sameUser)
 
-	return sameUser
+	return &sameUser
 }
 
 func findByEmail(user *models.User, email string) error {

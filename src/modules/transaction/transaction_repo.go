@@ -14,18 +14,12 @@ func findCart(userId uint, cart *[]models.Cart, preload bool) error {
 	return tx.Find(cart).Error
 }
 
-func updateCart(userId uint, productId uint, cart *models.Cart) error {
-	return config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).Updates(cart).Error
+func findOneCart(cart *models.Cart, userId uint, productId uint) error {
+	return config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).First(&cart).Error
 }
 
-func updateManyCart(cart *[]*models.Cart) error {
-	tx := config.DB.Begin()
-	
-	for _, c := range *cart {
-		tx.Save(c)
-	}
-
-	return tx.Commit().Error
+func save(cart *models.Cart) error {
+	return config.DB.Save(cart).Error
 }
 
 func deleteCart(userId uint, productId uint) error {

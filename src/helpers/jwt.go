@@ -25,3 +25,11 @@ func ParseJwt(token string) (jwt.MapClaims, error) {
 	claim, _ := parsedToken.Claims.(jwt.MapClaims)
 	return claim, err
 }
+
+
+func GenerateJwt(claim *jwt.MapClaims) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_KEY")))
+
+	return tokenString
+}

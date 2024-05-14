@@ -42,6 +42,28 @@ func handleLogin(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
 
+func handleGoogle(ctx *gin.Context) {
+	var body GoogleScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	data, token, isPasswordSet, err := googleService(&body)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{
+		"token": token,
+		"data": data,
+		"is_password_set": isPasswordSet,
+	}))
+}
+
 func handleForgot(ctx *gin.Context) {
 	var body ForgotScheme
 

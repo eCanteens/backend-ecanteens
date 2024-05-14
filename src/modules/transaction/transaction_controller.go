@@ -23,7 +23,7 @@ func getCart(ctx *gin.Context)  {
 }
 
 func addCart(ctx *gin.Context) {
-	var body []AddUpdateCartScheme
+	var body AddUpdateCartScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -38,17 +38,4 @@ func addCart(ctx *gin.Context) {
 	}
 
 	ctx.JSON(201, helpers.SuccessResponse("Produk berhasil ditambahkan ke keranjang"))
-}
-
-func handleUpdateCart(ctx *gin.Context) {
-	var body AddUpdateCartScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
-
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
-		return
-	}
-
-	updateCartService(&_user, &body)
 }

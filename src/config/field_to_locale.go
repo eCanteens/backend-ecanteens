@@ -11,15 +11,13 @@ func fieldToLocale(field string) (intlField string) {
 	case "Password":
 		intlField = "Kata Sandi"
 	case "OldPassword":
-		intlField = "Password Lama"
+		intlField = "Kata Sandi Lama"
 	case "NewPassword":
-		intlField = "Password Baru"
+		intlField = "Kata Sandi Baru"
 	case "Pin":
 		intlField = "Pin"
 	case "NewPin":
 		intlField = "Pin Baru"
-	case "IsLike":
-		intlField = "IsLike"
 	default:
 		intlField = field
 	}
