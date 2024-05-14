@@ -78,14 +78,13 @@ func handleForgot(ctx *gin.Context) {
 
 func handleReset(ctx *gin.Context) {
 	var body ResetScheme
-	token := ctx.Param("token")
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
-	if err := resetService(&body, token); err != nil {
+	if err := resetService(&body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}

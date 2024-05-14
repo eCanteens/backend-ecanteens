@@ -18,6 +18,7 @@ type ForgotScheme struct {
 }
 
 type ResetScheme struct {
+	Token	string `binding:"required" mod:"trim" json:"token"`
 	Password string `binding:"required,min=8" mod:"trim" json:"password"`
 }
 

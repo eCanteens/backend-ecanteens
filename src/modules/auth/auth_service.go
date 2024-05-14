@@ -123,8 +123,8 @@ func forgotService(body *ForgotScheme) error {
 	})
 }
 
-func resetService(body *ResetScheme, token string) error {
-	claim, err := helpers.ParseJwt(token)
+func resetService(body *ResetScheme) error {
+	claim, err := helpers.ParseJwt(body.Token)
 
 	if err != nil {
 		return err
