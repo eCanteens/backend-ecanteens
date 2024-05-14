@@ -117,7 +117,7 @@ func forgotService(body *ForgotScheme) error {
 		HtmlBody:    t,
 		HTMLProps: &ResetPasswordProps{
 			LOGO: fmt.Sprintf("%s/public/assets/logo.png", os.Getenv("BASE_URL")),
-			URL:  fmt.Sprintf("%s/api/auth/reset-password/%s", os.Getenv("BASE_URL"), tokenString),
+			URL:  fmt.Sprintf("%s/api/auth/new-password/%s", os.Getenv("BASE_URL"), tokenString),
 			NAME: user.Name,
 		},
 	})
