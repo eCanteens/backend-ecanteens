@@ -78,7 +78,7 @@ func handleProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	_user.Password = ""
-	_user.Pin = ""
+	_user.Pin = nil
 
 	ctx.JSON(200, gin.H{
 		"data": _user,

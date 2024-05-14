@@ -32,7 +32,28 @@ func adminLoginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	user.Password = ""
-	user.Pin = ""
+	user.Pin = nil
 
 	return &user, &tokenString, nil
+}
+
+func dashboardService() (map[string]interface{}, error) {
+	var userCount int64
+	var restaurantCount int64
+
+	if err := count("users", &userCount); err != nil {
+		return nil, err
+	}
+
+	if err := count("restaurants", &restaurantCount); err != nil {
+		return nil, err
+	}
+
+	data := map[string]interface{}{
+		"users": userCount,
+		"restaurants": restaurantCount,
+		"total": userCount + restaurantCount,
+	}
+
+	return data, nil
 }

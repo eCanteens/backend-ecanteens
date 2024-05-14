@@ -22,3 +22,16 @@ func handleAdminLogin(ctx *gin.Context) {
 
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
+
+func handleDashoard(ctx *gin.Context) {
+	data, err := dashboardService()
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
+}

@@ -77,7 +77,7 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	user.Password = ""
-	user.Pin = ""
+	user.Pin = nil
 
 	return &user, &tokenString, nil
 }
@@ -184,7 +184,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	}
 
 	user.Password = ""
-	user.Pin = ""
+	user.Pin = nil
 
 	return user, nil
 }
@@ -202,7 +202,7 @@ func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error 
 }
 
 func checkPinService(user *models.User, body *CheckPinScheme) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Pin), []byte(body.Pin)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(*user.Pin), []byte(body.Pin)); err != nil {
 		return errors.New("pin salah")
 	}
 
@@ -211,7 +211,7 @@ func checkPinService(user *models.User, body *CheckPinScheme) error {
 
 func updatePinService(user *models.User, body *UpdatePinScheme) error {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Pin), bcrypt.DefaultCost)
-	user.Pin = string(hashed)
+	*user.Pin = string(hashed)
 
 	return save(user)
 }
