@@ -86,7 +86,7 @@ func forgotService(body *ForgotScheme) error {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
-		return err
+		return errors.New("pengguna tidak ditemukan")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -135,7 +135,9 @@ func resetService(body *ResetScheme, token string) error {
 		return errors.New("cant convert claims")
 	}
 
-	user := &models.User{Password: body.Password}
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+
+	user := &models.User{Password: string(hashed)}
 
 	return updatePassword(uint(id), user)
 }

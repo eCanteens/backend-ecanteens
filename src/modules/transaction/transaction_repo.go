@@ -5,8 +5,13 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
-func findCart(userId uint, cart *[]models.Cart) error {
-	return config.DB.Where("user_id = ?", userId).Preload("Product.Restaurant.Category").Preload("Product.Restaurant.Location").Find(cart).Error
+func findCart(userId uint, cart *[]models.Cart, preload bool) error {
+	tx := config.DB.Where("user_id = ?", userId)
+	if preload {
+		tx = tx.Preload("Product.Restaurant.Category").Preload("Product.Restaurant.Location")
+	}
+
+	return tx.Find(cart).Error
 }
 
 func updateCart(userId uint, productId uint, cart *models.Cart) error {

@@ -8,7 +8,7 @@ import (
 func getCartService(user *models.User) (*[]models.Cart, error) {
 	var cart []models.Cart
 
-	if err := findCart(*user.Id.Id, &cart); err != nil {
+	if err := findCart(*user.Id.Id, &cart, true); err != nil {
 		return nil, err
 	}
 
@@ -19,7 +19,7 @@ func addCartService(user *models.User, body *[]AddUpdateCartScheme) error {
 	var existedCart []models.Cart
 	var updateCart []*models.Cart
 
-	if err := findCart(*user.Id.Id, &existedCart); err != nil {
+	if err := findCart(*user.Id.Id, &existedCart, false); err != nil {
 		return err
 	}
 
