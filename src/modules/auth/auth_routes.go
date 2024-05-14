@@ -9,7 +9,7 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/register", handleRegister)
 	router.POST("/login", handleLogin)
 	router.POST("/forgot-password", handleForgot)
-	router.PUT("/reset-password/:token", handleReset)
+	router.PUT("/new-password/:token", handleReset)
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
