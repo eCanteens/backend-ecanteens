@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/middleware"
 	"github.com/eCanteens/backend-ecanteens/src/modules/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/product"
@@ -9,6 +10,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/modules/transaction"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 func init() {
@@ -22,6 +24,9 @@ func main() {
 	config.Upload(router)
 	router.Use(cors.Default())
 	router.Use(middleware.RateLimiter)
+
+	customValidator := helpers.NewCustomValidator() 
+	binding.Validator = customValidator
 
 	router.Static("/public", "./public")
 	router.Static("/.well-known", "./.well-known")

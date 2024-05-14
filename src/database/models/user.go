@@ -14,6 +14,7 @@ type User struct {
 	Pin      string  `gorm:"type:varchar(255)" json:"pin,omitempty"`
 	Avatar   *string `gorm:"type:varchar(255)" json:"avatar"`
 	WalletId uint    `gorm:"type:bigint" json:"wallet_id"`
+	RoleId	int	  `gorm:"type:int;not null;default:2" json:"role_id"`
 	Timestamps
 
 	// Relations

@@ -6,10 +6,15 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func UserSeeder() {
 	var users []*models.User
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+	chandra, _ := bcrypt.GenerateFromPassword([]byte("nadia123"), bcrypt.DefaultCost)
+	admin, _ := bcrypt.GenerateFromPassword([]byte("password-admin"), bcrypt.DefaultCost)
 
 	for i := 0; i < 9; i++ {
 		phone := "08" + gofakeit.Numerify("##########")
@@ -19,21 +24,22 @@ func UserSeeder() {
 			Name:     gofakeit.Name(),
 			Email:    gofakeit.Email(),
 			Phone:    &phone,
-			Password: "password",
+			Password: string(hashed),
 			Avatar:   &avatar,
 		})
 	}
 
 	users = append(users, &models.User{
-		Name:     "Test",
-		Email:    "test@gmail.com",
-		Password: "password",
+		Name:     "Chandra",
+		Email:    "mdutchand@gmail.com",
+		Password: string(chandra),
 	})
 
 	users = append(users, &models.User{
-		Name:     "Chandra",
-		Email:    "chandra123@gmail.com",
-		Password: "chandra123",
+		Name:     "Admin",
+		Email:    "admin@ecanteens.com",
+		Password: string(admin),
+		RoleId:   1,
 	})
 
 	config.DB.Create(users)
