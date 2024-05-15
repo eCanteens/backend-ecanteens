@@ -20,22 +20,22 @@ func registerService(body *RegisterScheme) (*models.User, error) {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 
 	if err := findByEmail(&models.User{}, body.Email); err != nil {
-		return nil, errors.New("email sudah digunakan")
+		user := &models.User{
+			Name:     body.Name,
+			Email:    body.Email,
+			Password: string(hashed),
+		}
+	
+		if err := create(user); err != nil {
+			return nil, err
+		}
+
+		user.Password = ""
+
+		return user, nil
 	}
 
-	user := &models.User{
-		Name:     body.Name,
-		Email:    body.Email,
-		Password: string(hashed),
-	}
-
-	if err := create(user); err != nil {
-		return nil, err
-	}
-
-	user.Password = ""
-
-	return user, nil
+	return nil, errors.New("email sudah digunakan")
 }
 
 func loginService(body *LoginScheme) (*models.User, *string, error) {
@@ -50,7 +50,7 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"email": user.Email,
+		"id": *user.Id.Id,
 		"exp":   float64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 
@@ -68,7 +68,7 @@ func googleService(body *GoogleScheme) (*models.User, *string, *bool, error) {
 		isPasswordSet = false
 		user.Name = body.Name
 		user.Email = body.Email
-		*user.Avatar = body.Avatar
+		user.Avatar = body.Avatar
 
 		if err := create(&user); err != nil {
 			return nil, nil, nil, err
@@ -78,7 +78,7 @@ func googleService(body *GoogleScheme) (*models.User, *string, *bool, error) {
 	isPasswordSet = user.Password != ""
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"email": user.Email,
+		"id": *user.Id.Id,
 		"exp":   float64(time.Now().Add(time.Hour * 24).Unix()),
 	})
 
@@ -93,7 +93,7 @@ func forgotService(body *ForgotScheme) error {
 	}
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"user_id": *user.Id.Id,
+		"id": *user.Id.Id,
 		"exp":     float64(time.Now().Add(time.Minute * 10).Unix()),
 	})
 
@@ -128,7 +128,7 @@ func resetService(body *ResetScheme) error {
 		return err
 	}
 
-	id, ok := claim["user_id"].(float64)
+	id, ok := claim["id"].(float64)
 	if !ok {
 		return errors.New("cant convert claims")
 	}

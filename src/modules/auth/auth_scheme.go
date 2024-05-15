@@ -14,9 +14,9 @@ type LoginScheme struct {
 }
 
 type GoogleScheme struct {
-	Name   string `binding:"required" json:"name"`
-	Email  string `binding:"required,email" json:"email"`
-	Avatar string `binding:"required" json:"avatar"`
+	Name   string  `binding:"required" json:"name"`
+	Email  string  `binding:"required,email" json:"email"`
+	Avatar *string `json:"avatar"`
 }
 
 type ForgotScheme struct {

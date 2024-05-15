@@ -28,7 +28,7 @@ func Auth(ctx *gin.Context) {
 	}
 
 	var user models.User
-	config.DB.Where("email = ?", claim["email"]).Preload("Wallet").First(&user)
+	config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user)
 
 	ctx.Set("user", user)
 	ctx.Next()
