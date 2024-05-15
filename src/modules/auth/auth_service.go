@@ -25,7 +25,7 @@ func registerService(body *RegisterScheme) (*models.User, error) {
 			Email:    body.Email,
 			Password: string(hashed),
 		}
-	
+
 		if err := create(user); err != nil {
 			return nil, err
 		}
@@ -50,8 +50,8 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id": *user.Id.Id,
-		"exp":   float64(time.Now().Add(time.Hour * 24).Unix()),
+		"id":  *user.Id.Id,
+		"exp": 0,
 	})
 
 	user.Password = ""
@@ -78,8 +78,8 @@ func googleService(body *GoogleScheme) (*models.User, *string, *bool, error) {
 	isPasswordSet = user.Password != ""
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id": *user.Id.Id,
-		"exp":   float64(time.Now().Add(time.Hour * 24).Unix()),
+		"id":  *user.Id.Id,
+		"exp": 0,
 	})
 
 	return &user, &tokenString, &isPasswordSet, nil
@@ -93,8 +93,8 @@ func forgotService(body *ForgotScheme) error {
 	}
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id": *user.Id.Id,
-		"exp":     float64(time.Now().Add(time.Minute * 10).Unix()),
+		"id":  *user.Id.Id,
+		"exp": float64(time.Now().Add(time.Minute * 10).Unix()),
 	})
 
 	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
