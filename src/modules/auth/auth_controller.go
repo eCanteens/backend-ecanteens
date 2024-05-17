@@ -58,8 +58,8 @@ func handleGoogle(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{
-		"token": token,
-		"data": data,
+		"token":           token,
+		"data":            data,
 		"is_password_set": isPasswordSet,
 	}))
 }

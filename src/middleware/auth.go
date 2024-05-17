@@ -28,8 +28,15 @@ func Auth(ctx *gin.Context) {
 	}
 
 	var user models.User
-	config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user)
+	result := config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user)
+
+	if result.Error != nil {
+		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(result.Error.Error(), helpers.Data{"data": nil}))
+		ctx.Abort()
+		return
+	}
 
 	ctx.Set("user", user)
+
 	ctx.Next()
 }
