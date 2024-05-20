@@ -203,6 +203,10 @@ func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error 
 }
 
 func checkPinService(user *models.User, body *CheckPinScheme) error {
+	if user.Pin == nil {
+		return errors.New("pin belum di set")
+	}
+
 	if err := bcrypt.CompareHashAndPassword([]byte(*user.Pin), []byte(body.Pin)); err != nil {
 		return errors.New("pin salah")
 	}
@@ -211,7 +215,14 @@ func checkPinService(user *models.User, body *CheckPinScheme) error {
 }
 
 func updatePinService(user *models.User, body *UpdatePinScheme) error {
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Pin), bcrypt.DefaultCost)
+	if user.Pin == nil {
+		user.Pin = new(string)
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(body.Pin), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New(err.Error())
+	}
 	*user.Pin = string(hashed)
 
 	return save(user)
