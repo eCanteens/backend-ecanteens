@@ -13,17 +13,17 @@ func Routes(router *gin.RouterGroup) {
 	authorized.Use(middleware.Auth)
 	{
 		// dashboard
-		router.GET("/dashboard", handleDashoard)
+		authorized.GET("/dashboard", handleDashoard)
 
 		// topup
-		router.POST("/wallet", handleCheckWallet)
-		router.POST("/topup", handleTopup)
+		authorized.POST("/wallet", handleCheckWallet)
+		authorized.POST("/topup", handleTopup)
 
 		// withdraw
-		router.POST("/withdraw", handleWithdraw)
+		authorized.POST("/withdraw", handleWithdraw)
 
 		// mutasi
-		router.GET("/mutasi", handleMutasi)
+		authorized.GET("/mutasi", handleMutasi)
 
 		// profile
 		authorized.GET("/profile", handleProfile)
