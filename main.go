@@ -20,7 +20,7 @@ func init() {
 }
 
 func main() {
-	router := gin.Default()
+	router := gin.Default() 
 
 	config.Upload(router)
 	router.Use(cors.Default())

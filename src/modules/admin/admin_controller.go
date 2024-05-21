@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// login
 func handleAdminLogin(ctx *gin.Context) {
 	var body LoginScheme
 
@@ -23,6 +24,7 @@ func handleAdminLogin(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
 
+// dashboard
 func handleDashoard(ctx *gin.Context) {
 	data, err := dashboardService()
 
@@ -35,3 +37,22 @@ func handleDashoard(ctx *gin.Context) {
 		"data": data,
 	})
 }
+
+// topup
+func handleCheckWallet(ctx *gin.Context) {
+}
+
+func handleTopup(ctx *gin.Context) {}
+
+// withdraw
+func handleWithdraw(ctx *gin.Context) {}
+
+// mutasi
+func handleMutasi(ctx *gin.Context) {}
+
+// profile
+func handleProfile(ctx *gin.Context) {}
+
+func handleUpdateProfile(ctx *gin.Context) {}
+
+func handleUpdatePassword(ctx *gin.Context) {}
