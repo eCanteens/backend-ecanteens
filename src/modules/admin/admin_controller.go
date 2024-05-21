@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/gin-gonic/gin"
 )
@@ -51,7 +52,16 @@ func handleWithdraw(ctx *gin.Context) {}
 func handleMutasi(ctx *gin.Context) {}
 
 // profile
-func handleProfile(ctx *gin.Context) {}
+func handleProfile(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+	_user.Password = ""
+	_user.Pin = nil
+
+	ctx.JSON(200, gin.H{
+		"data": _user,
+	})
+}
 
 func handleUpdateProfile(ctx *gin.Context) {}
 
