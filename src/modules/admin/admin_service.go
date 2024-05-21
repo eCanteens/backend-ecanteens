@@ -3,7 +3,6 @@ package admin
 import (
 	"errors"
 	"os"
-	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/golang-jwt/jwt/v5"
@@ -22,8 +21,9 @@ func adminLoginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":      *user.Id.Id,
 		"email":   user.Email,
-		"exp":     float64(time.Now().Add(time.Hour * 24).Unix()),
+		"exp":     0,
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))

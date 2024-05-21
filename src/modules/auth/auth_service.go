@@ -51,6 +51,7 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
 		"id":  *user.Id.Id,
+		"email": user.Email,
 		"exp": 0,
 	})
 
