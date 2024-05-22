@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/middleware"
@@ -11,13 +9,12 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/modules/product"
 	"github.com/eCanteens/backend-ecanteens/src/modules/restaurant"
 	"github.com/eCanteens/backend-ecanteens/src/modules/transaction"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 func init() {
-	// config.LoadEnvVariables()
+	config.LoadEnvVariables()
 	config.ConnectDB()
 }
 
@@ -25,13 +22,7 @@ func main() {
 	router := gin.Default()
 
 	config.Upload(router)
-	router.Use(cors.New(cors.Config{
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
-		AllowOrigins:     []string{"*"},
-		AllowCredentials: false,
-		MaxAge:           12 * time.Hour,
-	}))
+	router.Use(middleware.Cors)
 	router.Use(middleware.RateLimiter)
 
 	customValidator := helpers.NewCustomValidator()
