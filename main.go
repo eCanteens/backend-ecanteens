@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/middleware"
@@ -20,13 +22,19 @@ func init() {
 }
 
 func main() {
-	router := gin.Default() 
+	router := gin.Default()
 
 	config.Upload(router)
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
+		AllowAllOrigins:  true,
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}))
 	router.Use(middleware.RateLimiter)
 
-	customValidator := helpers.NewCustomValidator() 
+	customValidator := helpers.NewCustomValidator()
 	binding.Validator = customValidator
 
 	router.Static("/public", "./public")
@@ -44,7 +52,7 @@ func main() {
 	admin.Routes(router.Group("/api/admin"))
 
 	router.NoRoute(func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "API Docs on /api"})
+		c.JSON(404, gin.H{"message": "API Docs on /api"})
 	})
 
 	router.Run()
