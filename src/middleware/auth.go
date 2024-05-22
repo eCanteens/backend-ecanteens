@@ -1,14 +1,14 @@
 package middleware
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
-
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func Auth(ctx *gin.Context) {
@@ -28,11 +28,12 @@ func Auth(ctx *gin.Context) {
 	}
 
 	var user models.User
-	result := config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user)
-
-	if result.Error != nil {
-		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(result.Error.Error(), helpers.Data{"data": nil}))
-		ctx.Abort()
+	if err := config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		} else {
+			ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
+		}
 		return
 	}
 

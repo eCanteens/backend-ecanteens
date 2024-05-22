@@ -32,7 +32,7 @@ func adminLoginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	user.Password = ""
-	user.Pin = nil
+	user.Wallet.Pin = ""
 
 	return &user, &tokenString, nil
 }

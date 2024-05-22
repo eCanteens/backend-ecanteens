@@ -56,7 +56,7 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 	})
 
 	user.Password = ""
-	user.Pin = nil
+	user.Wallet.Pin = ""
 
 	return &user, &tokenString, nil
 }
@@ -77,6 +77,8 @@ func googleService(body *GoogleScheme) (*models.User, *string, *bool, error) {
 	}
 
 	isPasswordSet = user.Password != ""
+	user.Password = ""
+	user.Wallet.Pin = ""
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
 		"id":  *user.Id.Id,
@@ -186,7 +188,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	}
 
 	user.Password = ""
-	user.Pin = nil
+	user.Wallet.Pin = ""
 
 	return user, nil
 }
@@ -204,11 +206,11 @@ func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error 
 }
 
 func checkPinService(user *models.User, body *CheckPinScheme) error {
-	if user.Pin == nil {
+	if user.Wallet.Pin == "" {
 		return errors.New("pin belum di set")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(*user.Pin), []byte(body.Pin)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Wallet.Pin), []byte(body.Pin)); err != nil {
 		return errors.New("pin salah")
 	}
 
@@ -216,15 +218,11 @@ func checkPinService(user *models.User, body *CheckPinScheme) error {
 }
 
 func updatePinService(user *models.User, body *UpdatePinScheme) error {
-	if user.Pin == nil {
-		user.Pin = new(string)
-	}
-
 	hashed, err := bcrypt.GenerateFromPassword([]byte(body.Pin), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.New(err.Error())
 	}
-	*user.Pin = string(hashed)
+	user.Wallet.Pin = string(hashed)
 
 	return save(user)
 }
