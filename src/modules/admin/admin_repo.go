@@ -12,3 +12,23 @@ func findAdminEmail(user *models.User, email string) error {
 func count(table string, count *int64) error {
 	return config.DB.Table(table).Count(count).Error
 }
+
+func checkEmail(user *models.User, id ...*uint) *[]models.User {
+	var sameUser []models.User
+
+	query := config.DB.Where(
+		config.DB.Where("email = ?", user.Email),
+	)
+
+	if len(id) > 0 {
+		query = query.Not("id = ?", *id[0])
+	}
+
+	query.Find(&sameUser)
+
+	return &sameUser
+}
+
+func save(user *models.User) error {
+	return config.DB.Save(user).Error
+}
