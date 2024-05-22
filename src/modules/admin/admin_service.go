@@ -107,3 +107,15 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 
 	return user, nil
 }
+
+func updateAdminPasswordService(user *models.User, body *UpdateAdminPasswordScheme) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
+		return errors.New("password salah")
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+
+	user.Password = string(hashed)
+
+	return save(user)
+}

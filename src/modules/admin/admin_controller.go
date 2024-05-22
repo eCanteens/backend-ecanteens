@@ -83,4 +83,20 @@ func handleUpdateAdminProfile(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": __user}))
 }
 
-func handleUpdateAdminPassword(ctx *gin.Context) {}
+func handleUpdateAdminPassword(ctx *gin.Context) {
+	var body UpdateAdminPasswordScheme
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := updateAdminPasswordService(&_user, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
+}

@@ -16,3 +16,8 @@ type UpdateAdminProfileScheme struct {
 	Name   string                `binding:"required" mod:"trim" json:"name" form:"name"`
 	Email  string                `binding:"required,email" mod:"trim" json:"email" form:"email"`
 }
+
+type UpdateAdminPasswordScheme struct {
+	OldPassword string `binding:"required" mod:"trim" json:"old_password"`
+	NewPassword string `binding:"required,min=8" mod:"trim" json:"new_password"`
+}
