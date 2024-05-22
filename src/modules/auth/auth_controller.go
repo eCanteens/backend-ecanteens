@@ -119,14 +119,12 @@ func handleUpdateProfile(ctx *gin.Context) {
 		return
 	}
 
-	__user, err := updateProfileService(ctx, &_user, &body)
-
-	if err != nil {
+	if err := updateProfileService(ctx, &_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": __user}))
+	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": _user}))
 }
 
 func handleUpdatePassword(ctx *gin.Context) {

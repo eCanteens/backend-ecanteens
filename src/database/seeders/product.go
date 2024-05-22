@@ -2,6 +2,7 @@ package seeders
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -24,13 +25,13 @@ func ProductSeeder() {
 	for i := 0; i < 50; i++ {
 		products = append(products, &models.Product{
 			RestaurantId: gofakeit.UintRange(1, 10),
-			Name: gofakeit.ProductName(),
-			Description: gofakeit.ProductDescription(),
-			Image: "/public/dummy/product.png",
-			CategoryId: 1,
-			Price: (gofakeit.UintRange(1_000, 20_000) / 100) * 100,
-			Stock: gofakeit.UintRange(0, 20),
-			Sold: gofakeit.UintRange(0, 200),
+			Name:         gofakeit.ProductName(),
+			Description:  gofakeit.ProductDescription(),
+			Image:        os.Getenv("BASE_URL") + "/public/dummy/product.png",
+			CategoryId:   1,
+			Price:        (gofakeit.UintRange(1_000, 20_000) / 100) * 100,
+			Stock:        gofakeit.UintRange(0, 20),
+			Sold:         gofakeit.UintRange(0, 200),
 		})
 	}
 

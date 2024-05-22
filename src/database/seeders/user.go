@@ -2,6 +2,7 @@ package seeders
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -13,7 +14,7 @@ func UserSeeder() {
 	var users []*models.User
 
 	password, _ := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
-	chandra, _ := bcrypt.GenerateFromPassword([]byte("nadia123"), bcrypt.DefaultCost)
+	chandra, _ := bcrypt.GenerateFromPassword([]byte("chandra123"), bcrypt.DefaultCost)
 	admin, _ := bcrypt.GenerateFromPassword([]byte("password-admin"), bcrypt.DefaultCost)
 
 	users = append(users, &models.User{
@@ -25,7 +26,7 @@ func UserSeeder() {
 
 	for i := 0; i < 9; i++ {
 		phone := "08" + gofakeit.Numerify("##########")
-		avatar := "/public/dummy/avatar_user.png"
+		avatar := os.Getenv("BASE_URL") + "/public/dummy/avatar_user.png"
 
 		users = append(users, &models.User{
 			Name:     gofakeit.Name(),

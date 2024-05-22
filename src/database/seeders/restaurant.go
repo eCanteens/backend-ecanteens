@@ -2,6 +2,7 @@ package seeders
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -27,8 +28,8 @@ func RestaurantSeeder() {
 			Phone:      "08" + gofakeit.Numerify("##########"),
 			Email:      gofakeit.Email(),
 			LocationId: 1,
-			Avatar:     "/public/dummy/avatar_resto.png",
-			Banner:     "/public/dummy/banner.jpeg",
+			Avatar:     os.Getenv("BASE_URL") + "/public/dummy/avatar_resto.png",
+			Banner:     os.Getenv("BASE_URL") + "/public/dummy/banner.jpeg",
 			CategoryId: 1,
 		})
 	}

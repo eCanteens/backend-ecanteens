@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -39,6 +40,6 @@ func UploadPath(filename string) *FilePath {
 
 	return &FilePath{
 		Path: fmt.Sprintf("%s/%s", absPath, filename),
-		Url:  fmt.Sprintf("/public/uploads/%s", filename),
+		Url:  fmt.Sprintf("%s/public/uploads/%s", os.Getenv("BASE_URL"), filename),
 	}
 }

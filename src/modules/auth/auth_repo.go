@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
@@ -17,6 +19,7 @@ func checkEmailAndPhone(user *models.User, id ...*uint) *[]models.User {
 	)
 
 	if len(id) > 0 {
+		fmt.Println(*id[0])
 		query = query.Not("id = ?", *id[0])
 	}
 

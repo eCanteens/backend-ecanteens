@@ -14,25 +14,30 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func registerService(body *RegisterScheme) (*models.User, error) {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 
 	if err := findByEmail(&models.User{}, body.Email); err != nil {
-		user := &models.User{
-			Name:     body.Name,
-			Email:    body.Email,
-			Password: string(hashed),
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			user := &models.User{
+				Name:     body.Name,
+				Email:    body.Email,
+				Password: string(hashed),
+			}
+
+			if err := create(user); err != nil {
+				return nil, err
+			}
+
+			user.Password = ""
+
+			return user, nil
 		}
 
-		if err := create(user); err != nil {
-			return nil, err
-		}
-
-		user.Password = ""
-
-		return user, nil
+		return nil, err
 	}
 
 	return nil, errors.New("email sudah digunakan")
@@ -50,9 +55,9 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 	}
 
 	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id":  *user.Id.Id,
+		"id":    *user.Id.Id,
 		"email": user.Email,
-		"exp": 0,
+		"exp":   0,
 	})
 
 	user.Password = ""
@@ -143,7 +148,7 @@ func resetService(body *ResetScheme) error {
 	return updatePassword(uint(id), user)
 }
 
-func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateScheme) (*models.User, error) {
+func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateScheme) error {
 	user.Name = body.Name
 	user.Email = body.Email
 
@@ -154,7 +159,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	sameUser := checkEmailAndPhone(user, user.Id.Id)
 
 	if len(*sameUser) > 1 {
-		return nil, errors.New("email dan nomor telepon sudah digunakan")
+		return errors.New("email dan nomor telepon sudah digunakan")
 	} else if len(*sameUser) == 1 {
 		var fields []string
 
@@ -169,7 +174,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 		}
 
 		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
-		return nil, errors.New(errMsg)
+		return errors.New(errMsg)
 	}
 
 	if body.Avatar != nil {
@@ -177,20 +182,20 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 		filePath := helpers.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
-			return nil, err
+			return err
 		}
 
 		user.Avatar = &filePath.Url
 	}
 
 	if err := save(user); err != nil {
-		return nil, err
+		return err
 	}
 
 	user.Password = ""
 	user.Wallet.Pin = ""
 
-	return user, nil
+	return nil
 }
 
 func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error {
