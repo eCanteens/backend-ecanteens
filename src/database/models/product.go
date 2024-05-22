@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 
 	"gorm.io/gorm"
@@ -46,6 +48,7 @@ func (p *Product) AfterFind(tx *gorm.DB) (err error) {
         var feedbackType string
         var count int
         if err := rows.Scan(&feedbackType, &count); err != nil {
+			fmt.Println(err)
             return err
         }
         if feedbackType == "like" {

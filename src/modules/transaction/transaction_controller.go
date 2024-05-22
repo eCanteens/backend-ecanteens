@@ -39,3 +39,7 @@ func addCart(ctx *gin.Context) {
 
 	ctx.JSON(201, helpers.SuccessResponse("Produk berhasil ditambahkan ke keranjang"))
 }
+
+func order(ctx *gin.Context) {
+	
+}
