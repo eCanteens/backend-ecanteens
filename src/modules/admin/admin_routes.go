@@ -27,7 +27,7 @@ func Routes(router *gin.RouterGroup) {
 
 		// profile
 		authorized.GET("/profile", handleAdminProfile)
-		authorized.PUT("/profile", handleAdminUpdateProfile)
-		authorized.PUT("/password", handleUpdatePassword)
+		authorized.PUT("/profile", handleUpdateAdminProfile)
+		authorized.PUT("/password", handleUpdateAdminPassword)
 	}
 }

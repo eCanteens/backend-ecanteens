@@ -63,7 +63,7 @@ func handleAdminProfile(ctx *gin.Context) {
 	})
 }
 
-func handleAdminUpdateProfile(ctx *gin.Context) {
+func handleUpdateAdminProfile(ctx *gin.Context) {
 	var body UpdateAdminProfileScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
@@ -83,4 +83,4 @@ func handleAdminUpdateProfile(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": __user}))
 }
 
-func handleUpdatePassword(ctx *gin.Context) {}
+func handleUpdateAdminPassword(ctx *gin.Context) {}
