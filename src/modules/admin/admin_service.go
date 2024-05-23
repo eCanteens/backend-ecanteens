@@ -80,6 +80,24 @@ func checkWalletService(body *CheckWalletScheme) (*models.User, error) {
 	return user, nil
 }
 
+func topupService(id string, body *TopupScheme) (*models.User, error) {
+	var user *models.User
+
+	topup, err := topup(body.Amount, id)
+
+	if err != nil {
+		return nil, errors.New("top Up gagal, silahkan cek Wallet ID")
+	}
+
+	user, err = findUserByWalletId(&models.User{}, topup.Id.Id)
+
+	if err != nil {
+		return nil, errors.New("user tidak ditemukan")
+	}
+
+	return user, nil
+}
+
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) (*models.User, error) {
 	user.Name = body.Name
 	user.Email = body.Email

@@ -2,8 +2,6 @@ package admin
 
 import (
 	"mime/multipart"
-
-	"github.com/google/uuid"
 )
 
 type AdminLoginScheme struct {
@@ -12,7 +10,11 @@ type AdminLoginScheme struct {
 }
 
 type CheckWalletScheme struct {
-	WalletId uuid.UUID `binding:"required" mod:"trim" json:"wallet_id"`
+	WalletId string `binding:"required" mod:"trim" json:"wallet_id"`
+}
+
+type TopupScheme struct {
+	Amount   uint       `binding:"required" mod:"trim" json:"amount"`
 }
 
 type UpdateAdminProfileScheme struct {

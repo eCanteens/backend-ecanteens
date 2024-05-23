@@ -60,7 +60,24 @@ func handleCheckWallet(ctx *gin.Context) {
 	})
 }
 
-func handleTopup(ctx *gin.Context) {}
+func handleTopup(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var body TopupScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	data, err := topupService(id, &body)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Top Up Berhasil", helpers.Data{"data": data}))
+}
 
 // withdraw
 func handleWithdraw(ctx *gin.Context) {}

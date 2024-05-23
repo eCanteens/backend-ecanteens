@@ -17,7 +17,7 @@ func Routes(router *gin.RouterGroup) {
 
 		// topup
 		authorized.POST("/wallet", handleCheckWallet)
-		authorized.POST("/topup", handleTopup)
+		authorized.POST("/topup/:id", handleTopup)
 
 		// withdraw
 		authorized.POST("/withdraw", handleWithdraw)
