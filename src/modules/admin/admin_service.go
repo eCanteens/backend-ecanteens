@@ -62,6 +62,24 @@ func dashboardService() (map[string]interface{}, error) {
 	return data, nil
 }
 
+func checkWalletService(body *CheckWalletScheme) (*models.User, error) {
+	var user *models.User
+
+	wallet, err := findWallet(&models.Wallet{}, body.WalletId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) (*models.User, error) {
 	user.Name = body.Name
 	user.Email = body.Email

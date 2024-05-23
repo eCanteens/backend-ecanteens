@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/google/uuid"
 )
 
 func findAdminEmail(user *models.User, email string) error {
@@ -31,4 +32,12 @@ func checkEmail(user *models.User, id ...*uint) *[]models.User {
 
 func save(user *models.User) error {
 	return config.DB.Save(user).Error
+}
+
+func findWallet(wallet *models.Wallet, walletId uuid.UUID) (*models.Wallet, error) {
+	return wallet, config.DB.Where("uuid = ?", walletId).First(wallet).Error
+}
+
+func findUserByWalletId(user *models.User, walletId ...*uint) (*models.User, error) {
+	return user, config.DB.Where("wallet_id = ?", walletId).Preload("Wallet").First(user).Error
 }

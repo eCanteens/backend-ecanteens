@@ -41,6 +41,23 @@ func handleDashoard(ctx *gin.Context) {
 
 // topup
 func handleCheckWallet(ctx *gin.Context) {
+	var body CheckWalletScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	data, err := checkWalletService(&body)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
 }
 
 func handleTopup(ctx *gin.Context) {}
