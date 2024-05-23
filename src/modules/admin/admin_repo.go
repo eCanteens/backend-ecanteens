@@ -41,13 +41,17 @@ func findUserByWalletId(user *models.User, walletId ...*uint) (*models.User, err
 	return user, config.DB.Where("wallet_id = ?", walletId).Preload("Wallet").First(user).Error
 }
 
-func topup(amount uint, id string) (*models.Wallet, error) {
+func wallet(amount uint, id string, tipe string) (*models.Wallet, error) {
 	var wallet models.Wallet
 
 	if err := config.DB.Model(&models.Wallet{}).Where("uuid = ?", id).First(&wallet).Error; err != nil {
 		return nil, err
 	}
 
-	wallet.Balance += amount
+	if tipe == "topup" {
+		wallet.Balance += amount
+	} else if tipe == "withdraw" {
+		wallet.Balance -= amount
+	}
 	return &wallet, config.DB.Save(&wallet).Error
 }

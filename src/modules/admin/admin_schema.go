@@ -13,7 +13,7 @@ type CheckWalletScheme struct {
 	WalletId string `binding:"required" mod:"trim" json:"wallet_id"`
 }
 
-type TopupScheme struct {
+type TopupWithdrawScheme struct {
 	Amount   uint       `binding:"required" mod:"trim" json:"amount"`
 }
 

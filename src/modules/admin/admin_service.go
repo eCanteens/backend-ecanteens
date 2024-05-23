@@ -80,16 +80,16 @@ func checkWalletService(body *CheckWalletScheme) (*models.User, error) {
 	return user, nil
 }
 
-func topupService(id string, body *TopupScheme) (*models.User, error) {
+func topupWithdrawService(id string, body *TopupWithdrawScheme, tipe string) (*models.User, error) {
 	var user *models.User
 
-	topup, err := topup(body.Amount, id)
+	wallet, err := wallet(body.Amount, id, tipe)
 
 	if err != nil {
-		return nil, errors.New("top Up gagal, silahkan cek Wallet ID")
+		return nil, errors.New("top Up atau Withdraw gagal, silahkan cek Wallet ID")
 	}
 
-	user, err = findUserByWalletId(&models.User{}, topup.Id.Id)
+	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
 
 	if err != nil {
 		return nil, errors.New("user tidak ditemukan")

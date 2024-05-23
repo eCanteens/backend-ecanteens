@@ -62,14 +62,14 @@ func handleCheckWallet(ctx *gin.Context) {
 
 func handleTopup(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var body TopupScheme
+	var body TopupWithdrawScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
-	data, err := topupService(id, &body)
+	data, err := topupWithdrawService(id, &body, "topup")
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -80,7 +80,24 @@ func handleTopup(ctx *gin.Context) {
 }
 
 // withdraw
-func handleWithdraw(ctx *gin.Context) {}
+func handleWithdraw(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var body TopupWithdrawScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	data, err := topupWithdrawService(id, &body, "withdraw")
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Withdraw Berhasil", helpers.Data{"data": data}))
+}
 
 // mutasi
 func handleMutasi(ctx *gin.Context) {}

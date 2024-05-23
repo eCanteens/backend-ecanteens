@@ -20,7 +20,7 @@ func Routes(router *gin.RouterGroup) {
 		authorized.POST("/topup/:id", handleTopup)
 
 		// withdraw
-		authorized.POST("/withdraw", handleWithdraw)
+		authorized.POST("/withdraw/:id", handleWithdraw)
 
 		// mutasi
 		authorized.GET("/mutasi", handleMutasi)
