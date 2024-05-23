@@ -47,7 +47,7 @@ func getFavorite(ctx *gin.Context) {
 	query := map[string]string{}
 	user, _ := ctx.Get("user")
 
-	ctx.BindQuery(query)
+	ctx.ShouldBindQuery(query)
 
 	data, err := getFavoriteService(*user.(models.User).Id.Id, query)
 

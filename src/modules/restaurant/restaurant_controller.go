@@ -10,7 +10,7 @@ func getFavorite(ctx *gin.Context) {
 	query := map[string]string{}
 	user, _ := ctx.Get("user")
 
-	ctx.BindQuery(query)
+	ctx.ShouldBindQuery(query)
 
 	data, err := getFavoriteService(*user.(models.User).Id.Id, query)
 
@@ -27,7 +27,7 @@ func getFavorite(ctx *gin.Context) {
 func getAll(ctx *gin.Context) {
 	query := map[string]string{}
 
-	ctx.BindQuery(query)
+	ctx.ShouldBindQuery(query)
 
 	data, err := getAllService(query)
 
@@ -58,7 +58,7 @@ func getRestosProducts(ctx *gin.Context) {
 	id := ctx.Param("id")
 	query := map[string]string{}
 
-	ctx.BindQuery(query)
+	ctx.ShouldBindQuery(query)
 
 	data, err := getRestosProductsService(id, query)
 

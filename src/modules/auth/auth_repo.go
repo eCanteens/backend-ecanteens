@@ -32,8 +32,8 @@ func findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Preload("Wallet").First(user).Error
 }
 
-func save(user *models.User) error {
-	return config.DB.Save(user).Error
+func save[T any](model T) error {
+	return config.DB.Save(model).Error
 }
 
 func updatePassword(id uint, user *models.User) error {

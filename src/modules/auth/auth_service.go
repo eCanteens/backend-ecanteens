@@ -229,5 +229,5 @@ func updatePinService(user *models.User, body *UpdatePinScheme) error {
 	}
 	user.Wallet.Pin = string(hashed)
 
-	return save(user)
+	return save(user.Wallet)
 }
