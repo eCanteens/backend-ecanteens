@@ -68,13 +68,13 @@ func checkWalletService(body *CheckWalletScheme) (*models.User, error) {
 	wallet, err := findWallet(&models.Wallet{}, body.WalletId)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("wallet tidak ditemukan")
 	}
 
 	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("user tidak ditemukan")
 	}
 
 	return user, nil
