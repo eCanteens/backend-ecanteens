@@ -62,31 +62,25 @@ func dashboardService() (map[string]interface{}, error) {
 	return data, nil
 }
 
-func checkWalletService(id string) (*models.User, error) {
-	var user *models.User
+func checkWalletService(phone string) (*models.User, error) {
+	var user models.User
 
-	wallet, err := findWallet(&models.Wallet{}, id)
-
-	if err != nil {
-		return nil, errors.New("wallet tidak ditemukan")
-	}
-
-	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
+	err := findUser(&user, phone)
 
 	if err != nil {
 		return nil, errors.New("user tidak ditemukan")
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func topupWithdrawService(id string, body *TopupWithdrawScheme, tipe string) (*models.User, error) {
+func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) (*models.User, error) {
 	var user *models.User
 
-	wallet, err := wallet(body.Amount, id, tipe)
+	wallet, err := topupWithdraw(body.Amount, phone, tipe)
 
 	if err != nil {
-		return nil, errors.New("top Up atau Withdraw gagal, silahkan cek Wallet ID")
+		return nil, err
 	}
 
 	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)

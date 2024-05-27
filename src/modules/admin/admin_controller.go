@@ -41,23 +41,24 @@ func handleDashoard(ctx *gin.Context) {
 
 // check wallet
 func handleCheckWallet(ctx *gin.Context) {
-	id := ctx.Param("id")
+	phone := ctx.Param("phone")
 
-	data, err := checkWalletService(id)
+	data, err := checkWalletService(phone)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"data": data,
-	})
+	data.Password = ""
+	data.Wallet.Pin = ""
+
+	ctx.JSON(200, helpers.SuccessResponse("User ditemukan", helpers.Data{"data": data}))
 }
 
 // topup
 func handleTopup(ctx *gin.Context) {
-	id := ctx.Param("id")
+	phone := ctx.Param("phone")
 	var body TopupWithdrawScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
@@ -65,7 +66,7 @@ func handleTopup(ctx *gin.Context) {
 		return
 	}
 
-	data, err := topupWithdrawService(id, &body, "topup")
+	data, err := topupWithdrawService(phone, &body, "topup")
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -77,7 +78,7 @@ func handleTopup(ctx *gin.Context) {
 
 // withdraw
 func handleWithdraw(ctx *gin.Context) {
-	id := ctx.Param("id")
+	phone := ctx.Param("phone")
 	var body TopupWithdrawScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
@@ -85,7 +86,7 @@ func handleWithdraw(ctx *gin.Context) {
 		return
 	}
 
-	data, err := topupWithdrawService(id, &body, "withdraw")
+	data, err := topupWithdrawService(phone, &body, "withdraw")
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))

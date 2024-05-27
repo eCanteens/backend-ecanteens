@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"errors"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
@@ -33,24 +35,27 @@ func save(user *models.User) error {
 	return config.DB.Save(user).Error
 }
 
-func findWallet(wallet *models.Wallet, walletId string) (*models.Wallet, error) {
-	return wallet, config.DB.Where("uuid = ?", walletId).First(wallet).Error
+func findUser(user *models.User, phone string) error {
+	return config.DB.Where("phone = ?", phone).Preload("Wallet").First(user).Error
 }
 
 func findUserByWalletId(user *models.User, walletId ...*uint) (*models.User, error) {
 	return user, config.DB.Where("wallet_id = ?", walletId).Preload("Wallet").First(user).Error
 }
 
-func wallet(amount uint, id string, tipe string) (*models.Wallet, error) {
+func topupWithdraw(amount uint, id string, tipe string) (*models.Wallet, error) {
 	var wallet models.Wallet
 
 	if err := config.DB.Model(&models.Wallet{}).Where("uuid = ?", id).First(&wallet).Error; err != nil {
-		return nil, err
+		return nil, errors.New("wallet tidak ditemukan")
 	}
 
 	if tipe == "topup" {
 		wallet.Balance += amount
 	} else if tipe == "withdraw" {
+		if amount > wallet.Balance {
+			return nil, errors.New("balance tidak mencukupi")
+		}
 		wallet.Balance -= amount
 	}
 	return &wallet, config.DB.Save(&wallet).Error
