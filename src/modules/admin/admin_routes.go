@@ -16,8 +16,7 @@ func Routes(router *gin.RouterGroup) {
 		authorized.GET("/dashboard", handleDashoard)
 
 		// check wallet
-		authorized.POST("/wallet", handleCheckWallet)
-		authorized.GET("/wallet/:id", handleGetWallet)
+		authorized.GET("/wallet/:id", handleCheckWallet)
 
 		// topup
 		authorized.POST("/topup/:id", handleTopup)
