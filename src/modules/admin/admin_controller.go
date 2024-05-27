@@ -66,7 +66,7 @@ func handleTopup(ctx *gin.Context) {
 		return
 	}
 
-	data, err := topupWithdrawService(phone, &body, "topup")
+	data, err := topupWithdrawService(phone, &body, "TOPUP")
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -86,7 +86,7 @@ func handleWithdraw(ctx *gin.Context) {
 		return
 	}
 
-	data, err := topupWithdrawService(phone, &body, "withdraw")
+	data, err := topupWithdrawService(phone, &body, "WITHDRAW")
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))

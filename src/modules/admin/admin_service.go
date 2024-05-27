@@ -72,7 +72,7 @@ func checkWalletService(phone string) (*models.User, error) {
 	return &user, nil
 }
 
-func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) (*models.User, error) {
+func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) (*models.Transaction, error) {
 	var user models.User
 
 	if err := findUser(&user, phone); err != nil {
@@ -83,7 +83,13 @@ func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) 
 		return nil, err
 	}
 
-	return &user, nil
+	data, err := createTransaction(&user, body.Amount, models.TransactionType(tipe))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) (*models.User, error) {

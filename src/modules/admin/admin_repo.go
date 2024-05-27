@@ -2,6 +2,8 @@ package admin
 
 import (
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
@@ -40,14 +42,35 @@ func findUser(user *models.User, phone string) error {
 }
 
 func topupWithdraw(amount uint, user *models.User, tipe string) error {
-	if tipe == "topup" {
+	if tipe == "TOPUP" {
 		user.Wallet.Balance += amount
-	} else if tipe == "withdraw" {
+	} else if tipe == "WITHDRAW" {
 		if amount > user.Wallet.Balance {
-			return errors.New("balance tidak mencukupi")
+			return errors.New("saldo tidak mencukupi")
 		}
 		user.Wallet.Balance -= amount
 	}
 
 	return config.DB.Save(user.Wallet).Error
+}
+
+func createTransaction(user *models.User, amount uint, tipe models.TransactionType) (*models.Transaction, error) {
+	transaction := models.Transaction{
+		TransactionId: fmt.Sprintf("#%d%d", time.Now().Unix(), user.Id.Id),
+		UserId:        *user.Id.Id,
+		Type:          tipe,
+		Status:        models.SUCCESS,
+		Amount:        amount,
+		Items:         "[]",
+	}
+
+	if err := config.DB.Create(&transaction).Error; err != nil {
+		return nil, err
+	}
+
+	if err := config.DB.Where("id = ?", transaction.Id.Id).Preload("User.Wallet").First(&transaction).Error; err != nil {
+		return nil, err
+	}
+
+	return &transaction, nil
 }
