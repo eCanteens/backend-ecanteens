@@ -56,21 +56,16 @@ func topupWithdraw(amount uint, user *models.User, tipe string) error {
 
 func createTransaction(user *models.User, amount uint, tipe models.TransactionType) (*models.Transaction, error) {
 	transaction := models.Transaction{
-		TransactionId: fmt.Sprintf("#%d%d", time.Now().Unix(), user.Id.Id),
+		TransactionId: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id.Id),
 		UserId:        *user.Id.Id,
 		Type:          tipe,
 		Status:        models.SUCCESS,
 		Amount:        amount,
 		Items:         "[]",
 	}
+	return &transaction, config.DB.Create(&transaction).Error
+}
 
-	if err := config.DB.Create(&transaction).Error; err != nil {
-		return nil, err
-	}
-
-	if err := config.DB.Where("id = ?", transaction.Id.Id).Preload("User.Wallet").First(&transaction).Error; err != nil {
-		return nil, err
-	}
-
-	return &transaction, nil
+func findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error) {
+	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
 }

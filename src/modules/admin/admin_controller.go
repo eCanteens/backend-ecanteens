@@ -96,6 +96,20 @@ func handleWithdraw(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Withdraw Berhasil", helpers.Data{"data": data}))
 }
 
+// transaction
+func handleTransaction(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	data, err := transactionService(id)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{"data": data})
+}
+
 // mutasi
 func handleMutasi(ctx *gin.Context) {}
 

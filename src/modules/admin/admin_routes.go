@@ -24,6 +24,9 @@ func Routes(router *gin.RouterGroup) {
 		// withdraw
 		authorized.POST("/withdraw/:phone", handleWithdraw)
 
+		// transaction
+		authorized.GET("/transaction/:id", handleTransaction)
+
 		// mutasi
 		authorized.GET("/mutasi", handleMutasi)
 

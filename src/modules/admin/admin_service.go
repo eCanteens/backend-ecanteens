@@ -25,9 +25,9 @@ func adminLoginService(body *AdminLoginScheme) (*models.User, *string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":      *user.Id.Id,
-		"email":   user.Email,
-		"exp":     0,
+		"id":    *user.Id.Id,
+		"email": user.Email,
+		"exp":   0,
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
@@ -54,9 +54,9 @@ func dashboardService() (map[string]interface{}, error) {
 	}
 
 	data := map[string]interface{}{
-		"users": userCount,
+		"users":       userCount,
 		"restaurants": restaurantCount,
-		"total": userCount + restaurantCount,
+		"total":       userCount + restaurantCount,
 	}
 
 	return data, nil
@@ -84,6 +84,18 @@ func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) 
 	}
 
 	data, err := createTransaction(&user, body.Amount, models.TransactionType(tipe))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func transactionService(id string) (*models.Transaction, error) {
+	var transaction models.Transaction
+
+	data, err := findTransaction(&transaction, id)
 
 	if err != nil {
 		return nil, err
