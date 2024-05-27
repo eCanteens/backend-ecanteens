@@ -9,10 +9,6 @@ type AdminLoginScheme struct {
 	Password string `binding:"required" mod:"trim" json:"password"`
 }
 
-type CheckWalletScheme struct {
-	WalletId string `binding:"required" mod:"trim" json:"wallet_id"`
-}
-
 type TopupWithdrawScheme struct {
 	Amount   uint       `binding:"required" mod:"trim" json:"amount"`
 }

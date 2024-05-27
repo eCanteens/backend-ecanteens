@@ -65,9 +65,7 @@ func dashboardService() (map[string]interface{}, error) {
 func checkWalletService(phone string) (*models.User, error) {
 	var user models.User
 
-	err := findUser(&user, phone)
-
-	if err != nil {
+	if err := findUser(&user, phone); err != nil {
 		return nil, errors.New("user tidak ditemukan")
 	}
 
@@ -75,21 +73,17 @@ func checkWalletService(phone string) (*models.User, error) {
 }
 
 func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) (*models.User, error) {
-	var user *models.User
+	var user models.User
 
-	wallet, err := topupWithdraw(body.Amount, phone, tipe)
-
-	if err != nil {
-		return nil, err
-	}
-
-	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
-
-	if err != nil {
+	if err := findUser(&user, phone); err != nil {
 		return nil, errors.New("user tidak ditemukan")
 	}
 
-	return user, nil
+	if err := topupWithdraw(body.Amount, &user, tipe); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) (*models.User, error) {

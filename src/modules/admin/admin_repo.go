@@ -39,24 +39,14 @@ func findUser(user *models.User, phone string) error {
 	return config.DB.Where("phone = ?", phone).Preload("Wallet").First(user).Error
 }
 
-func findUserByWalletId(user *models.User, walletId ...*uint) (*models.User, error) {
-	return user, config.DB.Where("wallet_id = ?", walletId).Preload("Wallet").First(user).Error
-}
-
-func topupWithdraw(amount uint, id string, tipe string) (*models.Wallet, error) {
-	var wallet models.Wallet
-
-	if err := config.DB.Model(&models.Wallet{}).Where("uuid = ?", id).First(&wallet).Error; err != nil {
-		return nil, errors.New("wallet tidak ditemukan")
-	}
-
+func topupWithdraw(amount uint, user *models.User, tipe string) error {
 	if tipe == "topup" {
-		wallet.Balance += amount
+		user.Wallet.Balance += amount
 	} else if tipe == "withdraw" {
-		if amount > wallet.Balance {
-			return nil, errors.New("balance tidak mencukupi")
+		if amount > user.Wallet.Balance {
+			return errors.New("balance tidak mencukupi")
 		}
-		wallet.Balance -= amount
+		user.Wallet.Balance -= amount
 	}
-	return &wallet, config.DB.Save(&wallet).Error
+	return config.DB.Save(user.Wallet).Error
 }
