@@ -62,10 +62,20 @@ func dashboardService() (map[string]interface{}, error) {
 	return data, nil
 }
 
-func checkWalletService(body *CheckWalletScheme) (*models.User, error) {
+func checkWalletService(body *CheckWalletScheme) error {
+	_, err := findWallet(&models.Wallet{}, body.WalletId)
+
+	if err != nil {
+		return errors.New("wallet tidak ditemukan")
+	}
+
+	return nil
+}
+
+func getWalletService(id string) (*models.User, error) {
 	var user *models.User
 
-	wallet, err := findWallet(&models.Wallet{}, body.WalletId)
+	wallet, err := findWallet(&models.Wallet{}, id)
 
 	if err != nil {
 		return nil, errors.New("wallet tidak ditemukan")

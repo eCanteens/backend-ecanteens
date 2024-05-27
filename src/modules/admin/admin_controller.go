@@ -39,7 +39,7 @@ func handleDashoard(ctx *gin.Context) {
 	})
 }
 
-// topup
+// wallet
 func handleCheckWallet(ctx *gin.Context) {
 	var body CheckWalletScheme
 
@@ -48,7 +48,23 @@ func handleCheckWallet(ctx *gin.Context) {
 		return
 	}
 
-	data, err := checkWalletService(&body)
+	if err := checkWalletService(&body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Wallet Ditemukan"))
+}
+
+func handleGetWallet(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	if err := helpers.Bind(ctx, id); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	data, err := getWalletService(id)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -60,6 +76,7 @@ func handleCheckWallet(ctx *gin.Context) {
 	})
 }
 
+// topup
 func handleTopup(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var body TopupWithdrawScheme
