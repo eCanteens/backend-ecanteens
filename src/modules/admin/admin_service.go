@@ -123,8 +123,8 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 			fields = append(fields, "email")
 		}
 
-		if (*sameUser)[0].Phone != nil && user.Phone != nil {
-			if *(*sameUser)[0].Phone == *user.Phone {
+		if (*sameUser)[0].Phone != "" && user.Phone != "" {
+			if (*sameUser)[0].Phone == user.Phone {
 				fields = append(fields, "nomor telepon")
 			}
 		}

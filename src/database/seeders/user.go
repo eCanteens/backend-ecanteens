@@ -21,17 +21,17 @@ func UserSeeder() {
 		Name:     "Admin",
 		Email:    "admin@ecanteens.com",
 		Password: string(admin),
+		Phone:    "-",
 		RoleId:   1,
 	})
 
 	for i := 0; i < 9; i++ {
-		phone := "08" + gofakeit.Numerify("##########")
 		avatar := os.Getenv("BASE_URL") + "/public/dummy/avatar_user.png"
 
 		users = append(users, &models.User{
 			Name:     gofakeit.Name(),
 			Email:    gofakeit.Email(),
-			Phone:    &phone,
+			Phone:    "08" + gofakeit.Numerify("##########"),
 			Password: string(password),
 			Avatar:   &avatar,
 		})
@@ -40,6 +40,7 @@ func UserSeeder() {
 	users = append(users, &models.User{
 		Name:     "Chandra",
 		Email:    "mdutchand@gmail.com",
+		Phone:    "085797175262",
 		Password: string(chandra),
 	})
 

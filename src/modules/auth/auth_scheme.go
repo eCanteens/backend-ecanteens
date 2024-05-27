@@ -5,6 +5,7 @@ import "mime/multipart"
 type RegisterScheme struct {
 	Name     string `binding:"required" mod:"trim" json:"name"`
 	Email    string `binding:"required,email" mod:"trim" json:"email"`
+	Phone    string `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone"`
 	Password string `binding:"required,min=8" mod:"trim" json:"password"`
 }
 
@@ -14,8 +15,9 @@ type LoginScheme struct {
 }
 
 type GoogleScheme struct {
-	Name   string  `binding:"required" json:"name"`
-	Email  string  `binding:"required,email" json:"email"`
+	Name   string  `binding:"required" mod:"trim" json:"name"`
+	Email  string  `binding:"required,email" mod:"trim" json:"email"`
+	Phone  string  `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone"`
 	Avatar *string `json:"avatar"`
 }
 
@@ -32,7 +34,7 @@ type UpdateScheme struct {
 	Avatar *multipart.FileHeader `form:"avatar"`
 	Name   string                `binding:"required" mod:"trim" json:"name" form:"name"`
 	Email  string                `binding:"required,email" mod:"trim" json:"email" form:"email"`
-	Phone  string                `mod:"trim" json:"phone" form:"phone"`
+	Phone  string                `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone"`
 }
 
 type UpdatePasswordScheme struct {

@@ -153,7 +153,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	user.Email = body.Email
 
 	if body.Phone != "" {
-		user.Phone = &body.Phone
+		user.Phone = body.Phone
 	}
 
 	sameUser := checkEmailAndPhone(user, user.Id.Id)
@@ -167,8 +167,8 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 			fields = append(fields, "email")
 		}
 
-		if (*sameUser)[0].Phone != nil && user.Phone != nil {
-			if *(*sameUser)[0].Phone == *user.Phone {
+		if (*sameUser)[0].Phone != "" && user.Phone != "" {
+			if (*sameUser)[0].Phone == user.Phone {
 				fields = append(fields, "nomor telepon")
 			}
 		}

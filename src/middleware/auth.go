@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -31,8 +30,7 @@ func Auth(ctx *gin.Context) {
 	var user models.User
 	if err := config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
-			fmt.Println("400")
+			ctx.AbortWithStatusJSON(401, helpers.ErrorResponse(err.Error()))
 		} else {
 			ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
 		}

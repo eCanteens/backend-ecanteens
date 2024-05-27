@@ -22,6 +22,7 @@ type Restaurant struct {
 	LocationId uint      `gorm:"type:bigint" json:"location_id"`
 	CategoryId uint      `gorm:"type:bigint" json:"category_id"`
 	WalletId   uint      `gorm:"type:bigint" json:"wallet_id"`
+	IsOpen     bool      `gorm:"type:boolean;default:true" json:"is_open"`
 	Timestamps
 
 	// Relation
