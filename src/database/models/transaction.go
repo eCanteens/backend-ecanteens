@@ -6,8 +6,9 @@ type transactionType string
 type transactionStatus string
 
 const (
-	OUTCOME transactionType = "OUTCOME"
-	INCOME  transactionType = "INCOME"
+	PAY      transactionType = "PAY"
+	TOPUP    transactionType = "TOPUP"
+	WITHDRAW transactionType = "WITHDRAW"
 )
 
 func (ct *transactionType) Scan(value interface{}) error {
@@ -36,11 +37,12 @@ func (ct transactionStatus) Value() (driver.Value, error) {
 
 type Transaction struct {
 	Id
-	UserId uint              `gorm:"type:bigint" json:"user_id"`
-	Type   transactionType   `gorm:"type:transaction_type" json:"type"`
-	Status transactionStatus `gorm:"type:transaction_status" json:"status"`
-	Amount uint              `gorm:"type:int" json:"amount"`
-	Items  string            `gorm:"type:json" json:"items"`
+	TransactionId string            `gorm:"type:varchar(255)" json:"transaction_id"`
+	UserId        uint              `gorm:"type:bigint" json:"user_id"`
+	Type          transactionType   `gorm:"type:transaction_type" json:"type"`
+	Status        transactionStatus `gorm:"type:transaction_status" json:"status"`
+	Amount        uint              `gorm:"type:int" json:"amount"`
+	Items         string            `gorm:"type:json" json:"items"`
 	Timestamps
 
 	// Relation

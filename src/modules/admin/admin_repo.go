@@ -48,5 +48,6 @@ func topupWithdraw(amount uint, user *models.User, tipe string) error {
 		}
 		user.Wallet.Balance -= amount
 	}
+
 	return config.DB.Save(user.Wallet).Error
 }
