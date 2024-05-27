@@ -39,32 +39,11 @@ func handleDashoard(ctx *gin.Context) {
 	})
 }
 
-// wallet
+// check wallet
 func handleCheckWallet(ctx *gin.Context) {
-	var body CheckWalletScheme
-
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
-		return
-	}
-
-	if err := checkWalletService(&body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
-		return
-	}
-
-	ctx.JSON(200, helpers.SuccessResponse("Wallet Ditemukan"))
-}
-
-func handleGetWallet(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	if err := helpers.Bind(ctx, id); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
-		return
-	}
-
-	data, err := getWalletService(id)
+	data, err := checkWalletService(id)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
