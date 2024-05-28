@@ -1,6 +1,10 @@
 package admin
 
 import (
+	"errors"
+	"fmt"
+	"time"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
@@ -33,25 +37,35 @@ func save(user *models.User) error {
 	return config.DB.Save(user).Error
 }
 
-func findWallet(wallet *models.Wallet, walletId string) (*models.Wallet, error) {
-	return wallet, config.DB.Where("uuid = ?", walletId).First(wallet).Error
+func findUser(user *models.User, phone string) error {
+	return config.DB.Where("phone = ?", phone).Preload("Wallet").First(user).Error
 }
 
-func findUserByWalletId(user *models.User, walletId ...*uint) (*models.User, error) {
-	return user, config.DB.Where("wallet_id = ?", walletId).Preload("Wallet").First(user).Error
+func topupWithdraw(amount uint, user *models.User, tipe string) error {
+	if tipe == "TOPUP" {
+		user.Wallet.Balance += amount
+	} else if tipe == "WITHDRAW" {
+		if amount > user.Wallet.Balance {
+			return errors.New("saldo tidak mencukupi")
+		}
+		user.Wallet.Balance -= amount
+	}
+
+	return config.DB.Save(user.Wallet).Error
 }
 
-func wallet(amount uint, id string, tipe string) (*models.Wallet, error) {
-	var wallet models.Wallet
-
-	if err := config.DB.Model(&models.Wallet{}).Where("uuid = ?", id).First(&wallet).Error; err != nil {
-		return nil, err
+func createTransaction(user *models.User, amount uint, tipe models.TransactionType) (*models.Transaction, error) {
+	transaction := models.Transaction{
+		TransactionId: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id.Id),
+		UserId:        *user.Id.Id,
+		Type:          tipe,
+		Status:        models.SUCCESS,
+		Amount:        amount,
+		Items:         "[]",
 	}
+	return &transaction, config.DB.Create(&transaction).Error
+}
 
-	if tipe == "topup" {
-		wallet.Balance += amount
-	} else if tipe == "withdraw" {
-		wallet.Balance -= amount
-	}
-	return &wallet, config.DB.Save(&wallet).Error
+func findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error) {
+	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
 }

@@ -62,40 +62,46 @@ func dashboardService() (map[string]interface{}, error) {
 	return data, nil
 }
 
-func checkWalletService(id string) (*models.User, error) {
-	var user *models.User
+func checkWalletService(phone string) (*models.User, error) {
+	var user models.User
 
-	wallet, err := findWallet(&models.Wallet{}, id)
-
-	if err != nil {
-		return nil, errors.New("wallet tidak ditemukan")
-	}
-
-	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
-
-	if err != nil {
+	if err := findUser(&user, phone); err != nil {
 		return nil, errors.New("user tidak ditemukan")
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func topupWithdrawService(id string, body *TopupWithdrawScheme, tipe string) (*models.User, error) {
-	var user *models.User
+func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) (*models.Transaction, error) {
+	var user models.User
 
-	wallet, err := wallet(body.Amount, id, tipe)
-
-	if err != nil {
-		return nil, errors.New("top Up atau Withdraw gagal, silahkan cek Wallet ID")
-	}
-
-	user, err = findUserByWalletId(&models.User{}, wallet.Id.Id)
-
-	if err != nil {
+	if err := findUser(&user, phone); err != nil {
 		return nil, errors.New("user tidak ditemukan")
 	}
 
-	return user, nil
+	if err := topupWithdraw(body.Amount, &user, tipe); err != nil {
+		return nil, err
+	}
+
+	data, err := createTransaction(&user, body.Amount, models.TransactionType(tipe))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func transactionService(id string) (*models.Transaction, error) {
+	var transaction models.Transaction
+
+	data, err := findTransaction(&transaction, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) (*models.User, error) {
