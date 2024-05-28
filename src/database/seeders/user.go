@@ -7,6 +7,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,7 +22,7 @@ func UserSeeder() {
 		Name:     "Admin",
 		Email:    "admin@ecanteens.com",
 		Password: string(admin),
-		Phone:    "-",
+		Phone:    helpers.PointerTo("-"),
 		RoleId:   1,
 	})
 
@@ -31,7 +32,7 @@ func UserSeeder() {
 		users = append(users, &models.User{
 			Name:     gofakeit.Name(),
 			Email:    gofakeit.Email(),
-			Phone:    "08" + gofakeit.Numerify("##########"),
+			Phone:    helpers.PointerTo("08" + gofakeit.Numerify("##########")),
 			Password: string(password),
 			Avatar:   &avatar,
 		})
@@ -40,7 +41,7 @@ func UserSeeder() {
 	users = append(users, &models.User{
 		Name:     "Chandra",
 		Email:    "mdutchand@gmail.com",
-		Phone:    "085797175262",
+		Phone:    helpers.PointerTo("085797175262"),
 		Password: string(chandra),
 	})
 

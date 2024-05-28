@@ -1,8 +1,6 @@
 package transaction
 
 import (
-	"fmt"
-
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
@@ -31,7 +29,5 @@ func addCartService(user *models.User, body *AddUpdateCartScheme) error {
 	cart.Amount = body.Amount
 	cart.Notes = body.Notes
 
-	fmt.Println(cart)
-
-	return save(&cart)
+	return saveCart(&cart)
 }

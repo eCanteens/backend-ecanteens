@@ -2,22 +2,24 @@ package config
 
 func fieldToLocale(field string) (intlField string) {
 	switch field {
-	case "Name":
+	case "name":
 		intlField = "Nama"
-	case "Email":
+	case "email":
 		intlField = "Email"
-	case "Phone":
+	case "phone":
 		intlField = "Nomor Telepon"
-	case "Password":
+	case "password":
 		intlField = "Kata Sandi"
-	case "OldPassword":
+	case "old_password":
 		intlField = "Kata Sandi Lama"
-	case "NewPassword":
+	case "new_password":
 		intlField = "Kata Sandi Baru"
-	case "Pin":
+	case "pin":
 		intlField = "Pin"
-	case "NewPin":
-		intlField = "Pin Baru"
+	case "refresh_token":
+		intlField = "Refresh Token"
+	case "id_token":
+		intlField = "ID Token"
 	default:
 		intlField = field
 	}

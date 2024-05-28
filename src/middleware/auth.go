@@ -28,7 +28,7 @@ func Auth(ctx *gin.Context) {
 	}
 
 	var user models.User
-	if err := config.DB.Where("id = ?", claim["id"]).Preload("Wallet").First(&user).Error; err != nil {
+	if err := config.DB.Where("id = ?", claim["sub"]).Preload("Wallet").First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			ctx.AbortWithStatusJSON(401, helpers.ErrorResponse(err.Error()))
 		} else {

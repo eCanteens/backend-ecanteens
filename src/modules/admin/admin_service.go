@@ -25,9 +25,9 @@ func adminLoginService(body *AdminLoginScheme) (*models.User, *string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":      *user.Id.Id,
-		"email":   user.Email,
-		"exp":     0,
+		"sub":   *user.Id.Id,
+		"email": user.Email,
+		"exp":   0,
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
@@ -54,9 +54,9 @@ func dashboardService() (map[string]interface{}, error) {
 	}
 
 	data := map[string]interface{}{
-		"users": userCount,
+		"users":       userCount,
 		"restaurants": restaurantCount,
-		"total": userCount + restaurantCount,
+		"total":       userCount + restaurantCount,
 	}
 
 	return data, nil
@@ -113,7 +113,7 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 			fields = append(fields, "email")
 		}
 
-		if (*sameUser)[0].Phone != "" && user.Phone != "" {
+		if (*sameUser)[0].Phone != nil && user.Phone != nil {
 			if (*sameUser)[0].Phone == user.Phone {
 				fields = append(fields, "nomor telepon")
 			}

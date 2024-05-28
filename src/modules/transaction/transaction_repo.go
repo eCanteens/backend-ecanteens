@@ -18,7 +18,7 @@ func findOneCart(cart *models.Cart, userId uint, productId uint) error {
 	return config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).First(&cart).Error
 }
 
-func save(cart *models.Cart) error {
+func saveCart(cart *models.Cart) error {
 	return config.DB.Save(cart).Error
 }
 

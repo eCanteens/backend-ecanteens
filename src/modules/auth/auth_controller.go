@@ -14,14 +14,14 @@ func handleRegister(ctx *gin.Context) {
 		return
 	}
 
-	user, err := registerService(&body)
+	err := registerService(&body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(201, helpers.SuccessResponse("Register berhasil", helpers.Data{"data": &user}))
+	ctx.JSON(201, helpers.SuccessResponse("Register berhasil"))
 }
 
 func handleLogin(ctx *gin.Context) {
@@ -50,7 +50,7 @@ func handleGoogle(ctx *gin.Context) {
 		return
 	}
 
-	data, token, isPasswordSet, err := googleService(&body)
+	data, token, err := googleService(&body)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -58,10 +58,29 @@ func handleGoogle(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{
-		"token":           token,
-		"data":            data,
-		"is_password_set": isPasswordSet,
+		"token": token,
+		"data":  data,
 	}))
+}
+
+func handleRefresh(ctx *gin.Context) {
+	var body RefreshScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	token, err := refreshService(&body)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"token": token,
+	})
 }
 
 func handleForgot(ctx *gin.Context) {
@@ -111,13 +130,14 @@ func handleProfile(ctx *gin.Context) {
 
 func handleUpdateProfile(ctx *gin.Context) {
 	var body UpdateScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if err := updateProfileService(ctx, &_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))

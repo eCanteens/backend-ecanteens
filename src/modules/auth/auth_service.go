@@ -1,49 +1,77 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/api/idtoken"
 	"gorm.io/gorm"
 )
 
-func registerService(body *RegisterScheme) (*models.User, error) {
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+func checkUniqueService(email string, phone string, id ...uint) error {
+	sameUser := checkEmailAndPhone(email, phone, id...)
 
-	if err := findByEmail(&models.User{}, body.Email); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			user := &models.User{
-				Name:     body.Name,
-				Email:    body.Email,
-				Password: string(hashed),
-			}
+	if len(*sameUser) > 1 {
+		return errors.New("email dan nomor telepon sudah digunakan")
+	} else if len(*sameUser) == 1 {
+		var fields []string
 
-			if err := create(user); err != nil {
-				return nil, err
-			}
-
-			user.Password = ""
-
-			return user, nil
+		if (*sameUser)[0].Email == email {
+			fields = append(fields, "email")
 		}
 
-		return nil, err
+		if (*sameUser)[0].Phone != nil && phone != "" {
+			if *(*sameUser)[0].Phone == phone {
+				fields = append(fields, "nomor telepon")
+			}
+		}
+
+		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
+		return errors.New(errMsg)
 	}
 
-	return nil, errors.New("email sudah digunakan")
+	return nil
 }
 
-func loginService(body *LoginScheme) (*models.User, *string, error) {
+func verifyGoogleToken(idToken string) (*idtoken.Payload, error) {
+	ctx := context.Background()
+	payload, err := idtoken.Validate(ctx, idToken, os.Getenv("GOOGLE_CLIENT_ID"))
+	if err != nil {
+		return nil, err
+	}
+	return payload, nil
+}
+
+func registerService(body *RegisterScheme) error {
+	if err := checkUniqueService(body.Email, body.Phone); err != nil {
+		return err
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	user := &models.User{
+		Name:     body.Name,
+		Email:    body.Email,
+		Phone:    &body.Phone,
+		Password: string(hashed),
+	}
+
+	if err := create(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func loginService(body *LoginScheme) (*models.User, *helpers.Token, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
@@ -54,43 +82,61 @@ func loginService(body *LoginScheme) (*models.User, *string, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id":    *user.Id.Id,
-		"email": user.Email,
-		"exp":   0,
-	})
+	token := helpers.GenerateUserToken(&user)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
 
-	return &user, &tokenString, nil
+	return &user, token, nil
 }
 
-func googleService(body *GoogleScheme) (*models.User, *string, *bool, error) {
+func googleService(body *GoogleScheme) (*models.User, *helpers.Token, error) {
+	payload, err := verifyGoogleToken(body.IdToken)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
 	var user models.User
-	var isPasswordSet bool
 
-	if err := findByEmail(&user, body.Email); err != nil {
-		isPasswordSet = false
-		user.Name = body.Name
-		user.Email = body.Email
-		user.Avatar = body.Avatar
+	if err := findByEmail(&user, payload.Claims["email"].(string)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			user.Name = payload.Claims["name"].(string)
+			user.Email = payload.Claims["email"].(string)
+			*user.Avatar = payload.Claims["picture"].(string)
 
-		if err := create(&user); err != nil {
-			return nil, nil, nil, err
+			if err := create(&user); err != nil {
+				return nil, nil, err
+			}
+		} else {
+			return nil, nil, err
 		}
 	}
 
-	isPasswordSet = user.Password != ""
-	user.Password = ""
-	user.Wallet.Pin = ""
+	token := helpers.GenerateUserToken(&user)
 
-	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id":  *user.Id.Id,
-		"exp": 0,
-	})
+	return &user, token, nil
+}
 
-	return &user, &tokenString, &isPasswordSet, nil
+func refreshService(body *RefreshScheme) (*helpers.Token, error) {
+	claim, err := helpers.ParseJwt(body.RefreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	if claim["type"].(string) != "refresh" {
+		return nil, errors.New("token tidak valid")
+	}
+
+	var user models.User
+
+	if err := findById(&user, uint(claim["sub"].(float64))); err != nil {
+		return nil, err
+	}
+
+	token := helpers.GenerateUserToken(&user)
+
+	return token, nil
 }
 
 func forgotService(body *ForgotScheme) error {
@@ -100,10 +146,7 @@ func forgotService(body *ForgotScheme) error {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	tokenString := helpers.GenerateJwt(&jwt.MapClaims{
-		"id":  *user.Id.Id,
-		"exp": float64(time.Now().Add(time.Minute * 10).Unix()),
-	})
+	tokenString := helpers.GenerateResetToken(&user)
 
 	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
 	t, err := template.ParseFiles(absPath)
@@ -136,7 +179,11 @@ func resetService(body *ResetScheme) error {
 		return err
 	}
 
-	id, ok := claim["id"].(float64)
+	if claim["type"].(string) != "reset" {
+		return errors.New("token tidak valid")
+	}
+
+	id, ok := claim["sub"].(float64)
 	if !ok {
 		return errors.New("cant convert claims")
 	}
@@ -149,33 +196,13 @@ func resetService(body *ResetScheme) error {
 }
 
 func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateScheme) error {
+	if err := checkUniqueService(body.Email, body.Phone, *user.Id.Id); err != nil {
+		return err
+	}
+
 	user.Name = body.Name
 	user.Email = body.Email
-
-	if body.Phone != "" {
-		user.Phone = body.Phone
-	}
-
-	sameUser := checkEmailAndPhone(user, user.Id.Id)
-
-	if len(*sameUser) > 1 {
-		return errors.New("email dan nomor telepon sudah digunakan")
-	} else if len(*sameUser) == 1 {
-		var fields []string
-
-		if (*sameUser)[0].Email == user.Email {
-			fields = append(fields, "email")
-		}
-
-		if (*sameUser)[0].Phone != "" && user.Phone != "" {
-			if (*sameUser)[0].Phone == user.Phone {
-				fields = append(fields, "nomor telepon")
-			}
-		}
-
-		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
-		return errors.New(errMsg)
-	}
+	user.Phone = &body.Phone
 
 	if body.Avatar != nil {
 		extracted := helpers.ExtractFileName(body.Avatar.Filename)

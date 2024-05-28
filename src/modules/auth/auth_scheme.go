@@ -15,10 +15,11 @@ type LoginScheme struct {
 }
 
 type GoogleScheme struct {
-	Name   string  `binding:"required" mod:"trim" json:"name"`
-	Email  string  `binding:"required,email" mod:"trim" json:"email"`
-	Phone  string  `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone"`
-	Avatar *string `json:"avatar"`
+	IdToken string `binding:"required" mod:"trim" json:"id_token"`
+}
+
+type RefreshScheme struct {
+	RefreshToken string `binding:"required" json:"refresh_token"`
 }
 
 type ForgotScheme struct {
@@ -34,7 +35,7 @@ type UpdateScheme struct {
 	Avatar *multipart.FileHeader `form:"avatar"`
 	Name   string                `binding:"required" mod:"trim" json:"name" form:"name"`
 	Email  string                `binding:"required,email" mod:"trim" json:"email" form:"email"`
-	Phone  string                `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone"`
+	Phone  string                `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone" form:"phone"`
 }
 
 type UpdatePasswordScheme struct {

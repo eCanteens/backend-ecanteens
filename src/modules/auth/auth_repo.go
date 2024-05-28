@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"fmt"
-
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
@@ -11,16 +9,15 @@ func create(user *models.User) error {
 	return config.DB.Create(user).Error
 }
 
-func checkEmailAndPhone(user *models.User, id ...*uint) *[]models.User {
+func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 	var sameUser []models.User
 
 	query := config.DB.Where(
-		config.DB.Where("email = ?", user.Email).Or("phone = ?", user.Phone),
+		config.DB.Where("email = ?", email).Or("phone = ?", phone),
 	)
 
 	if len(id) > 0 {
-		fmt.Println(*id[0])
-		query = query.Not("id = ?", *id[0])
+		query = query.Not("id = ?", id[0])
 	}
 
 	query.Find(&sameUser)
@@ -30,6 +27,10 @@ func checkEmailAndPhone(user *models.User, id ...*uint) *[]models.User {
 
 func findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Preload("Wallet").First(user).Error
+}
+
+func findById(user *models.User, id uint) error {
+	return config.DB.Where("id = ?", id).First(user).Error
 }
 
 func save[T any](model T) error {
