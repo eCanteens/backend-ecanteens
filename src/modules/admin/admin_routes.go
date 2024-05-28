@@ -10,7 +10,7 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/login", handleAdminLogin)
 
 	authorized := router.Group("/")
-	authorized.Use(middleware.Auth)
+	authorized.Use(middleware.Admin)
 	{
 		// dashboard
 		authorized.GET("/dashboard", handleDashoard)

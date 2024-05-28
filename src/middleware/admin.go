@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func Auth(ctx *gin.Context) {
+func Admin(ctx *gin.Context) {
 	token := ctx.Request.Header.Get("Authorization")
 
 	if token == "" {
@@ -27,11 +27,6 @@ func Auth(ctx *gin.Context) {
 		return
 	}
 
-	if claim["type"].(string) != "access" {
-		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Token tidak valid"))
-		return
-	}
-
 	var user models.User
 	if err := config.DB.Where("id = ?", claim["sub"]).Preload("Wallet").First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -39,6 +34,11 @@ func Auth(ctx *gin.Context) {
 		} else {
 			ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
 		}
+		return
+	}
+
+	if user.RoleId != 1 {
+		ctx.AbortWithStatusJSON(403, helpers.ErrorResponse("Role anda tidak mencukupi"))
 		return
 	}
 
