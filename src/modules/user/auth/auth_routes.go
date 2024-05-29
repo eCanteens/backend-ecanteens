@@ -12,10 +12,11 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/refresh", handleRefresh)
 	router.POST("/forgot-password", handleForgot)
 	router.PUT("/new-password", handleReset)
-
+	
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
+		authorized.POST("/google/setup", handleSetup)
 		authorized.GET("/profile", handleProfile)
 		authorized.PUT("/profile", handleUpdateProfile)
 		authorized.PUT("/password", handleUpdatePassword)

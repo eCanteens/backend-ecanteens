@@ -125,6 +125,25 @@ func googleService(body *GoogleScheme) (*models.User, *helpers.Token, error) {
 	return &user, token, nil
 }
 
+func setupGoogleService(body *SetupScheme, user *models.User) error {
+	if err := checkUniqueService(user.Email, body.Phone, *user.Id.Id); err != nil {
+		return err
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	user.Phone = &body.Phone
+	user.Password = string(hashed)
+
+	if err := save(user); err != nil {
+		return err
+	}
+
+	user.Password = ""
+	user.Wallet.Pin = ""
+
+	return nil
+}
+
 func refreshService(body *RefreshScheme) (*helpers.Token, error) {
 	claim, err := helpers.ParseJwt(body.RefreshToken)
 	if err != nil {
