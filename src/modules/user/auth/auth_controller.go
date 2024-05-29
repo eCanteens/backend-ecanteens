@@ -58,9 +58,29 @@ func handleGoogle(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{
-		"token": token,
-		"data":  data,
+		"token":     token,
+		"data":      data,
 		"is_setted": data.Phone != nil,
+	}))
+}
+
+func handleSetup(ctx *gin.Context) {
+	var body SetupScheme
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := setupGoogleService(&body, &_user); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Nomor telepon dan Kata sandi berhasil disimpan", helpers.Data{
+		"data": _user,
 	}))
 }
 

@@ -45,6 +45,7 @@ func UserSeeder() {
 		Email:    "mdutchand@gmail.com",
 		Phone:    helpers.PointerTo("085797175262"),
 		Password: string(chandra),
+		Avatar:   &avatar,
 	})
 
 	config.DB.Create(users)

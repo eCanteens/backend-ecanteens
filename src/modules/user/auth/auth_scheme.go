@@ -18,6 +18,11 @@ type GoogleScheme struct {
 	IdToken string `binding:"required" mod:"trim" json:"id_token"`
 }
 
+type SetupScheme struct {
+	Phone    string `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone"`
+	Password string `binding:"required,min=8" mod:"trim" json:"password"`
+}
+
 type RefreshScheme struct {
 	RefreshToken string `binding:"required" json:"refresh_token"`
 }
