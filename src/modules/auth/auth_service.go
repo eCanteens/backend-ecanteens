@@ -57,14 +57,14 @@ func registerService(body *RegisterScheme) error {
 	}
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
-	user := &models.User{
+	user := models.User{
 		Name:     body.Name,
 		Email:    body.Email,
 		Phone:    &body.Phone,
 		Password: string(hashed),
 	}
 
-	if err := create(user); err != nil {
+	if err := create(&user); err != nil {
 		return err
 	}
 
@@ -108,12 +108,19 @@ func googleService(body *GoogleScheme) (*models.User, *helpers.Token, error) {
 			if err := create(&user); err != nil {
 				return nil, nil, err
 			}
+
+			if err := findByEmail(&user, payload.Claims["email"].(string)); err != nil {
+				return nil, nil, err
+			}
 		} else {
 			return nil, nil, err
 		}
 	}
 
 	token := helpers.GenerateUserToken(&user)
+
+	user.Password = ""
+	user.Wallet.Pin = ""
 
 	return &user, token, nil
 }
