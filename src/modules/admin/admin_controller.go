@@ -118,31 +118,31 @@ func handleAdminProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	_user.Password = ""
+	isPinSet := _user.Wallet.Pin != ""
 	_user.Wallet.Pin = ""
 
 	ctx.JSON(200, gin.H{
-		"data": _user,
+		"data":       _user,
+		"is_pin_set": isPinSet,
 	})
 }
 
 func handleUpdateAdminProfile(ctx *gin.Context) {
 	var body UpdateAdminProfileScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
-
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
 
-	__user, err := updateAdminProfileService(ctx, &_user, &body)
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
-	if err != nil {
+	if err := updateAdminProfileService(ctx, &_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": __user}))
+	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": _user}))
 }
 
 func handleUpdateAdminPassword(ctx *gin.Context) {
