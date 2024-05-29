@@ -7,6 +7,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -21,7 +22,7 @@ func Admin(ctx *gin.Context) {
 
 	token = strings.Split(token, " ")[1]
 
-	claim, err := helpers.ParseJwt(token)
+	claim, err := jwt.Parse(token)
 	if err != nil {
 		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse(err.Error()))
 		return

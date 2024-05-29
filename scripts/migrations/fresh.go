@@ -5,10 +5,11 @@ import (
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 )
 
 func init() {
-	config.LoadEnvVariables()
+	helpers.LoadEnvVariables()
 	config.ConnectDB()
 }
 

@@ -1,4 +1,4 @@
-package helpers
+package jwt
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func ParseJwt(token string) (jwt.MapClaims, error) {
+func Parse(token string) (jwt.MapClaims, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -27,7 +27,7 @@ func ParseJwt(token string) (jwt.MapClaims, error) {
 }
 
 
-func GenerateJwt(claim *jwt.MapClaims) string {
+func New(claim *jwt.MapClaims) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_KEY")))
 

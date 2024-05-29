@@ -127,12 +127,9 @@ func handleAdminProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	_user.Password = ""
-	isPinSet := _user.Wallet.Pin != ""
-	_user.Wallet.Pin = ""
 
 	ctx.JSON(200, gin.H{
-		"data":       _user,
-		"is_pin_set": isPinSet,
+		"data": _user,
 	})
 }
 

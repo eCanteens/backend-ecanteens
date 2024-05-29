@@ -5,13 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
-	"text/template"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/smtp"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -73,7 +72,7 @@ func registerService(body *registerScheme) error {
 	return nil
 }
 
-func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
+func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
@@ -84,7 +83,7 @@ func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -92,7 +91,7 @@ func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
 	return &user, token, nil
 }
 
-func googleService(body *googleScheme) (*models.User, *helpers.Token, error) {
+func googleService(body *googleScheme) (*models.User, *jwt.UserToken, error) {
 	payload, err := verifyGoogleToken(body.IdToken)
 
 	if err != nil {
@@ -119,7 +118,7 @@ func googleService(body *googleScheme) (*models.User, *helpers.Token, error) {
 		}
 	}
 
-	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -146,8 +145,8 @@ func setupGoogleService(body *setupScheme, user *models.User) error {
 	return nil
 }
 
-func refreshService(body *refreshScheme) (*helpers.Token, error) {
-	claim, err := helpers.ParseJwt(body.RefreshToken)
+func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
+	claim, err := jwt.Parse(body.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +161,7 @@ func refreshService(body *refreshScheme) (*helpers.Token, error) {
 		return nil, err
 	}
 
-	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	return token, nil
 }
@@ -174,34 +173,17 @@ func forgotService(body *forgotScheme) error {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	tokenString := helpers.GenerateResetToken(*user.Id.Id)
+	tokenString := jwt.GenerateResetToken(*user.Id.Id)
 
-	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
-	t, err := template.ParseFiles(absPath)
-	if err != nil {
-		return err
-	}
-
-	type ResetPasswordProps struct {
-		LOGO string
-		URL  string
-		NAME string
-	}
-
-	return helpers.SendMail([]string{body.Email}, &helpers.MailMessage{
-		Subject:     "Forgot Password",
-		ContentType: helpers.HTML,
-		HtmlBody:    t,
-		HTMLProps: &ResetPasswordProps{
-			LOGO: fmt.Sprintf("%s/public/assets/logo.png", os.Getenv("BASE_URL")),
-			URL:  fmt.Sprintf("%s/api/auth/new-password/%s", os.Getenv("BASE_URL"), tokenString),
-			NAME: user.Name,
-		},
+	return smtp.ResetPasswordTemplate([]string{body.Email}, &smtp.ResetPasswordProps{
+		LOGO: fmt.Sprintf("%s/public/assets/logo.png", os.Getenv("BASE_URL")),
+		URL:  fmt.Sprintf("%s/api/auth/new-password/%s", os.Getenv("BASE_URL"), tokenString),
+		NAME: user.Name,
 	})
 }
 
 func resetService(body *resetScheme) error {
-	claim, err := helpers.ParseJwt(body.Token)
+	claim, err := jwt.Parse(body.Token)
 
 	if err != nil {
 		return err

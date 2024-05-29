@@ -3,16 +3,17 @@ package main
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/seeders"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 )
 
 func init() {
-	config.LoadEnvVariables()
+	helpers.LoadEnvVariables()
 	config.ConnectDB()
 }
 
 func main() {
-	seeders.RestaurantSeeder()
 	seeders.UserSeeder()
+	seeders.RestaurantSeeder()
 	seeders.ReviewSeeder()
 	seeders.ProductSeeder()
 	seeders.ProductFeedbackSeeder()

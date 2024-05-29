@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -94,7 +94,7 @@ func registerService(ctx *gin.Context, body *registerScheme) error {
 	return create(&user)
 }
 
-func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
+func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
@@ -105,7 +105,7 @@ func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -113,8 +113,8 @@ func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
 	return &user, token, nil
 }
 
-func refreshService(body *refreshScheme) (*helpers.Token, error) {
-	claim, err := helpers.ParseJwt(body.RefreshToken)
+func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
+	claim, err := jwt.Parse(body.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func refreshService(body *refreshScheme) (*helpers.Token, error) {
 		return nil, err
 	}
 
-	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	return token, nil
 }

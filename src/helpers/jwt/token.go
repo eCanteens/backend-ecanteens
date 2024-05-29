@@ -1,4 +1,4 @@
-package helpers
+package jwt
 
 import (
 	"os"
@@ -7,15 +7,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type Token struct {
+type UserToken struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
 
-func GenerateUserToken(id uint, roleId uint) *Token {
-	var token Token
+func GenerateUserToken(id uint, roleId uint) *UserToken {
+	var token UserToken
 
-	token.AccessToken = GenerateJwt(&jwt.MapClaims{
+	token.AccessToken = New(&jwt.MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
 		"sub":  id,
 		"iat":  float64(time.Now().Unix()),
@@ -24,7 +24,7 @@ func GenerateUserToken(id uint, roleId uint) *Token {
 		"role": roleId,
 	})
 
-	token.RefreshToken = GenerateJwt(&jwt.MapClaims{
+	token.RefreshToken = New(&jwt.MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
 		"sub":  id,
 		"iat":  float64(time.Now().Unix()),
@@ -36,7 +36,7 @@ func GenerateUserToken(id uint, roleId uint) *Token {
 }
 
 func GenerateResetToken(id uint) string {
-	return GenerateJwt(&jwt.MapClaims{
+	return New(&jwt.MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
 		"sub":  id,
 		"iat":  float64(time.Now().Unix()),

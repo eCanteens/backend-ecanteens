@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
 func getFavoriteService(userId uint, query map[string]string) (*[]models.Restaurant, error) {
@@ -26,15 +26,14 @@ func getFavoriteService(userId uint, query map[string]string) (*[]models.Restaur
 	return &user.FavoriteRestaurants, nil
 }
 
-func getAllService(query map[string]string) (*helpers.Pagination, error) {
-	var restoPagination helpers.Pagination
-	var restaurants []models.Restaurant
+func getAllService(query map[string]string) (*pagination.Pagination, error) {
+	var result pagination.Pagination
 
-	if err := find(&restoPagination, &restaurants, query); err != nil {
+	if err := find(&result, query); err != nil {
 		return nil, err
 	}
 
-	return &restoPagination, nil
+	return &result, nil
 }
 
 func getDetailService(id string) (*models.Restaurant, error) {
@@ -47,15 +46,14 @@ func getDetailService(id string) (*models.Restaurant, error) {
 	return &restaurant, nil
 }
 
-func getRestosProductsService(id string, query map[string]string) (*helpers.Pagination, error) {
-	var productsPagination helpers.Pagination
-	var products []models.Product
+func getRestosProductsService(id string, query map[string]string) (*pagination.Pagination, error) {
+	var result pagination.Pagination
 
-	if err := findRestosProducts(&productsPagination, &products, id, query); err != nil {
+	if err := findRestosProducts(&result, id, query); err != nil {
 		return nil, err
 	}
 
-	return &productsPagination, nil
+	return &result, nil
 }
 
 func addFavoriteService(userId uint, restaurantId string) error {

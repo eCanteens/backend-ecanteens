@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	// config.LoadEnvVariables()
+	// helpers.LoadEnvVariables()
 	config.ConnectDB()
 }
 
