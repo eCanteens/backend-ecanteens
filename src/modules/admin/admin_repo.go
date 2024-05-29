@@ -17,15 +17,15 @@ func count(table string, count *int64) error {
 	return config.DB.Table(table).Count(count).Error
 }
 
-func checkEmail(user *models.User, id ...*uint) *[]models.User {
+func checkEmail(email string, id ...uint) *[]models.User {
 	var sameUser []models.User
 
 	query := config.DB.Where(
-		config.DB.Where("email = ?", user.Email),
+		config.DB.Where("email = ?", email),
 	)
 
 	if len(id) > 0 {
-		query = query.Not("id = ?", *id[0])
+		query = query.Not("id = ?", id[0])
 	}
 
 	query.Find(&sameUser)
@@ -68,4 +68,8 @@ func createTransaction(user *models.User, amount uint, tipe models.TransactionTy
 
 func findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error) {
 	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
+}
+
+func findMutasi(mutasi *[]models.Transaction) (*[]models.Transaction, error) {
+	return mutasi, config.DB.Where("type = ?", "TOPUP").Or("type = ?", "WITHDRAW").Preload("User.Wallet").Find(mutasi).Error
 }

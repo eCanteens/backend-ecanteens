@@ -11,6 +11,7 @@ func Routes(router *gin.RouterGroup) {
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.Admin)
+
 	{
 		// dashboard
 		authorized.GET("/dashboard", handleDashoard)

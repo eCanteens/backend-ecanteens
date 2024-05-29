@@ -98,56 +98,51 @@ func transactionService(id string) (*models.Transaction, error) {
 	data, err := findTransaction(&transaction, id)
 
 	if err != nil {
-		return nil, err
+		return nil, errors.New("transaksi tidak ditemukan")
 	}
 
 	return data, nil
 }
 
-func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) (*models.User, error) {
+func mutasiService() (*[]models.Transaction, error) {
+	var mutasi []models.Transaction
+
+	data, err := findMutasi(&mutasi)
+
+	if err != nil {
+		return nil, errors.New("belum ada mutasi")
+	}
+
+	return data, nil
+}
+
+func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) error {
+	if err := checkUniqueService(body.Email, *user.Id.Id); err != nil {
+		return err
+	}
+
 	user.Name = body.Name
 	user.Email = body.Email
-
-	sameUser := checkEmail(user, user.Id.Id)
-
-	if len(*sameUser) > 1 {
-		return nil, errors.New("email dan nomor telepon sudah digunakan")
-	} else if len(*sameUser) == 1 {
-		var fields []string
-
-		if (*sameUser)[0].Email == user.Email {
-			fields = append(fields, "email")
-		}
-
-		if (*sameUser)[0].Phone != nil && user.Phone != nil {
-			if (*sameUser)[0].Phone == user.Phone {
-				fields = append(fields, "nomor telepon")
-			}
-		}
-
-		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
-		return nil, errors.New(errMsg)
-	}
 
 	if body.Avatar != nil {
 		extracted := upload.ExtractFileName(body.Avatar.Filename)
 		filePath := upload.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
-			return nil, err
+			return err
 		}
 
 		user.Avatar = &filePath.Url
 	}
 
 	if err := save(user); err != nil {
-		return nil, err
+		return err
 	}
 
 	user.Password = ""
 	user.Wallet.Pin = ""
 
-	return user, nil
+	return nil
 }
 
 func updateAdminPasswordService(user *models.User, body *UpdateAdminPasswordScheme) error {
@@ -160,4 +155,23 @@ func updateAdminPasswordService(user *models.User, body *UpdateAdminPasswordSche
 	user.Password = string(hashed)
 
 	return save(user)
+}
+
+func checkUniqueService(email string, id ...uint) error {
+	sameUser := checkEmail(email, id...)
+
+	if len(*sameUser) > 1 {
+		return errors.New("email dan nomor telepon sudah digunakan")
+	} else if len(*sameUser) == 1 {
+		var fields []string
+
+		if (*sameUser)[0].Email == email {
+			fields = append(fields, "email")
+		}
+
+		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
+		return errors.New(errMsg)
+	}
+
+	return nil
 }
