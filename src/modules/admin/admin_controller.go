@@ -111,7 +111,16 @@ func handleTransaction(ctx *gin.Context) {
 }
 
 // mutasi
-func handleMutasi(ctx *gin.Context) {}
+func handleMutasi(ctx *gin.Context) {
+	data, err := mutasiService()
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{"data": data})
+}
 
 // profile
 func handleAdminProfile(ctx *gin.Context) {

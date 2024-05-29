@@ -69,3 +69,7 @@ func createTransaction(user *models.User, amount uint, tipe models.TransactionTy
 func findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error) {
 	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
 }
+
+func findMutasi(mutasi *[]models.Transaction) (*[]models.Transaction, error) {
+	return mutasi, config.DB.Where("type = ?", "TOPUP").Or("type = ?", "WITHDRAW").Preload("User.Wallet").Find(mutasi).Error
+}

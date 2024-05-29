@@ -104,6 +104,18 @@ func transactionService(id string) (*models.Transaction, error) {
 	return data, nil
 }
 
+func mutasiService() (*[]models.Transaction, error) {
+	var mutasi []models.Transaction
+
+	data, err := findMutasi(&mutasi)
+
+	if err != nil {
+		return nil, errors.New("belum ada mutasi")
+	}
+
+	return data, nil
+}
+
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) error {
 	if err := checkUniqueService(body.Email, *user.Id.Id); err != nil {
 		return err
