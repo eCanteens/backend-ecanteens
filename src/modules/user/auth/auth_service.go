@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/api/idtoken"
@@ -51,7 +53,7 @@ func verifyGoogleToken(idToken string) (*idtoken.Payload, error) {
 	return payload, nil
 }
 
-func registerService(body *RegisterScheme) error {
+func registerService(body *registerScheme) error {
 	if err := checkUniqueService(body.Email, body.Phone); err != nil {
 		return err
 	}
@@ -71,7 +73,7 @@ func registerService(body *RegisterScheme) error {
 	return nil
 }
 
-func loginService(body *LoginScheme) (*models.User, *helpers.Token, error) {
+func loginService(body *loginScheme) (*models.User, *helpers.Token, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
@@ -82,7 +84,7 @@ func loginService(body *LoginScheme) (*models.User, *helpers.Token, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	token := helpers.GenerateUserToken(&user)
+	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -90,7 +92,7 @@ func loginService(body *LoginScheme) (*models.User, *helpers.Token, error) {
 	return &user, token, nil
 }
 
-func googleService(body *GoogleScheme) (*models.User, *helpers.Token, error) {
+func googleService(body *googleScheme) (*models.User, *helpers.Token, error) {
 	payload, err := verifyGoogleToken(body.IdToken)
 
 	if err != nil {
@@ -117,7 +119,7 @@ func googleService(body *GoogleScheme) (*models.User, *helpers.Token, error) {
 		}
 	}
 
-	token := helpers.GenerateUserToken(&user)
+	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -125,7 +127,7 @@ func googleService(body *GoogleScheme) (*models.User, *helpers.Token, error) {
 	return &user, token, nil
 }
 
-func setupGoogleService(body *SetupScheme, user *models.User) error {
+func setupGoogleService(body *setupScheme, user *models.User) error {
 	if err := checkUniqueService(user.Email, body.Phone, *user.Id.Id); err != nil {
 		return err
 	}
@@ -144,7 +146,7 @@ func setupGoogleService(body *SetupScheme, user *models.User) error {
 	return nil
 }
 
-func refreshService(body *RefreshScheme) (*helpers.Token, error) {
+func refreshService(body *refreshScheme) (*helpers.Token, error) {
 	claim, err := helpers.ParseJwt(body.RefreshToken)
 	if err != nil {
 		return nil, err
@@ -160,19 +162,19 @@ func refreshService(body *RefreshScheme) (*helpers.Token, error) {
 		return nil, err
 	}
 
-	token := helpers.GenerateUserToken(&user)
+	token := helpers.GenerateUserToken(*user.Id.Id, user.RoleId)
 
 	return token, nil
 }
 
-func forgotService(body *ForgotScheme) error {
+func forgotService(body *forgotScheme) error {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	tokenString := helpers.GenerateResetToken(&user)
+	tokenString := helpers.GenerateResetToken(*user.Id.Id)
 
 	absPath, _ := filepath.Abs("./src/templates/reset-password.html")
 	t, err := template.ParseFiles(absPath)
@@ -198,7 +200,7 @@ func forgotService(body *ForgotScheme) error {
 	})
 }
 
-func resetService(body *ResetScheme) error {
+func resetService(body *resetScheme) error {
 	claim, err := helpers.ParseJwt(body.Token)
 
 	if err != nil {
@@ -221,7 +223,7 @@ func resetService(body *ResetScheme) error {
 	return updatePassword(uint(id), user)
 }
 
-func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateScheme) error {
+func updateProfileService(ctx *gin.Context, user *models.User, body *updateScheme) error {
 	if err := checkUniqueService(body.Email, body.Phone, *user.Id.Id); err != nil {
 		return err
 	}
@@ -231,8 +233,11 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	user.Phone = &body.Phone
 
 	if body.Avatar != nil {
-		extracted := helpers.ExtractFileName(body.Avatar.Filename)
-		filePath := helpers.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
+		filePath := upload.New(&upload.Option{
+			Folder: "avatar/user",
+			Filename: body.Avatar.Filename,
+			NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+		})
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
 			return err
@@ -251,7 +256,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *UpdateSchem
 	return nil
 }
 
-func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error {
+func updatePasswordService(user *models.User, body *updatePasswordScheme) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
 		return errors.New("password salah")
 	}
@@ -263,7 +268,7 @@ func updatePasswordService(user *models.User, body *UpdatePasswordScheme) error 
 	return save(user)
 }
 
-func checkPinService(user *models.User, body *CheckPinScheme) error {
+func checkPinService(user *models.User, body *checkPinScheme) error {
 	if user.Wallet.Pin == "" {
 		return errors.New("pin belum di set")
 	}
@@ -275,7 +280,7 @@ func checkPinService(user *models.User, body *CheckPinScheme) error {
 	return nil
 }
 
-func updatePinService(user *models.User, body *UpdatePinScheme) error {
+func updatePinService(user *models.User, body *updatePinScheme) error {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(body.Pin), bcrypt.DefaultCost)
 	if err != nil {
 		return errors.New(err.Error())

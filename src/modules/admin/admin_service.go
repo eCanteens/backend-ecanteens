@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -130,8 +130,8 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 	}
 
 	if body.Avatar != nil {
-		extracted := helpers.ExtractFileName(body.Avatar.Filename)
-		filePath := helpers.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
+		extracted := upload.ExtractFileName(body.Avatar.Filename)
+		filePath := upload.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
 			return nil, err

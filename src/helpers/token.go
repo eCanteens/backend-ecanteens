@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -13,21 +12,21 @@ type Token struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-func GenerateUserToken(user *models.User) *Token {
+func GenerateUserToken(id uint, roleId uint) *Token {
 	var token Token
 
 	token.AccessToken = GenerateJwt(&jwt.MapClaims{
-		"iss":   os.Getenv("BASE_URL"),
-		"sub":   *user.Id.Id,
-		"iat":   float64(time.Now().Unix()),
-		"exp":   float64(time.Now().Add(time.Hour).Unix()),
-		"type":  "access",
-		"email": user.Email,
+		"iss":  os.Getenv("BASE_URL"),
+		"sub":  id,
+		"iat":  float64(time.Now().Unix()),
+		"exp":  float64(time.Now().Add(time.Hour).Unix()),
+		"type": "access",
+		"role": roleId,
 	})
 
 	token.RefreshToken = GenerateJwt(&jwt.MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
-		"sub":  *user.Id.Id,
+		"sub":  id,
 		"iat":  float64(time.Now().Unix()),
 		"exp":  float64(time.Now().Add(time.Hour * 24 * 5).Unix()),
 		"type": "refresh",
@@ -36,10 +35,10 @@ func GenerateUserToken(user *models.User) *Token {
 	return &token
 }
 
-func GenerateResetToken(user *models.User) string {
+func GenerateResetToken(id uint) string {
 	return GenerateJwt(&jwt.MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
-		"sub":  *user.Id.Id,
+		"sub":  id,
 		"iat":  float64(time.Now().Unix()),
 		"exp":  float64(time.Now().Add(time.Minute * 10).Unix()),
 		"type": "reset",

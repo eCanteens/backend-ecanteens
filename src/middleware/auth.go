@@ -35,10 +35,15 @@ func Auth(ctx *gin.Context) {
 	var user models.User
 	if err := config.DB.Where("id = ?", claim["sub"]).Preload("Wallet").First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatusJSON(401, helpers.ErrorResponse(err.Error()))
+			ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Pengguna tidak ditemukan"))
 		} else {
 			ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
 		}
+		return
+	}
+
+	if uint(claim["role"].(float64)) != user.RoleId {
+		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Pengguna tidak ditemukan"))
 		return
 	}
 

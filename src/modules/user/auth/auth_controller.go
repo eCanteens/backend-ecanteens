@@ -7,7 +7,7 @@ import (
 )
 
 func handleRegister(ctx *gin.Context) {
-	var body RegisterScheme
+	var body registerScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -25,7 +25,7 @@ func handleRegister(ctx *gin.Context) {
 }
 
 func handleLogin(ctx *gin.Context) {
-	var body LoginScheme
+	var body loginScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -43,7 +43,7 @@ func handleLogin(ctx *gin.Context) {
 }
 
 func handleGoogle(ctx *gin.Context) {
-	var body GoogleScheme
+	var body googleScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -65,7 +65,7 @@ func handleGoogle(ctx *gin.Context) {
 }
 
 func handleSetup(ctx *gin.Context) {
-	var body SetupScheme
+	var body setupScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -85,7 +85,7 @@ func handleSetup(ctx *gin.Context) {
 }
 
 func handleRefresh(ctx *gin.Context) {
-	var body RefreshScheme
+	var body refreshScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -105,7 +105,7 @@ func handleRefresh(ctx *gin.Context) {
 }
 
 func handleForgot(ctx *gin.Context) {
-	var body ForgotScheme
+	var body forgotScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -121,7 +121,7 @@ func handleForgot(ctx *gin.Context) {
 }
 
 func handleReset(ctx *gin.Context) {
-	var body ResetScheme
+	var body resetScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -150,7 +150,7 @@ func handleProfile(ctx *gin.Context) {
 }
 
 func handleUpdateProfile(ctx *gin.Context) {
-	var body UpdateScheme
+	var body updateScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -169,7 +169,7 @@ func handleUpdateProfile(ctx *gin.Context) {
 }
 
 func handleUpdatePassword(ctx *gin.Context) {
-	var body UpdatePasswordScheme
+	var body updatePasswordScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -187,7 +187,7 @@ func handleUpdatePassword(ctx *gin.Context) {
 }
 
 func handleCheckPin(ctx *gin.Context) {
-	var body CheckPinScheme
+	var body checkPinScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -205,7 +205,7 @@ func handleCheckPin(ctx *gin.Context) {
 }
 
 func handleUpdatePin(ctx *gin.Context) {
-	var body UpdatePinScheme
+	var body updatePinScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 

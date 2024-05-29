@@ -13,7 +13,7 @@ type User struct {
 	Password string  `gorm:"type:varchar(255);not null" json:"password,omitempty"`
 	Avatar   *string `gorm:"type:varchar(255)" json:"avatar"`
 	WalletId uint    `gorm:"type:bigint;" json:"wallet_id"`
-	RoleId   int     `gorm:"type:int;not null;default:2" json:"role_id"`
+	RoleId   uint    `gorm:"type:int;not null;default:2" json:"role_id"` // 1: Admin, 2: User, 3: Resto
 	Timestamps
 
 	// Relations

@@ -11,7 +11,6 @@ func init() {
 }
 
 func main() {
-	seeders.LocationSeeder()
 	seeders.RestaurantSeeder()
 	seeders.UserSeeder()
 	seeders.ReviewSeeder()

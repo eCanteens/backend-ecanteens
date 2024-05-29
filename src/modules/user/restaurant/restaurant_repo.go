@@ -24,7 +24,7 @@ func find(pagination *helpers.Pagination, restaurants *[]models.Restaurant, quer
 }
 
 func findOne(restaurant *models.Restaurant, id string) error {
-	return config.DB.Where("id = ?", id).Preload("Category").Preload("Location").First(restaurant).Error
+	return config.DB.Where("id = ?", id).Preload("Category").First(restaurant).Error
 }
 
 func findRestosProducts(pagination *helpers.Pagination, products *[]models.Product, id string, query map[string]string) error {

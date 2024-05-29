@@ -16,7 +16,7 @@ func checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, erro
 	return &feedbacks, nil
 }
 
-func updateFeedback(id uint, body *FeedbackScheme) error {
+func updateFeedback(id uint, body *feedbackScheme) error {
 	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.IsLike).Error
 }
 
