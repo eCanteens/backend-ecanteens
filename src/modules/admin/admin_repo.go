@@ -3,6 +3,7 @@ package admin
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -97,7 +98,18 @@ func findMutasi(result *pagination.Pagination, query map[string]string) error {
 		Preload("User.Wallet")
 
 	if search != "" {
-		db = db.Where("users.name ILIKE ? OR users.email ILIKE ?", "%"+search+"%", "%"+search+"%")
+		searchPattern := "%" + search + "%"
+		db = db.Where(
+			config.DB.Where("users.name ILIKE ?", searchPattern).
+				Or("users.email ILIKE ?", searchPattern).
+				Or("CAST(transactions.amount AS TEXT) ILIKE ?", searchPattern).
+				Or("CAST(transactions.created_at AS TEXT) ILIKE ?", searchPattern),
+		)
+	}
+
+	if query["type"] != "" {
+		typeFilter := strings.ToUpper(query["type"])
+		db = db.Where("transactions.type = ?", typeFilter)
 	}
 
 	params := &pagination.Params{
