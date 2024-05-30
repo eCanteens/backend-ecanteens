@@ -2,6 +2,11 @@ package auth
 
 import "mime/multipart"
 
+type checkRegisterScheme struct {
+	Email string `binding:"required,email" json:"email"`
+	Phone string `binding:"required,numeric,min=11,max=13" json:"phone"`
+}
+
 type registerScheme struct {
 	Avatar           *multipart.FileHeader `binding:"required" form:"avatar"`
 	Name             string                `binding:"required" form:"name" json:"name" mod:"trim"`

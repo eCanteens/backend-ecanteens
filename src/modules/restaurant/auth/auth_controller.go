@@ -5,6 +5,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func handleCheckRegister(ctx *gin.Context) {
+	var body checkRegisterScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := checkUniqueService(body.Email, body.Phone); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Data berhasil divalidasi"))
+}
+
 func handleRegister(ctx *gin.Context) {
 	var body registerScheme
 

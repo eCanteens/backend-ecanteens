@@ -21,7 +21,7 @@ type Restaurant struct {
 	Timestamps
 
 	// Relation
-	Owner    *User               `gorm:"foreignKey:owner_id" json:"owner,omitempty"`
+	Owner    *User               `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:owner_id" json:"owner,omitempty"`
 	Category *RestaurantCategory `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:category_id" json:"category,omitempty"`
 	Reviews  []*Review           `gorm:"foreignKey:restaurant_id" json:"reviews,omitempty"`
 

@@ -29,6 +29,10 @@ func findById(user *models.User, id uint) error {
 	return config.DB.Where("id = ?", id).Where("role_id = ?", 3).First(user).Error
 }
 
-func create(user *models.User) error {
-	return config.DB.Create(user).Error
+func create(restaurant *models.Restaurant) error {
+	return config.DB.Create(restaurant).Error
+}
+
+func update[T any](restaurant *T) error {
+	return config.DB.Updates(restaurant).Error
 }
