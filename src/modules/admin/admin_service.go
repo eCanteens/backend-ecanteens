@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -103,16 +104,14 @@ func transactionService(id string) (*models.Transaction, error) {
 	return data, nil
 }
 
-func mutasiService() (*[]models.Transaction, error) {
-	var mutasi []models.Transaction
+func mutasiService(query map[string]string) (*pagination.Pagination, error) {
+	var result pagination.Pagination
 
-	data, err := findMutasi(&mutasi)
-
-	if err != nil {
+	if err := findMutasi(&result, query); err != nil {
 		return nil, errors.New("belum ada mutasi")
 	}
 
-	return data, nil
+	return &result, nil
 }
 
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) error {
@@ -125,8 +124,8 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 
 	if body.Avatar != nil {
 		filePath := upload.New(&upload.Option{
-			Folder: "avatar/user",
-			Filename: body.Avatar.Filename,
+			Folder:      "avatar/user",
+			Filename:    body.Avatar.Filename,
 			NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
 		})
 
