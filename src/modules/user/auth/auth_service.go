@@ -59,6 +59,7 @@ func registerService(body *registerScheme) error {
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	user := models.User{
+		Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg",
 		Name:     body.Name,
 		Email:    body.Email,
 		Phone:    &body.Phone,
@@ -104,7 +105,7 @@ func googleService(body *googleScheme) (*models.User, *jwt.UserToken, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			user.Name = payload.Claims["name"].(string)
 			user.Email = payload.Claims["email"].(string)
-			*user.Avatar = payload.Claims["picture"].(string)
+			user.Avatar = payload.Claims["picture"].(string)
 
 			if err := create(&user); err != nil {
 				return nil, nil, err
@@ -216,8 +217,8 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *updateSchem
 
 	if body.Avatar != nil {
 		filePath := upload.New(&upload.Option{
-			Folder: "avatar/user",
-			Filename: body.Avatar.Filename,
+			Folder:      "avatar/user",
+			Filename:    body.Avatar.Filename,
 			NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
 		})
 
@@ -225,7 +226,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *updateSchem
 			return err
 		}
 
-		user.Avatar = &filePath.Url
+		user.Avatar = filePath.Url
 	}
 
 	if err := save(user); err != nil {

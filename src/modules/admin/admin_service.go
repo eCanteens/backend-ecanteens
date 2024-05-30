@@ -134,7 +134,7 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 			return err
 		}
 
-		user.Avatar = &filePath.Url
+		user.Avatar = filePath.Url
 	}
 
 	if err := save(user); err != nil {

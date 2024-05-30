@@ -87,7 +87,7 @@ func registerService(ctx *gin.Context, body *registerScheme) error {
 		return err
 	}
 
-	user.Avatar = &avatar.Url
+	user.Avatar = avatar.Url
 	restaurant.Avatar = restaurantAvatar.Url
 	restaurant.Banner = banner.Url
 
