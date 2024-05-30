@@ -112,14 +112,18 @@ func handleTransaction(ctx *gin.Context) {
 
 // mutasi
 func handleMutasi(ctx *gin.Context) {
-	data, err := mutasiService()
+	query := map[string]string{}
+
+	ctx.ShouldBindQuery(query)
+
+	data, err := mutasiService(query)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{"data": data})
+	ctx.JSON(200, data)
 }
 
 // profile
