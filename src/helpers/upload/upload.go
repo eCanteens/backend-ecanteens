@@ -1,4 +1,4 @@
-package helpers
+package upload
 
 import (
 	"fmt"
@@ -15,6 +15,12 @@ type FilePath struct {
 type FileName struct {
 	Name string
 	Ext  string
+}
+
+type Option struct {
+	Folder      string
+	Filename    string
+	NewFilename string
 }
 
 func ExtractFileName(filename string) *FileName {
@@ -42,4 +48,9 @@ func UploadPath(filename string) *FilePath {
 		Path: fmt.Sprintf("%s/%s", absPath, filename),
 		Url:  fmt.Sprintf("%s/public/uploads/%s", os.Getenv("BASE_URL"), filename),
 	}
+}
+
+func New(option *Option) *FilePath {
+	extracted := ExtractFileName(option.Filename)
+	return UploadPath(fmt.Sprintf("%s/%s.%s", option.Folder, option.NewFilename, extracted.Ext))
 }

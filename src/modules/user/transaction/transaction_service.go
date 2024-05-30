@@ -14,7 +14,7 @@ func getCartService(user *models.User) (*[]models.Cart, error) {
 	return &cart, nil
 }
 
-func addCartService(user *models.User, body *AddUpdateCartScheme) error {
+func addCartService(user *models.User, body *addUpdateCartScheme) error {
 	var cart models.Cart
 
 	findOneCart(&cart, *user.Id.Id, body.ProductId)

@@ -7,7 +7,7 @@ import (
 )
 
 func addFeedback(ctx *gin.Context) {
-	var body FeedbackScheme
+	var body feedbackScheme
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 

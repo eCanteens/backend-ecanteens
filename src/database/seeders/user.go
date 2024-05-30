@@ -18,7 +18,7 @@ func UserSeeder() {
 	chandra, _ := bcrypt.GenerateFromPassword([]byte("chandra123"), bcrypt.DefaultCost)
 	admin, _ := bcrypt.GenerateFromPassword([]byte("password-admin"), bcrypt.DefaultCost)
 
-	avatar := os.Getenv("BASE_URL") + "/public/dummy/avatar_user.png"
+	avatar := os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg"
 
 	users = append(users, &models.User{
 		Name:     "Admin",
@@ -26,17 +26,16 @@ func UserSeeder() {
 		Password: string(admin),
 		Phone:    helpers.PointerTo("-"),
 		RoleId:   1,
-		Avatar:   &avatar,
+		Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-admin.jpg",
 	})
 
 	for i := 0; i < 9; i++ {
-
 		users = append(users, &models.User{
 			Name:     gofakeit.Name(),
 			Email:    gofakeit.Email(),
 			Phone:    helpers.PointerTo("08" + gofakeit.Numerify("##########")),
 			Password: string(password),
-			Avatar:   &avatar,
+			Avatar:   avatar,
 		})
 	}
 
@@ -45,7 +44,7 @@ func UserSeeder() {
 		Email:    "mdutchand@gmail.com",
 		Phone:    helpers.PointerTo("085797175262"),
 		Password: string(chandra),
-		Avatar:   &avatar,
+		Avatar:   avatar,
 	})
 
 	config.DB.Create(users)

@@ -1,4 +1,4 @@
-package helpers
+package smtp
 
 import (
 	"bytes"
@@ -27,7 +27,7 @@ type MailMessage struct {
 	ContentType MyEnum
 	Body        string
 	HtmlBody    *template.Template
-	HTMLProps   interface{}
+	HTMLProps   any
 }
 
 func SendMail(to []string, message *MailMessage) error {

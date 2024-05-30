@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getCart(ctx *gin.Context)  {
+func getCart(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -23,7 +23,7 @@ func getCart(ctx *gin.Context)  {
 }
 
 func addCart(ctx *gin.Context) {
-	var body AddUpdateCartScheme
+	var body addUpdateCartScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -41,5 +41,5 @@ func addCart(ctx *gin.Context) {
 }
 
 func order(ctx *gin.Context) {
-	
+
 }

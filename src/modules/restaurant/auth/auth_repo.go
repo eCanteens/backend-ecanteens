@@ -5,10 +5,6 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
-func create(user *models.User) error {
-	return config.DB.Create(user).Error
-}
-
 func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 	var sameUser []models.User
 
@@ -26,17 +22,13 @@ func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 }
 
 func findByEmail(user *models.User, email string) error {
-	return config.DB.Where("email = ?", email).Where("role_id = ?", 2).Preload("Wallet").First(user).Error
+	return config.DB.Where("email = ?", email).Where("role_id = ?", 3).Preload("Wallet").First(user).Error
 }
 
 func findById(user *models.User, id uint) error {
-	return config.DB.Where("id = ?", id).Where("role_id = ?", 2).First(user).Error
+	return config.DB.Where("id = ?", id).Where("role_id = ?", 3).First(user).Error
 }
 
-func save[T any](model T) error {
-	return config.DB.Save(model).Error
-}
-
-func updatePassword(id uint, user *models.User) error {
-	return config.DB.Select("password").Where("id = ?", id).Updates(user).Error
+func create(user *models.User) error {
+	return config.DB.Create(user).Error
 }

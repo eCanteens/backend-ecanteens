@@ -2,12 +2,12 @@ package admin
 
 import (
 	"errors"
-	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -36,7 +36,6 @@ func adminLoginService(body *AdminLoginScheme) (*models.User, *string, error) {
 	}
 
 	user.Password = ""
-	user.Wallet.Pin = ""
 
 	return &user, &tokenString, nil
 }
@@ -125,14 +124,17 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 	user.Email = body.Email
 
 	if body.Avatar != nil {
-		extracted := helpers.ExtractFileName(body.Avatar.Filename)
-		filePath := helpers.UploadPath(fmt.Sprintf("avatar/user/%d.%s", *user.Id.Id, extracted.Ext))
+		filePath := upload.New(&upload.Option{
+			Folder: "avatar/user",
+			Filename: body.Avatar.Filename,
+			NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+		})
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
 			return err
 		}
 
-		user.Avatar = &filePath.Url
+		user.Avatar = filePath.Url
 	}
 
 	if err := save(user); err != nil {
@@ -140,7 +142,6 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 	}
 
 	user.Password = ""
-	user.Wallet.Pin = ""
 
 	return nil
 }

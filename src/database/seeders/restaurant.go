@@ -7,6 +7,8 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func restaurantCategorySeeder() {
@@ -23,14 +25,22 @@ func RestaurantSeeder() {
 	var restaurants []*models.Restaurant
 
 	for i := 0; i < 10; i++ {
+		pw, _ := bcrypt.GenerateFromPassword([]byte("password-admin"), bcrypt.DefaultCost)
+
+		owner := models.User{
+			Name:     gofakeit.Name(),
+			Email:    gofakeit.Email(),
+			Phone:    helpers.PointerTo("08" + gofakeit.Numerify("##########")),
+			Password: string(pw),
+			Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg",
+		}
+
 		restaurants = append(restaurants, &models.Restaurant{
 			Name:       gofakeit.AppName(),
-			Phone:      "08" + gofakeit.Numerify("##########"),
-			Email:      gofakeit.Email(),
-			LocationId: 1,
-			Avatar:     os.Getenv("BASE_URL") + "/public/dummy/avatar_resto.png",
+			Avatar:     os.Getenv("BASE_URL") + "/public/dummy/avatar-resto.png",
 			Banner:     os.Getenv("BASE_URL") + "/public/dummy/banner.jpeg",
 			CategoryId: 1,
+			Owner:      &owner,
 		})
 	}
 

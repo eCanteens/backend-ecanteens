@@ -7,7 +7,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
-func addFeedbackService(body *FeedbackScheme, userId uint, productId string) error {
+func addFeedbackService(body *feedbackScheme, userId uint, productId string) error {
 	id, err := strconv.ParseUint(productId, 10, 32)
 
 	if err != nil {
@@ -24,9 +24,9 @@ func addFeedbackService(body *FeedbackScheme, userId uint, productId string) err
 		return updateFeedback(*(*feedbacks)[0].Id.Id, body)
 	} else {
 		feedback := &models.ProductFeedback{
-			UserId: userId,
+			UserId:    userId,
 			ProductId: uint(id),
-			IsLike: *body.IsLike,
+			IsLike:    *body.IsLike,
 		}
 
 		return createFeedback(feedback)
@@ -74,7 +74,7 @@ func addFavoriteService(userId uint, productId string) error {
 	}
 
 	favorite := &models.FavoriteProduct{
-		UserId: userId,
+		UserId:    userId,
 		ProductId: uint(id),
 	}
 

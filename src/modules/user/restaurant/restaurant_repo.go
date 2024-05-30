@@ -3,7 +3,7 @@ package restaurant
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
 
@@ -13,9 +13,10 @@ func findFavorite(user *models.User, id uint, query map[string]string) error {
 	}).Find(user).Error
 }
 
-func find(pagination *helpers.Pagination, restaurants *[]models.Restaurant, query map[string]string) error {
-	return pagination.Paginate(restaurants, &helpers.Params{
+func find(result *pagination.Pagination, query map[string]string) error {
+	return result.New(&pagination.Params{
 		Query:     config.DB.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category"),
+		Model:     &[]models.Restaurant{},
 		Page:      query["page"],
 		Limit:     query["limit"],
 		Order:     query["order"],
@@ -24,12 +25,13 @@ func find(pagination *helpers.Pagination, restaurants *[]models.Restaurant, quer
 }
 
 func findOne(restaurant *models.Restaurant, id string) error {
-	return config.DB.Where("id = ?", id).Preload("Category").Preload("Location").First(restaurant).Error
+	return config.DB.Where("id = ?", id).Preload("Category").First(restaurant).Error
 }
 
-func findRestosProducts(pagination *helpers.Pagination, products *[]models.Product, id string, query map[string]string) error {
-	return pagination.Paginate(products, &helpers.Params{
+func findRestosProducts(result *pagination.Pagination, id string, query map[string]string) error {
+	return result.New(&pagination.Params{
 		Query:     config.DB.Where("restaurant_id = ?", id),
+		Model:     &[]models.Product{},
 		Page:      query["page"],
 		Limit:     query["limit"],
 		Order:     query["order"],

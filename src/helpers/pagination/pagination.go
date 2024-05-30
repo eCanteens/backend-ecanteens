@@ -1,4 +1,4 @@
-package helpers
+package pagination
 
 import (
 	"math"
@@ -22,13 +22,14 @@ type Pagination struct {
 
 type Params struct {
 	Query     *gorm.DB
+	Model     any
 	Page      string
 	Limit     string
 	Order     string
 	Direction string
 }
 
-func (pagination *Pagination) Paginate(value interface{}, params *Params) error {
+func (pagination *Pagination) New(params *Params) error {
 	if params.Query == nil {
 		params.Query = config.DB
 	}
@@ -54,12 +55,12 @@ func (pagination *Pagination) Paginate(value interface{}, params *Params) error 
 	}
 
 	var totalData int64
-	params.Query.Model(value).Count(&totalData)
+	params.Query.Model(params.Model).Count(&totalData)
 	offset := (pagination.Meta.CurrentPage - 1) * pagination.Meta.PerPage
 
 	pagination.Meta.Total = totalData
 	pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))
-	pagination.Data = value
+	pagination.Data = params.Model
 
-	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(value).Error
+	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(params.Model).Error
 }
