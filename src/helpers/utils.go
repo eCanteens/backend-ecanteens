@@ -21,6 +21,6 @@ func PointerTo[T any](s T) *T {
 }
 
 func RandomElement[T any](nums []T) T {
-	s := rand.New(rand.NewSource(time.Now().Unix()))
+	s := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return nums[s.Intn(len(nums))]
 }

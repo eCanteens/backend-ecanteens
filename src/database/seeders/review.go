@@ -3,6 +3,7 @@ package seeders
 import (
 	"fmt"
 
+	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
@@ -17,6 +18,7 @@ func ReviewSeeder() {
 				Rating:       helpers.RandomElement([]float64{0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5}),
 				UserId:       uint(j + 1),
 				RestaurantId: uint(i + 1),
+				Comment:      gofakeit.Comment(),
 			})
 		}
 	}
