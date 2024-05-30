@@ -57,22 +57,26 @@ func registerService(ctx *gin.Context, body *registerScheme) error {
 		Owner:      &user,
 	}
 
+	if err := create(&restaurant); err != nil {
+		return err
+	}
+
 	avatar := upload.New(&upload.Option{
-		Folder: "avatar/user",
-		Filename: body.Avatar.Filename,
+		Folder:      "avatar/user",
+		Filename:    body.Avatar.Filename,
 		NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
 	})
 
 	restaurantAvatar := upload.New(&upload.Option{
-		Folder: "avatar/restaurant",
-		Filename: body.RestaurantAvatar.Filename,
-		NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+		Folder:      "avatar/restaurant",
+		Filename:    body.RestaurantAvatar.Filename,
+		NewFilename: strconv.FormatUint(uint64(*restaurant.Id.Id), 10),
 	})
 
 	banner := upload.New(&upload.Option{
-		Folder: "banner",
-		Filename: body.Avatar.Filename,
-		NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+		Folder:      "banner",
+		Filename:    body.Avatar.Filename,
+		NewFilename: strconv.FormatUint(uint64(*restaurant.Id.Id), 10),
 	})
 
 	if err := ctx.SaveUploadedFile(body.Avatar, avatar.Path); err != nil {
@@ -91,7 +95,8 @@ func registerService(ctx *gin.Context, body *registerScheme) error {
 	restaurant.Avatar = restaurantAvatar.Url
 	restaurant.Banner = banner.Url
 
-	return create(&user)
+	update(&user)
+	return update(&restaurant)
 }
 
 func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {

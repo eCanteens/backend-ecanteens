@@ -4,8 +4,6 @@ func fieldToLocale(field string) (intlField string) {
 	switch field {
 	case "name":
 		intlField = "Nama"
-	case "email":
-		intlField = "Email"
 	case "phone":
 		intlField = "Nomor Telepon"
 	case "password":
@@ -14,12 +12,16 @@ func fieldToLocale(field string) (intlField string) {
 		intlField = "Kata Sandi Lama"
 	case "new_password":
 		intlField = "Kata Sandi Baru"
-	case "pin":
-		intlField = "Pin"
 	case "refresh_token":
 		intlField = "Refresh Token"
 	case "id_token":
 		intlField = "ID Token"
+	case "restaurant_avatar":
+		intlField = "Avatar Restoran"
+	case "restaurant_name":
+		intlField = "Nama Restoran"
+	case "category_id":
+		intlField = "Kategori"
 	default:
 		intlField = field
 	}
