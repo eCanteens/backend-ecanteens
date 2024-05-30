@@ -104,7 +104,7 @@ func transactionService(id string) (*models.Transaction, error) {
 	return data, nil
 }
 
-func mutasiService(query map[string]string) (*pagination.Pagination, error) {
+func mutasiService(query *MutationQS) (*pagination.Pagination, error) {
 	var result pagination.Pagination
 
 	if err := findMutasi(&result, query); err != nil {

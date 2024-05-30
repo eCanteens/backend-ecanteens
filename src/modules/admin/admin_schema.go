@@ -10,7 +10,7 @@ type AdminLoginScheme struct {
 }
 
 type TopupWithdrawScheme struct {
-	Amount   uint       `binding:"required" mod:"trim" json:"amount"`
+	Amount uint `binding:"required" mod:"trim" json:"amount"`
 }
 
 type UpdateAdminProfileScheme struct {
@@ -22,4 +22,12 @@ type UpdateAdminProfileScheme struct {
 type UpdateAdminPasswordScheme struct {
 	OldPassword string `binding:"required" mod:"trim" json:"old_password"`
 	NewPassword string `binding:"required,min=8" mod:"trim" json:"new_password"`
+}
+
+type MutationQS struct {
+	Page      string `form:"page"`
+	Search    string `form:"search" mod:"trim"`
+	Order     string `form:"sort"`
+	Direction string `form:"direction"`
+	Type      string `form:"type"`
 }

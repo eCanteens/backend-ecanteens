@@ -72,26 +72,11 @@ func findTransaction(transaction *models.Transaction, id string) (*models.Transa
 	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
 }
 
-// func findMutasi(mutasi *[]models.Transaction) (*[]models.Transaction, error) {
-// 	return mutasi, config.DB.Where("type = ?", "TOPUP").Or("type = ?", "WITHDRAW").Preload("User.Wallet").Find(mutasi).Error
-// }
-
-// func findMutasi(result *pagination.Pagination, query map[string]string) error {
-// 	return result.New(&pagination.Params{
-// 		Query:     config.DB.Where("name ILIKE ?", "%"+query["search"]+"%").Or("email ILIKE ?", "%"+query["search"]+"%").Preload("User.Wallet"),
-// 		Model:     &[]models.Transaction{},
-// 		Page:      query["page"],
-// 		Limit:     "25",
-// 		Order:     query["order"],
-// 		Direction: query["direction"],
-// 	})
-// }
-
-func findMutasi(result *pagination.Pagination, query map[string]string) error {
-	search := query["search"]
-	page := query["page"]
-	order := query["order"]
-	direction := query["direction"]
+func findMutasi(result *pagination.Pagination, query *MutationQS) error {
+	search := query.Search
+	page := query.Page
+	order := query.Order
+	direction := query.Direction
 
 	db := config.DB.Model(&models.Transaction{}).
 		Joins("JOIN users ON users.id = transactions.user_id").
@@ -107,8 +92,8 @@ func findMutasi(result *pagination.Pagination, query map[string]string) error {
 		)
 	}
 
-	if query["type"] != "" {
-		typeFilter := strings.ToUpper(query["type"])
+	if query.Type != "" {
+		typeFilter := strings.ToUpper(query.Type)
 		db = db.Where("transactions.type = ?", typeFilter)
 	}
 
