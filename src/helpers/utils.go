@@ -3,6 +3,8 @@ package helpers
 import (
     "strings"
     "regexp"
+    "math/rand"
+	"time"
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -16,4 +18,9 @@ func ToSnakeCase(str string) string {
 
 func PointerTo[T any](s T) *T {
     return &s
+}
+
+func RandomElement[T any](nums []T) T {
+	s := rand.New(rand.NewSource(time.Now().Unix()))
+	return nums[s.Intn(len(nums))]
 }

@@ -7,35 +7,45 @@ import (
 	"gorm.io/gorm"
 )
 
-func findFavorite(user *models.User, id uint, query map[string]string) error {
+func findFavorite(user *models.User, id uint, query *paginationQS) error {
 	return config.DB.Where("id = ?", id).Preload("FavoriteRestaurants", func(db *gorm.DB) *gorm.DB {
-		return db.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category").Order(query["order"] + " " + query["direction"])
+		return db.Where("name ILIKE ?", "%"+query.Search+"%").Preload("Category").Order(query.Order + " " + query.Direction)
 	}).Find(user).Error
 }
 
-func find(result *pagination.Pagination, query map[string]string) error {
+func find(result *pagination.Pagination, query *paginationQS) error {
 	return result.New(&pagination.Params{
-		Query:     config.DB.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category"),
+		Query:     config.DB.Where("name ILIKE ?", "%"+query.Search+"%").Preload("Category"),
 		Model:     &[]models.Restaurant{},
-		Page:      query["page"],
-		Limit:     query["limit"],
-		Order:     query["order"],
-		Direction: query["direction"],
+		Page:      query.Page,
+		Limit:     query.Limit,
+		Order:     query.Order,
+		Direction: query.Direction,
 	})
+}
+
+func findReviews(reviews *[]models.Review,  restaurantId string, query *reviewQS) error {
+	tx := config.DB.Where("restaurant_id = ?", restaurantId)
+
+	if query.Filter != "" {
+		tx = tx.Where("rating = ?", query.Filter)
+	}
+
+	return tx.Find(reviews).Error
 }
 
 func findOne(restaurant *models.Restaurant, id string) error {
 	return config.DB.Where("id = ?", id).Preload("Category").First(restaurant).Error
 }
 
-func findRestosProducts(result *pagination.Pagination, id string, query map[string]string) error {
+func findRestosProducts(result *pagination.Pagination, id string, query *paginationQS) error {
 	return result.New(&pagination.Params{
 		Query:     config.DB.Where("restaurant_id = ?", id),
 		Model:     &[]models.Product{},
-		Page:      query["page"],
-		Limit:     query["limit"],
-		Order:     query["order"],
-		Direction: query["direction"],
+		Page:      query.Page,
+		Limit:     query.Limit,
+		Order:     query.Order,
+		Direction: query.Direction,
 	})
 }
 

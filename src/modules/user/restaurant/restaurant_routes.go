@@ -11,10 +11,12 @@ func Routes(router *gin.RouterGroup) {
 	{
 		authorized.GET("/favorites", getFavorite)
 		authorized.GET("/", getAll)
+		authorized.GET("/:id/reviews", getReviews)
 		authorized.GET("/:id/products", getRestosProducts)
 		authorized.GET("/:id", getDetail)
 		
 		authorized.POST("/:id/favorite", addFavorite)
 		authorized.DELETE("/:id/favorite", removeFavorite)
+
 	}
 }
