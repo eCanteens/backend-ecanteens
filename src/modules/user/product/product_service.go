@@ -21,7 +21,7 @@ func addFeedbackService(body *feedbackScheme, userId uint, productId string) err
 	}
 
 	if len(*feedbacks) > 0 {
-		return updateFeedback(*(*feedbacks)[0].Id.Id, body)
+		return updateFeedback(*(*feedbacks)[0].Id, body)
 	} else {
 		feedback := &models.ProductFeedback{
 			UserId:    userId,

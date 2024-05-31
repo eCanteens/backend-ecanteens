@@ -7,7 +7,7 @@ import (
 func getCartService(user *models.User) (*[]models.Cart, error) {
 	var cart []models.Cart
 
-	if err := findCart(*user.Id.Id, &cart, true); err != nil {
+	if err := findCart(*user.Id, &cart, true); err != nil {
 		return nil, err
 	}
 
@@ -17,13 +17,13 @@ func getCartService(user *models.User) (*[]models.Cart, error) {
 func addCartService(user *models.User, body *addUpdateCartScheme) error {
 	var cart models.Cart
 
-	findOneCart(&cart, *user.Id.Id, body.ProductId)
+	findOneCart(&cart, *user.Id, body.ProductId)
 
 	if body.Quantity == 0 {
-		return deleteCart(*user.Id.Id, body.ProductId)
+		return deleteCart(*user.Id, body.ProductId)
 	}
 
-	cart.UserId = *user.Id.Id
+	cart.UserId = *user.Id
 	cart.ProductId = body.ProductId
 	cart.Quantity = body.Quantity
 	cart.Amount = body.Amount

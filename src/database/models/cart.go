@@ -1,7 +1,7 @@
 package models
 
 type Cart struct {
-	Id
+	PK
 	UserId    uint   `gorm:"type:bigint" json:"user_id"`
 	ProductId uint   `gorm:"type:bigint" json:"product_id"`
 	Quantity  uint   `gorm:"type:int" json:"quantity"`

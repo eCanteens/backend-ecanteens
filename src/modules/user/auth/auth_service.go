@@ -84,7 +84,7 @@ func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -119,7 +119,7 @@ func googleService(body *googleScheme) (*models.User, *jwt.UserToken, error) {
 		}
 	}
 
-	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -128,7 +128,7 @@ func googleService(body *googleScheme) (*models.User, *jwt.UserToken, error) {
 }
 
 func setupGoogleService(body *setupScheme, user *models.User) error {
-	if err := checkUniqueService(user.Email, body.Phone, *user.Id.Id); err != nil {
+	if err := checkUniqueService(user.Email, body.Phone, *user.Id); err != nil {
 		return err
 	}
 
@@ -162,7 +162,7 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 		return nil, err
 	}
 
-	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
 	return token, nil
 }
@@ -174,7 +174,7 @@ func forgotService(body *forgotScheme) error {
 		return errors.New("pengguna tidak ditemukan")
 	}
 
-	tokenString := jwt.GenerateResetToken(*user.Id.Id)
+	tokenString := jwt.GenerateResetToken(*user.Id)
 
 	return smtp.ResetPasswordTemplate([]string{body.Email}, &smtp.ResetPasswordProps{
 		LOGO: fmt.Sprintf("%s/public/assets/logo.png", os.Getenv("BASE_URL")),
@@ -207,7 +207,7 @@ func resetService(body *resetScheme) error {
 }
 
 func updateProfileService(ctx *gin.Context, user *models.User, body *updateScheme) error {
-	if err := checkUniqueService(body.Email, body.Phone, *user.Id.Id); err != nil {
+	if err := checkUniqueService(body.Email, body.Phone, *user.Id); err != nil {
 		return err
 	}
 
@@ -219,7 +219,7 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *updateSchem
 		filePath := upload.New(&upload.Option{
 			Folder:      "avatar/user",
 			Filename:    body.Avatar.Filename,
-			NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+			NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 		})
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {

@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Id struct {
+type PK struct {
 	Id *uint `gorm:"type:bigint;primaryKey" json:"id"`
 }
 

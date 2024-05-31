@@ -64,19 +64,19 @@ func registerService(ctx *gin.Context, body *registerScheme) error {
 	avatar := upload.New(&upload.Option{
 		Folder:      "avatar/user",
 		Filename:    body.Avatar.Filename,
-		NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+		NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 	})
 
 	restaurantAvatar := upload.New(&upload.Option{
 		Folder:      "avatar/restaurant",
 		Filename:    body.RestaurantAvatar.Filename,
-		NewFilename: strconv.FormatUint(uint64(*restaurant.Id.Id), 10),
+		NewFilename: strconv.FormatUint(uint64(*restaurant.Id), 10),
 	})
 
 	banner := upload.New(&upload.Option{
 		Folder:      "banner",
 		Filename:    body.Avatar.Filename,
-		NewFilename: strconv.FormatUint(uint64(*restaurant.Id.Id), 10),
+		NewFilename: strconv.FormatUint(uint64(*restaurant.Id), 10),
 	})
 
 	if err := ctx.SaveUploadedFile(body.Avatar, avatar.Path); err != nil {
@@ -110,7 +110,7 @@ func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 		return nil, nil, errors.New("email atau password salah")
 	}
 
-	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
 	user.Password = ""
 	user.Wallet.Pin = ""
@@ -134,7 +134,7 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 		return nil, err
 	}
 
-	token := jwt.GenerateUserToken(*user.Id.Id, user.RoleId)
+	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
 	return token, nil
 }

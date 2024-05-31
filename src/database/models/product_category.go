@@ -1,7 +1,7 @@
 package models
 
 type ProductCategory struct {
-	Id
+	PK
 	Name string `gorm:"type:varchar(50)" json:"name"`
 	Timestamps
 }

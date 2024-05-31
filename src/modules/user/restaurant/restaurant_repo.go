@@ -7,15 +7,27 @@ import (
 	"gorm.io/gorm"
 )
 
-func findFavorite(user *models.User, id uint, query *paginationQS) error {
-	return config.DB.Where("id = ?", id).Preload("FavoriteRestaurants", func(db *gorm.DB) *gorm.DB {
-		return db.Where("name ILIKE ?", "%"+query.Search+"%").Preload("Category").Order(query.Order + " " + query.Direction)
-	}).Find(user).Error
-}
+func findFavorite(result *pagination.Pagination, userId uint, query *paginationQS) error {
+	avgSubquery := config.DB.Table("reviews").
+		Select("COALESCE(AVG(rating), 0)").
+		Where("reviews.restaurant_id = restaurants.id")
 
-func find(result *pagination.Pagination, query *paginationQS) error {
+	countSubquery := config.DB.Table("reviews").
+		Select("COUNT(*)").
+		Where("reviews.restaurant_id = restaurants.id")
+
+	favoriteSubquery := config.DB.Table("favorite_restaurants").
+		Select("restaurant_id").
+		Where("user_id = ?", userId)
+
+	q := config.DB.Table("restaurants").
+		Select("restaurants.*, (?) AS rating_avg, (?) AS rating_count", avgSubquery, countSubquery).
+		Where("restaurants.id IN (?)", favoriteSubquery).
+		Where("name ILIKE ?", "%"+query.Search+"%").
+		Preload("Category")
+
 	return result.New(&pagination.Params{
-		Query:     config.DB.Where("name ILIKE ?", "%"+query.Search+"%").Preload("Category"),
+		Query:     q,
 		Model:     &[]models.Restaurant{},
 		Page:      query.Page,
 		Limit:     query.Limit,
@@ -24,7 +36,31 @@ func find(result *pagination.Pagination, query *paginationQS) error {
 	})
 }
 
-func findReviews(reviews *[]models.Review,  restaurantId string, query *reviewQS) error {
+func find(result *pagination.Pagination, query *paginationQS) error {
+	avgSubquery := config.DB.Table("reviews").
+		Select("COALESCE(AVG(rating), 0)").
+		Where("reviews.restaurant_id = restaurants.id")
+
+	countSubquery := config.DB.Table("reviews").
+		Select("COUNT(*)").
+		Where("reviews.restaurant_id = restaurants.id")
+
+	q := config.DB.Table("restaurants").
+		Select("restaurants.*, (?) AS rating_avg, (?) AS rating_count", avgSubquery, countSubquery).
+		Where("restaurants.name ILIKE ?", "%"+query.Search+"%").
+		Preload("Category")
+
+	return result.New(&pagination.Params{
+		Query:     q,
+		Model:     &[]models.Restaurant{},
+		Page:      query.Page,
+		Limit:     query.Limit,
+		Order:     query.Order,
+		Direction: query.Direction,
+	})
+}
+
+func findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error {
 	tx := config.DB.Where("restaurant_id = ?", restaurantId)
 
 	if query.Filter != "" {
@@ -35,12 +71,39 @@ func findReviews(reviews *[]models.Review,  restaurantId string, query *reviewQS
 }
 
 func findOne(restaurant *models.Restaurant, id string) error {
-	return config.DB.Where("id = ?", id).Preload("Category").First(restaurant).Error
+	avgSubquery := config.DB.Table("reviews").
+		Select("COALESCE(AVG(rating), 0)").
+		Where("reviews.restaurant_id = restaurants.id")
+
+	countSubquery := config.DB.Table("reviews").
+		Select("COUNT(*)").
+		Where("reviews.restaurant_id = restaurants.id")
+
+	return config.DB.Select("restaurants.*, (?) AS rating_avg, (?) AS rating_count", avgSubquery, countSubquery).
+		Where("id = ?", id).
+		Preload("Category").
+		Preload("Owner", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, name, email, phone")
+		}).
+		First(restaurant).Error
 }
 
 func findRestosProducts(result *pagination.Pagination, id string, query *paginationQS) error {
+	likeCountSubquery := config.DB.Table("product_feedbacks").
+		Select("COUNT(*)").
+		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = TRUE")
+
+	dislikeCountSubquery := config.DB.Table("product_feedbacks").
+		Select("COUNT(*)").
+		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = FALSE")
+
+	q := config.DB.Table("products").
+		Select("products.*, (?) AS like, (?) AS dislike", likeCountSubquery, dislikeCountSubquery).
+		Where("products.restaurant_id = ?", id).
+		Where("products.name ILIKE ?", "%"+query.Search+"%")
+
 	return result.New(&pagination.Params{
-		Query:     config.DB.Where("restaurant_id = ?", id),
+		Query:     q,
 		Model:     &[]models.Product{},
 		Page:      query.Page,
 		Limit:     query.Limit,

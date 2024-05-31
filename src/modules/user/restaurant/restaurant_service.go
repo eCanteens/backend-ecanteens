@@ -8,8 +8,8 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func getFavoriteService(userId uint, query *paginationQS) (*[]models.Restaurant, error) {
-	var user models.User
+func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination, error) {
+	var result pagination.Pagination
 
 	if query.Order == "" {
 		query.Order = "created_at"
@@ -19,11 +19,11 @@ func getFavoriteService(userId uint, query *paginationQS) (*[]models.Restaurant,
 		query.Direction = "desc"
 	}
 
-	if err := findFavorite(&user, userId, query); err != nil {
+	if err := findFavorite(&result, userId, query); err != nil {
 		return nil, err
 	}
 
-	return &user.FavoriteRestaurants, nil
+	return &result, nil
 }
 
 func getAllService(query *paginationQS) (*pagination.Pagination, error) {

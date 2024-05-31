@@ -1,7 +1,7 @@
 package models
 
 type FavoriteRestaurant struct {
-	Id
+	PK
 	UserId       uint `gorm:"type:bigint" json:"user_id"`
 	RestaurantId uint `gorm:"type:bigint" json:"restaurant_id"`
 	Timestamps

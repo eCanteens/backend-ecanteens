@@ -53,7 +53,7 @@ func (ct TransactionStatus) Value() (driver.Value, error) {
 }
 
 type Transaction struct {
-	Id
+	PK
 	TransactionId string            `gorm:"type:varchar(255);unique" json:"transaction_id"`
 	UserId        uint              `gorm:"type:bigint" json:"user_id"`
 	Type          TransactionType   `gorm:"type:Transaction_type" json:"type"`

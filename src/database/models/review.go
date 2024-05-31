@@ -1,8 +1,8 @@
 package models
 
 type Review struct {
-	Id
-	Rating       float64 `gorm:"type:float" json:"rating"`
+	PK
+	Rating       float32 `gorm:"type:float" json:"rating"`
 	UserId       uint    `gorm:"type:bigint" json:"user_id"`
 	RestaurantId uint    `gorm:"type:bigint" json:"restaurant_id"`
 	Comment      string  `gorm:"type:text" json:"comment"`

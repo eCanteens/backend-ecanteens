@@ -26,7 +26,7 @@ func adminLoginService(body *AdminLoginScheme) (*models.User, *string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub":   *user.Id.Id,
+		"sub":   *user.Id,
 		"email": user.Email,
 		"exp":   0,
 	})
@@ -115,7 +115,7 @@ func mutasiService(query *MutationQS) (*pagination.Pagination, error) {
 }
 
 func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) error {
-	if err := checkUniqueService(body.Email, *user.Id.Id); err != nil {
+	if err := checkUniqueService(body.Email, *user.Id); err != nil {
 		return err
 	}
 
@@ -126,7 +126,7 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 		filePath := upload.New(&upload.Option{
 			Folder:      "avatar/user",
 			Filename:    body.Avatar.Filename,
-			NewFilename: strconv.FormatUint(uint64(*user.Id.Id), 10),
+			NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 		})
 
 		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
