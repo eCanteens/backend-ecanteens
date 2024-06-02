@@ -24,3 +24,12 @@ func RandomElement[T any](nums []T) T {
 	s := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return nums[s.Intn(len(nums))]
 }
+
+func Find[T any](slice *[]T, test func(*T) bool) (ret *T) {
+    for _, s := range *slice {
+        if test(&s) {
+            ret = &s
+        }
+    }
+    return
+}

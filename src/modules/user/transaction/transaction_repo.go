@@ -1,27 +1,39 @@
 package transaction
 
 import (
+	"errors"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
 func findCart(userId uint, cart *[]models.Cart, preload bool) error {
-	tx := config.DB.Where("user_id = ?", userId)
+	tx := config.DB.Where("user_id = ?", userId).Preload("Items")
 	if preload {
-		tx = tx.Preload("Product.Restaurant.Category").Preload("Product.Restaurant.Location")
+		tx = tx.Preload("Restaurant.Category").Preload("Items.Product")
 	}
 
 	return tx.Find(cart).Error
 }
 
-func findOneCart(cart *models.Cart, userId uint, productId uint) error {
-	return config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).First(&cart).Error
+func findOneProduct(product *models.Product, id uint) error {
+	return config.DB.Where("id = ?", id).Preload("Restaurant").First(product).Error
 }
 
-func saveCart(cart *models.Cart) error {
-	return config.DB.Save(cart).Error
+func saveRecord[T any](data *T) error {
+	return config.DB.Save(data).Error
 }
 
-func deleteCart(userId uint, productId uint) error {
-	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.Cart{}).Error
+func deleteRecord[T any](data *T) error {
+	return config.DB.Unscoped().Delete(data).Error
+}
+
+func updateCartNote(id, notes string) error {
+	tx := config.DB.Model(&models.Cart{}).Where("id = ?", id).Update("notes", notes)
+
+	if tx.RowsAffected == 0 {
+		return errors.New("keranjang tidak ditemukan")
+	}
+
+	return tx.Error
 }

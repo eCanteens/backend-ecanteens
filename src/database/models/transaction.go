@@ -63,5 +63,5 @@ type Transaction struct {
 	Timestamps
 
 	// Relation
-	User *User `gorm:"foreignKey:user_id" json:"user,omitempty"`
+	User *User `gorm:"foreignKey:user_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"user,omitempty"`
 }

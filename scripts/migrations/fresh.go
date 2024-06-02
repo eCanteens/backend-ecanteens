@@ -29,14 +29,16 @@ func main() {
 		&models.User{},
 		&models.RestaurantCategory{},
 		&models.Restaurant{},
+		&models.RestaurantReview{},
+		&models.FavoriteRestaurant{},
 		&models.ProductCategory{},
 		&models.Product{},
-		&models.Review{},
 		&models.ProductFeedback{},
-		&models.FavoriteRestaurant{},
 		&models.FavoriteProduct{},
 		&models.Cart{},
+		&models.CartItem{},
 		&models.Order{},
+		&models.OrderItem{},
 		&models.Transaction{},
 	)
 

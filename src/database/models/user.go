@@ -17,7 +17,7 @@ type User struct {
 	Timestamps
 
 	// Relations
-	Wallet              *Wallet      `gorm:"foreignKey:wallet_id" json:"wallet,omitempty"`
+	Wallet              *Wallet      `gorm:"foreignKey:wallet_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"wallet,omitempty"`
 	FavoriteRestaurants []Restaurant `gorm:"many2many:favorite_restaurants;" json:"favorite_restaurant,omitempty"`
 	FavoriteProducts    []Product    `gorm:"many2many:favorite_products;" json:"favorite_products,omitempty"`
 }

@@ -44,21 +44,19 @@ func removeFeedback(ctx *gin.Context) {
 }
 
 func getFavorite(ctx *gin.Context) {
-	query := map[string]string{}
+	var query paginationQS
 	user, _ := ctx.Get("user")
 
-	ctx.ShouldBindQuery(query)
+	ctx.ShouldBindQuery(&query)
 
-	data, err := getFavoriteService(*user.(models.User).Id, query)
+	data, err := getFavoriteService(*user.(models.User).Id, &query)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"data": data,
-	})
+	ctx.JSON(200, data)
 }
 
 func addFavorite(ctx *gin.Context) {

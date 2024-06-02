@@ -8,13 +8,13 @@ import (
 )
 
 func findFavorite(result *pagination.Pagination, userId uint, query *paginationQS) error {
-	avgSubquery := config.DB.Table("reviews").
+	avgSubquery := config.DB.Table("restaurant_reviews").
 		Select("COALESCE(AVG(rating), 0)").
-		Where("reviews.restaurant_id = restaurants.id")
+		Where("restaurant_reviews.restaurant_id = restaurants.id")
 
-	countSubquery := config.DB.Table("reviews").
+	countSubquery := config.DB.Table("restaurant_reviews").
 		Select("COUNT(*)").
-		Where("reviews.restaurant_id = restaurants.id")
+		Where("restaurant_reviews.restaurant_id = restaurants.id")
 
 	favoriteSubquery := config.DB.Table("favorite_restaurants").
 		Select("restaurant_id").
@@ -37,13 +37,13 @@ func findFavorite(result *pagination.Pagination, userId uint, query *paginationQ
 }
 
 func find(result *pagination.Pagination, query *paginationQS) error {
-	avgSubquery := config.DB.Table("reviews").
+	avgSubquery := config.DB.Table("restaurant_reviews").
 		Select("COALESCE(AVG(rating), 0)").
-		Where("reviews.restaurant_id = restaurants.id")
+		Where("restaurant_reviews.restaurant_id = restaurants.id")
 
-	countSubquery := config.DB.Table("reviews").
+	countSubquery := config.DB.Table("restaurant_reviews").
 		Select("COUNT(*)").
-		Where("reviews.restaurant_id = restaurants.id")
+		Where("restaurant_reviews.restaurant_id = restaurants.id")
 
 	q := config.DB.Table("restaurants").
 		Select("restaurants.*, (?) AS rating_avg, (?) AS rating_count", avgSubquery, countSubquery).
@@ -60,7 +60,7 @@ func find(result *pagination.Pagination, query *paginationQS) error {
 	})
 }
 
-func findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error {
+func findReviews(reviews *[]models.RestaurantReview, restaurantId string, query *reviewQS) error {
 	tx := config.DB.Where("restaurant_id = ?", restaurantId)
 
 	if query.Filter != "" {
@@ -71,13 +71,13 @@ func findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS)
 }
 
 func findOne(restaurant *models.Restaurant, id string) error {
-	avgSubquery := config.DB.Table("reviews").
+	avgSubquery := config.DB.Table("restaurant_reviews").
 		Select("COALESCE(AVG(rating), 0)").
-		Where("reviews.restaurant_id = restaurants.id")
+		Where("restaurant_reviews.restaurant_id = restaurants.id")
 
-	countSubquery := config.DB.Table("reviews").
+	countSubquery := config.DB.Table("restaurant_reviews").
 		Select("COUNT(*)").
-		Where("reviews.restaurant_id = restaurants.id")
+		Where("restaurant_reviews.restaurant_id = restaurants.id")
 
 	return config.DB.Select("restaurants.*, (?) AS rating_avg, (?) AS rating_count", avgSubquery, countSubquery).
 		Where("id = ?", id).
@@ -100,7 +100,8 @@ func findRestosProducts(result *pagination.Pagination, id string, query *paginat
 	q := config.DB.Table("products").
 		Select("products.*, (?) AS like, (?) AS dislike", likeCountSubquery, dislikeCountSubquery).
 		Where("products.restaurant_id = ?", id).
-		Where("products.name ILIKE ?", "%"+query.Search+"%")
+		Where("products.name ILIKE ?", "%"+query.Search+"%").
+		Preload("Category")
 
 	return result.New(&pagination.Params{
 		Query:     q,

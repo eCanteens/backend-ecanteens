@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
 func addFeedbackService(body *feedbackScheme, userId uint, productId string) error {
@@ -43,22 +44,14 @@ func removeFeedbackService(userId uint, productId string) error {
 	return deleteFeedback(userId, uint(id))
 }
 
-func getFavoriteService(userId uint, query map[string]string) (*[]models.Product, error) {
-	var user models.User
+func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination, error) {
+	var result pagination.Pagination
 
-	if query["order"] == "" {
-		query["order"] = "created_at"
-	}
-
-	if query["direction"] == "" {
-		query["direction"] = "desc"
-	}
-
-	if err := findFavorite(&user, userId, query); err != nil {
+	if err := findFavorite(&result, userId, query); err != nil {
 		return nil, err
 	}
 
-	return &user.FavoriteProducts, nil
+	return &result, nil
 }
 
 func addFavoriteService(userId uint, productId string) error {

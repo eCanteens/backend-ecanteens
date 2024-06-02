@@ -10,6 +10,7 @@ func Routes(router *gin.RouterGroup) {
 	authorized.Use(middleware.Auth)
 	{
 		authorized.GET("/carts", getCart)
+		authorized.PUT("/carts/:id", updateCart)
 		authorized.POST("/carts", addCart)
 		authorized.POST("/order", order)
 	}

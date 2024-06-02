@@ -22,8 +22,25 @@ func getCart(ctx *gin.Context) {
 	})
 }
 
+func updateCart(ctx *gin.Context) {
+	id := ctx.Param("id")
+	var body updateCartNoteScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := updateCartService(id, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return	
+	}
+
+	ctx.JSON(201, helpers.SuccessResponse("Catatan berhasil ditambahkan"))
+}
+
 func addCart(ctx *gin.Context) {
-	var body addUpdateCartScheme
+	var body addCartScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
@@ -37,7 +54,11 @@ func addCart(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(201, helpers.SuccessResponse("Produk berhasil ditambahkan ke keranjang"))
+	if *body.Quantity == 0 {
+		ctx.JSON(201, helpers.SuccessResponse("Produk berhasil dihapus dari keranjang"))
+	} else {
+		ctx.JSON(201, helpers.SuccessResponse("Produk berhasil ditambahkan ke keranjang"))
+	}
 }
 
 func order(ctx *gin.Context) {

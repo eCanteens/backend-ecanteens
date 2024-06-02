@@ -3,7 +3,7 @@ package product
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"gorm.io/gorm"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
 func checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, error) {
@@ -28,10 +28,33 @@ func deleteFeedback(userId uint, productId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.ProductFeedback{}).Error
 }
 
-func findFavorite(user *models.User, userId uint, query map[string]string) error {
-	return config.DB.Where("id = ?", userId).Preload("FavoriteProducts", func(db *gorm.DB) *gorm.DB {
-		return db.Where("name ILIKE ?", "%"+query["search"]+"%").Preload("Category").Order(query["order"] + " " + query["direction"])
-	}).Find(user).Error
+func findFavorite(result *pagination.Pagination, userId uint, query *paginationQS) error {
+	likeCountSubquery := config.DB.Table("product_feedbacks").
+		Select("COUNT(*)").
+		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = TRUE")
+
+	dislikeCountSubquery := config.DB.Table("product_feedbacks").
+		Select("COUNT(*)").
+		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = FALSE")
+
+	favoriteSubquery := config.DB.Table("favorite_products").
+		Select("product_id").
+		Where("user_id = ?", userId)
+
+	q := config.DB.Table("products").
+		Select("products.*, (?) AS like, (?) AS dislike", likeCountSubquery, dislikeCountSubquery).
+		Where("products.id IN (?)", favoriteSubquery).
+		Where("name ILIKE ?", "%"+query.Search+"%").
+		Preload("Category")
+
+	return result.New(&pagination.Params{
+		Query:     q,
+		Model:     &[]models.Product{},
+		Page:      query.Page,
+		Limit:     query.Limit,
+		Order:     query.Order,
+		Direction: query.Direction,
+	})
 }
 
 func checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct {
