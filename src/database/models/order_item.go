@@ -9,6 +9,6 @@ type OrderItem struct {
 	Timestamps
 
 	// Relation
-	Order   *Order   `gorm:"foreignKey:order_id" json:"order,omitempty"`
-	Product *Product `gorm:"foreignKey:product_id" json:"product,omitempty"`
+	Order   *Order   `gorm:"foreignKey:order_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"order,omitempty"`
+	Product *Product `gorm:"foreignKey:product_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"product,omitempty"`
 }

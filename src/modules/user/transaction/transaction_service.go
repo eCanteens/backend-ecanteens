@@ -3,7 +3,10 @@ package transaction
 import (
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/eCanteens/backend-ecanteens/src/constants/order"
+	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"gorm.io/gorm"
@@ -35,11 +38,11 @@ func addCartService(user *models.User, body *addCartScheme) error {
 	}
 
 	if product.Stock == 0 {
-		return errors.New("stok habis")
+		return errors.New("stok produk habis")
 	}
 
 	if !product.Restaurant.IsOpen {
-		return errors.New("restoran tutup")
+		return errors.New("restoran sedang tutup")
 	}
 
 	if err := findCart(*user.Id, &carts, false); err != nil {
@@ -71,7 +74,6 @@ func addCartService(user *models.User, body *addCartScheme) error {
 		// but quantity is 0 then return error
 		return errors.New("produk tidak ditemukan di keranjang")
 	}
-	fmt.Println("atas", cart.Items)
 
 	cartItem := helpers.Find(&cart.Items, func(item *models.CartItem) bool {
 		return item.ProductId == body.ProductId
@@ -109,4 +111,74 @@ func addCartService(user *models.User, body *addCartScheme) error {
 			}
 		}
 	}
+}
+
+func orderService(body *orderScheme, userId uint) error {
+	var carts []models.Cart
+	if err := findCart(userId, &carts, true); err != nil {
+		return err
+	}
+
+	if len(carts) == 0 {
+		return errors.New("keranjang masih kosong")
+	}
+
+	trx := models.Transaction{
+		TransactionId: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), userId),
+		UserId:        userId,
+		Type:          transaction.PAY,
+		Status:        transaction.INPROGRESS,
+		PaymentMethod: transaction.TransactionPaymentMethod(body.PaymentMethod),
+	}
+
+	var fullfilmentDate *time.Time
+
+	if *body.IsPreorder {
+		date, err := time.Parse(time.RFC3339, body.FullfilmentDate)
+		if err != nil {
+			return errors.New("format waktu tidak valid")
+		}
+
+		fullfilmentDate = &date
+	}
+
+	for _, cart := range carts {
+		if !cart.Restaurant.IsOpen {
+			return errors.New("restoran sedang tutup")
+		}
+		ord := models.Order{
+			UserId:          cart.UserId,
+			RestaurantId:    cart.RestaurantId,
+			Notes:           cart.Notes,
+			Status:          order.WAITING,
+			IsPreorder:      *body.IsPreorder,
+			FullfilmentDate: fullfilmentDate,
+		}
+
+		for _, item := range cart.Items {
+			if item.Product.Stock == 0 {
+				return errors.New("stok produk habis")
+			}
+			ord.Items = append(ord.Items, models.OrderItem{
+				ProductId: item.ProductId,
+				Quantity:  item.Quantity,
+				Price:     item.Product.Price,
+			})
+
+			ord.Amount += item.Quantity * item.Product.Price
+			trx.Amount += item.Quantity * item.Product.Price
+		}
+
+		trx.Orders = append(trx.Orders, ord)
+	}
+
+	if err := create(&trx); err != nil {
+		return err
+	}
+
+	if err := deleteRecord(&carts); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
@@ -83,7 +84,7 @@ func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) 
 		return nil, err
 	}
 
-	data, err := createTransaction(&user, body.Amount, models.TransactionType(tipe))
+	data, err := createTransaction(&user, body.Amount, transaction.TransactionType(tipe))
 
 	if err != nil {
 		return nil, err

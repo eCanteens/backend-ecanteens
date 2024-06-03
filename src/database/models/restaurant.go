@@ -11,9 +11,9 @@ type Restaurant struct {
 	Timestamps
 
 	// Relation
-	Owner    *User               `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:owner_id" json:"owner,omitempty"`
-	Category *RestaurantCategory `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:category_id" json:"category,omitempty"`
-	Reviews  []RestaurantReview  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:restaurant_id" json:"reviews,omitempty"`
+	Owner    *User               `gorm:"foreignKey:owner_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"owner,omitempty"`
+	Category *RestaurantCategory `gorm:"foreignKey:category_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"category,omitempty"`
+	Reviews  []RestaurantReview  `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"reviews,omitempty"`
 
 	// Extra
 	RatingAvg   float64 `json:"rating_avg"`

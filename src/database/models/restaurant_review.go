@@ -9,6 +9,6 @@ type RestaurantReview struct {
 	Timestamps
 
 	// Relation
-	User       *User       `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:user_id" json:"user,omitempty"`
-	Restaurant *Restaurant `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:restaurant_id" json:"restaurant,omitempty"`
+	User       *User       `gorm:"foreignKey:user_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"user,omitempty"`
+	Restaurant *Restaurant `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"restaurant,omitempty"`
 }

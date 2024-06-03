@@ -13,8 +13,8 @@ type Product struct {
 	Timestamps
 
 	// Relations
-	Restaurant *Restaurant      `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;foreignKey:restaurant_id" json:"restaurant,omitempty"`
-	Category   *ProductCategory `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:category_id" json:"category,omitempty"`
+	Restaurant *Restaurant      `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"restaurant,omitempty"`
+	Category   *ProductCategory `gorm:"foreignKey:category_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"category,omitempty"`
 
 	// Extra
 	Like    int64 `json:"like"`

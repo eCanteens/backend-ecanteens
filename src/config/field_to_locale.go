@@ -22,6 +22,10 @@ func fieldToLocale(field string) (intlField string) {
 		intlField = "Nama Restoran"
 	case "category_id":
 		intlField = "Kategori"
+	case "fullfilment_date":
+		intlField = "Tanggal Preorder"
+	case "payment_method":
+		intlField = "Metode Pembayaran"
 	default:
 		intlField = field
 	}

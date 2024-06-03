@@ -1,5 +1,7 @@
 package config
 
+import "strings"
+
 func MsgForTag(tag string, field string, param string) string {
 	intlField := fieldToLocale(field)
 
@@ -18,6 +20,13 @@ func MsgForTag(tag string, field string, param string) string {
 		return intlField + " sudah digunakan"
 	case "numeric":
 		return intlField + " harus berupa angka"
+	case "required_if":
+		return intlField + " harus diisi"
+	case "datetime":
+		return "Format waktu tidak valid"
+	case "oneof":
+		enum := strings.Join(strings.Split(param, " "), " atau ")
+		return intlField + " harus " + enum
 	}
 	return ""
 }

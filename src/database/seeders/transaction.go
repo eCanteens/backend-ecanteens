@@ -6,6 +6,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
+	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
@@ -17,10 +18,9 @@ func TransactionSeeder() {
 			transactions = append(transactions, &models.Transaction{
 				TransactionId: fmt.Sprintf("EC-%d-%d", gofakeit.DateRange(time.Now(), time.Now().AddDate(0, 0, 1)).Unix(), i+1),
 				UserId:        uint(i) + 1,
-				Type:          models.TransactionType(gofakeit.RandomString([]string{"TOPUP", "WITHDRAW"})),
-				Status:        models.TransactionStatus(gofakeit.RandomString([]string{"INPROGRESS", "SUCCESS", "CANCELED"})),
+				Type:          transaction.TransactionType(gofakeit.RandomString([]string{"TOPUP", "WITHDRAW"})),
+				Status:        transaction.TransactionStatus(gofakeit.RandomString([]string{"INPROGRESS", "SUCCESS", "CANCELED"})),
 				Amount:        (gofakeit.UintRange(1_000, 20_000) / 100) * 100,
-				Items:         "[]",
 			})
 		}
 	}

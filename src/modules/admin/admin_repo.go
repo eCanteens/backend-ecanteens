@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
+	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
@@ -56,14 +57,13 @@ func topupWithdraw(amount uint, user *models.User, tipe string) error {
 	return config.DB.Save(user.Wallet).Error
 }
 
-func createTransaction(user *models.User, amount uint, tipe models.TransactionType) (*models.Transaction, error) {
+func createTransaction(user *models.User, amount uint, tipe transaction.TransactionType) (*models.Transaction, error) {
 	transaction := models.Transaction{
 		TransactionId: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
 		UserId:        *user.Id,
 		Type:          tipe,
-		Status:        models.SUCCESS,
+		Status:        transaction.SUCCESS,
 		Amount:        amount,
-		Items:         "[]",
 	}
 	return &transaction, config.DB.Create(&transaction).Error
 }

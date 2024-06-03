@@ -7,6 +7,6 @@ type FavoriteProduct struct {
 	Timestamps
 
 	// Relations
-	User    *User    `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:user_id" json:"user,omitempty"`
-	Product *Product `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;foreignKey:product_id" json:"product,omitempty"`
+	User    *User    `gorm:"foreignKey:user_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"user,omitempty"`
+	Product *Product `gorm:"foreignKey:product_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"product,omitempty"`
 }

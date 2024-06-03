@@ -20,14 +20,30 @@ func UserSeeder() {
 
 	avatar := os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg"
 
-	users = append(users, &models.User{
-		Name:     "Admin",
-		Email:    "admin@ecanteens.com",
-		Password: string(admin),
-		Phone:    helpers.PointerTo("-"),
-		RoleId:   1,
-		Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-admin.jpg",
-	})
+	fakeUsers := []*models.User{
+		{
+			Name:     "Admin",
+			Email:    "admin@ecanteens.com",
+			Password: string(admin),
+			Phone:    helpers.PointerTo("-"),
+			RoleId:   1,
+			Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-admin.jpg",
+		},
+		{
+			Name:     "Chandra",
+			Email:    "mdutchand@gmail.com",
+			Phone:    helpers.PointerTo("085797175262"),
+			Password: string(chandra),
+			Avatar:   avatar,
+		},
+		{
+			Name:     "Muhajir",
+			Email:    "amuhajir.syamlan@gmail.com",
+			Phone:    helpers.PointerTo("088289570068"),
+			Password: string(password),
+			Avatar:   avatar,
+		},
+	}
 
 	for i := 0; i < 9; i++ {
 		users = append(users, &models.User{
@@ -39,13 +55,7 @@ func UserSeeder() {
 		})
 	}
 
-	users = append(users, &models.User{
-		Name:     "Chandra",
-		Email:    "mdutchand@gmail.com",
-		Phone:    helpers.PointerTo("085797175262"),
-		Password: string(chandra),
-		Avatar:   avatar,
-	})
+	users = append(users, fakeUsers...)
 
 	config.DB.Create(users)
 

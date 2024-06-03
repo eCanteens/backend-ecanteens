@@ -41,7 +41,7 @@ func RestaurantSeeder() {
 			Banner:     os.Getenv("BASE_URL") + "/public/dummy/banner.jpeg",
 			CategoryId: 1,
 			Owner:      &owner,
-			IsOpen:     gofakeit.Bool(),
+			IsOpen:     true,
 		})
 	}
 

@@ -50,7 +50,7 @@ func addCart(ctx *gin.Context) {
 	}
 
 	if err := addCartService(&_user, &body); err != nil {
-		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
@@ -61,6 +61,20 @@ func addCart(ctx *gin.Context) {
 	}
 }
 
-func order(ctx *gin.Context) {
+func handleOrder(ctx *gin.Context) {
+	var body orderScheme
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := orderService(&body, *_user.Id); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(201, helpers.SuccessResponse("Order berhasil dibuat"))
 }

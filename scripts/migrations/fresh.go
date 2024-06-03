@@ -37,9 +37,9 @@ func main() {
 		&models.FavoriteProduct{},
 		&models.Cart{},
 		&models.CartItem{},
+		&models.Transaction{},
 		&models.Order{},
 		&models.OrderItem{},
-		&models.Transaction{},
 	)
 
 	fmt.Println("Tables Created")

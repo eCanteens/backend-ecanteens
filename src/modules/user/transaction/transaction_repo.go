@@ -7,6 +7,10 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 )
 
+func create[T any](data *T) error {
+	return config.DB.Create(data).Error
+}
+
 func findCart(userId uint, cart *[]models.Cart, preload bool) error {
 	tx := config.DB.Where("user_id = ?", userId).Preload("Items")
 	if preload {
