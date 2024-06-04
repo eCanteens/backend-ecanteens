@@ -5,11 +5,12 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/middleware"
 	"github.com/eCanteens/backend-ecanteens/src/modules/admin"
+	restoAuth "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/auth"
+	restoProduct "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/product"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/product"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/restaurant"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/transaction"
-	restoAuth "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -50,6 +51,7 @@ func main() {
 	// Resto routes
 	{
 		restoAuth.Routes(resto.Group("/auth"))
+		restoProduct.Routes(resto.Group("/products"))
 	}
 
 	router.NoRoute(func(c *gin.Context) {
