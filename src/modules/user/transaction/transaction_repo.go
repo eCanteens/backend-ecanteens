@@ -7,6 +7,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/constants/order"
 	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"gorm.io/gorm"
 )
 
 func create[T any](data *T) error {
@@ -30,6 +31,15 @@ func findCart(userId uint, cart *[]models.Cart, preload bool) error {
 	return tx.Find(cart).Error
 }
 
+func findCartById(id uint, cart *models.Cart, preload bool) error {
+	tx := config.DB.Where("id = ?", id).Preload("Items")
+	if preload {
+		tx = tx.Preload("Restaurant.Category").Preload("Items.Product")
+	}
+
+	return tx.First(cart).Error
+}
+
 func findOneProduct(product *models.Product, id uint) error {
 	return config.DB.Where("id = ?", id).Preload("Restaurant").First(product).Error
 }
@@ -48,11 +58,27 @@ func updateCartNote(id, notes string) error {
 	return tx.Error
 }
 
-func cancelOrder(userId uint) error {
-	return config.DB.Table("transactions tx").
-		Joins("JOIN orders o ON tx.id = o.transaction_id").
-		Where("tx.user_id = ?", userId).
-		Where("o.status = ?", order.WAITING).
-		Update("tx.status", transaction.CANCELED).
-		Update("o.status", transaction.CANCELED).Error
+func cancelOrderById(id string) error {
+	return config.DB.Debug().Transaction(func(tx *gorm.DB) error {
+		var ord models.Order
+		
+		if err := tx.Where("id = ?", id).First(&ord).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("pesanan tidak ditemukan")
+			}
+
+			return err
+		}
+
+		if ord.Status != order.WAITING {
+			return errors.New("pesanan tidak bisa dibatalkan karena sudah dikonfirmasi oleh restoran")
+		}
+
+		ord.Status = order.CANCELED
+
+		tx.Save(&ord)
+		tx.Model(&models.Transaction{}).Where("id = ?", ord.TransactionId).Update("status", transaction.CANCELED)
+
+		return nil
+	})
 }

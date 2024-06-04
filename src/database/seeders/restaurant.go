@@ -33,6 +33,7 @@ func RestaurantSeeder() {
 			Phone:    helpers.PointerTo("08" + gofakeit.Numerify("##########")),
 			Password: string(pw),
 			Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg",
+			RoleId:   3,
 		}
 
 		restaurants = append(restaurants, &models.Restaurant{

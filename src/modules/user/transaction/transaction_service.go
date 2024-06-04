@@ -13,13 +13,13 @@ import (
 )
 
 func getCartService(user *models.User) (*[]models.Cart, error) {
-	var cart []models.Cart
+	var carts []models.Cart
 
-	if err := findCart(*user.Id, &cart, true); err != nil {
+	if err := findCart(*user.Id, &carts, true); err != nil {
 		return nil, err
 	}
 
-	return &cart, nil
+	return &carts, nil
 }
 
 func updateCartService(id string, body *updateCartNoteScheme) error {
@@ -123,14 +123,13 @@ func getOrderService(userId uint) (*[]models.Order, error) {
 	return &orders, nil
 }
 
-func orderService(body *orderScheme, user *models.User) error {
-	var carts []models.Cart
-	if err := findCart(*user.Id, &carts, true); err != nil {
-		return err
-	}
-
-	if len(carts) == 0 {
-		return errors.New("keranjang masih kosong")
+func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
+	var cart models.Cart
+	if err := findCartById(body.CartId, &cart, true); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("keranjang tidak ditemukan")
+		}
+		return nil, err
 	}
 
 	trx := models.Transaction{
@@ -146,57 +145,56 @@ func orderService(body *orderScheme, user *models.User) error {
 	if *body.IsPreorder {
 		date, err := time.Parse(time.RFC3339, body.FullfilmentDate)
 		if err != nil {
-			return errors.New("format waktu tidak valid")
+			return nil, errors.New("format waktu tidak valid")
 		}
 
 		fullfilmentDate = &date
 	}
 
-	for _, cart := range carts {
-		if !cart.Restaurant.IsOpen {
-			return errors.New("restoran sedang tutup")
-		}
-		ord := models.Order{
-			UserId:          cart.UserId,
-			RestaurantId:    cart.RestaurantId,
-			Notes:           cart.Notes,
-			Status:          order.WAITING,
-			IsPreorder:      *body.IsPreorder,
-			FullfilmentDate: fullfilmentDate,
-		}
-
-		for _, item := range cart.Items {
-			if item.Product.Stock == 0 {
-				return errors.New("stok produk habis")
-			}
-			ord.Items = append(ord.Items, models.OrderItem{
-				ProductId: item.ProductId,
-				Quantity:  item.Quantity,
-				Price:     item.Product.Price,
-			})
-
-			ord.Amount += item.Quantity * item.Product.Price
-			trx.Amount += item.Quantity * item.Product.Price
-		}
-
-		trx.Orders = append(trx.Orders, ord)
+	if !cart.Restaurant.IsOpen {
+		return nil, errors.New("restoran sedang tutup")
 	}
+
+	ord := models.Order{
+		UserId:          cart.UserId,
+		RestaurantId:    cart.RestaurantId,
+		Notes:           cart.Notes,
+		Status:          order.WAITING,
+		IsPreorder:      *body.IsPreorder,
+		FullfilmentDate: fullfilmentDate,
+	}
+
+	for _, item := range cart.Items {
+		if item.Product.Stock == 0 {
+			return nil, errors.New("stok produk habis")
+		}
+		ord.Items = append(ord.Items, models.OrderItem{
+			ProductId: item.ProductId,
+			Quantity:  item.Quantity,
+			Price:     item.Product.Price,
+		})
+
+		ord.Amount += item.Quantity * item.Product.Price
+		trx.Amount += item.Quantity * item.Product.Price
+	}
+
+	ord.Transaction = &trx
 
 	if trx.PaymentMethod == transaction.ECANTEENSPAY && user.Wallet.Balance < trx.Amount {
-		return errors.New("saldo anda tidak mencukupi")
+		return nil, errors.New("saldo anda tidak mencukupi")
 	}
 
-	if err := create(&trx); err != nil {
-		return err
+	if err := create(&ord); err != nil {
+		return nil, err
 	}
 
-	if err := deleteRecord(&carts); err != nil {
-		return err
+	if err := deleteRecord(&cart); err != nil {
+		return nil, err
 	}
 
-	return nil
+	return &ord, nil
 }
 
-func cancelOrderService(userId uint) error {
-	return cancelOrder(userId)
+func cancelOrderService(id string) error {
+	return cancelOrderById(id)
 }
