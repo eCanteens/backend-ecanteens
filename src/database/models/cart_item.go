@@ -2,7 +2,7 @@ package models
 
 type CartItem struct {
 	PK
-	CartId    uint `gorm:"type:bigint" json:"user_id"`
+	CartId    uint `gorm:"type:bigint" json:"cart_id"`
 	ProductId uint `gorm:"type:bigint" json:"product_id"`
 	Quantity  uint `gorm:"type:int" json:"quantity"`
 	Timestamps

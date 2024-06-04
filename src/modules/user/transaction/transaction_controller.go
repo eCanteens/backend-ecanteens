@@ -61,6 +61,22 @@ func addCart(ctx *gin.Context) {
 	}
 }
 
+func getOrder(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	data, err := getOrderService(*_user.Id)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
+}
+
 func handleOrder(ctx *gin.Context) {
 	var body orderScheme
 	user, _ := ctx.Get("user")
@@ -71,10 +87,22 @@ func handleOrder(ctx *gin.Context) {
 		return
 	}
 
-	if err := orderService(&body, *_user.Id); err != nil {
+	if err := orderService(&body, &_user); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
 	ctx.JSON(201, helpers.SuccessResponse("Order berhasil dibuat"))
+}
+
+func handleCancelOrder(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := cancelOrderService(*_user.Id); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Order berhasil dibatalkan"))
 }

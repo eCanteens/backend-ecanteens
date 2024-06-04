@@ -59,11 +59,11 @@ func topupWithdraw(amount uint, user *models.User, tipe string) error {
 
 func createTransaction(user *models.User, amount uint, tipe transaction.TransactionType) (*models.Transaction, error) {
 	transaction := models.Transaction{
-		TransactionId: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
-		UserId:        *user.Id,
-		Type:          tipe,
-		Status:        transaction.SUCCESS,
-		Amount:        amount,
+		TransactionCode: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
+		UserId:          *user.Id,
+		Type:            tipe,
+		Status:          transaction.SUCCESS,
+		Amount:          amount,
 	}
 	return &transaction, config.DB.Create(&transaction).Error
 }

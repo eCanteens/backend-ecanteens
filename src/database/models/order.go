@@ -12,14 +12,15 @@ type Order struct {
 	RestaurantId    uint              `gorm:"type:bigint" json:"restaurant_id"`
 	Notes           string            `gorm:"type:varchar(255)" json:"notes"`
 	Amount          uint              `gorm:"type:int" json:"amount"`
-	Status          order.OrderStatus `gorm:"type:varchar(20);default:WAITING" json:"status"` // [inprogress, success, canceled]
+	Status          order.OrderStatus `gorm:"type:varchar(20);default:WAITING" json:"status"` // [WAITING, INPROGRESS, SUCCESS, CANCELED]
 	IsPreorder      bool              `gorm:"type:bool" json:"is_preorder"`
 	FullfilmentDate *time.Time        `gorm:"type:timestamptz" json:"fullfilment_date"`
 	TransactionId   uint              `gorm:"type:bigint" json:"transaction_id"`
 	Timestamps
 
 	// Relation
-	User       *User       `gorm:"foreignKey:user_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"user,omitempty"`
-	Restaurant *Restaurant `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"restaurant,omitempty"`
-	Items      []OrderItem `gorm:"foreignKey:order_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"items,omitempty"`
+	User        *User        `gorm:"foreignKey:user_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"user,omitempty"`
+	Restaurant  *Restaurant  `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"restaurant,omitempty"`
+	Transaction *Transaction `gorm:"foreignKey:transaction_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"transaction,omitempty"`
+	Items       []OrderItem  `gorm:"foreignKey:order_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"items,omitempty"`
 }

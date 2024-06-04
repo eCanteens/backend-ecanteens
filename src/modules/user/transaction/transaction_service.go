@@ -113,9 +113,19 @@ func addCartService(user *models.User, body *addCartScheme) error {
 	}
 }
 
-func orderService(body *orderScheme, userId uint) error {
+func getOrderService(userId uint) (*[]models.Order, error) {
+	var orders []models.Order
+
+	if err := findOrder(&orders, userId); err != nil {
+		return nil, err
+	}
+
+	return &orders, nil
+}
+
+func orderService(body *orderScheme, user *models.User) error {
 	var carts []models.Cart
-	if err := findCart(userId, &carts, true); err != nil {
+	if err := findCart(*user.Id, &carts, true); err != nil {
 		return err
 	}
 
@@ -124,11 +134,11 @@ func orderService(body *orderScheme, userId uint) error {
 	}
 
 	trx := models.Transaction{
-		TransactionId: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), userId),
-		UserId:        userId,
-		Type:          transaction.PAY,
-		Status:        transaction.INPROGRESS,
-		PaymentMethod: transaction.TransactionPaymentMethod(body.PaymentMethod),
+		TransactionCode: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
+		UserId:          *user.Id,
+		Type:            transaction.PAY,
+		Status:          transaction.INPROGRESS,
+		PaymentMethod:   transaction.TransactionPaymentMethod(body.PaymentMethod),
 	}
 
 	var fullfilmentDate *time.Time
@@ -172,6 +182,10 @@ func orderService(body *orderScheme, userId uint) error {
 		trx.Orders = append(trx.Orders, ord)
 	}
 
+	if trx.PaymentMethod == transaction.ECANTEENSPAY && user.Wallet.Balance < trx.Amount {
+		return errors.New("saldo anda tidak mencukupi")
+	}
+
 	if err := create(&trx); err != nil {
 		return err
 	}
@@ -181,4 +195,8 @@ func orderService(body *orderScheme, userId uint) error {
 	}
 
 	return nil
+}
+
+func cancelOrderService(userId uint) error {
+	return cancelOrder(userId)
 }
