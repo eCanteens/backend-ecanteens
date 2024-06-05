@@ -5,24 +5,27 @@ import (
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
-	"github.com/gin-gonic/gin"
 )
 
-func createProductService(ctx *gin.Context, user *models.User, body *createProduct) error {
-	filepath := upload.New(&upload.Option{
+func createProductService(user *models.User, body *createProduct) error {
+	filepath, err := upload.New(&upload.Option{
 		Folder:      "product",
-		Filename:    body.Image.Filename,
+		File:        body.Image,
 		NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 	})
 
+	if err != nil {
+		return err
+	}
+
 	product := &models.Product{
 		RestaurantId: *user.Restaurant.Id,
-		Image:       filepath.Url,
-		Name:        body.Name,
-		Price:       body.Price,
-		Stock:       body.Stock,
-		Description: body.Description,
-		CategoryId:  body.CategoryId,
+		Image:        filepath.Url,
+		Name:         body.Name,
+		Price:        body.Price,
+		Stock:        body.Stock,
+		Description:  body.Description,
+		CategoryId:   body.CategoryId,
 	}
 
 	if err := create(product); err != nil {

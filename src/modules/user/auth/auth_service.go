@@ -12,7 +12,6 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/smtp"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
-	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/api/idtoken"
 	"gorm.io/gorm"
@@ -206,7 +205,7 @@ func resetService(body *resetScheme) error {
 	return updatePassword(uint(id), user)
 }
 
-func updateProfileService(ctx *gin.Context, user *models.User, body *updateScheme) error {
+func updateProfileService(user *models.User, body *updateScheme) error {
 	if err := checkUniqueService(body.Email, body.Phone, *user.Id); err != nil {
 		return err
 	}
@@ -216,13 +215,13 @@ func updateProfileService(ctx *gin.Context, user *models.User, body *updateSchem
 	user.Phone = &body.Phone
 
 	if body.Avatar != nil {
-		filePath := upload.New(&upload.Option{
+		filePath, err := upload.New(&upload.Option{
 			Folder:      "avatar/user",
-			Filename:    body.Avatar.Filename,
+			File:    body.Avatar,
 			NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 		})
 
-		if err := ctx.SaveUploadedFile(body.Avatar, filePath.Path); err != nil {
+		if err != nil {
 			return err
 		}
 

@@ -8,7 +8,6 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
-	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -37,7 +36,7 @@ func checkUniqueService(email string, phone string, id ...uint) error {
 	return nil
 }
 
-func registerService(ctx *gin.Context, body *registerScheme) error {
+func registerService(body *registerScheme) error {
 	if err := checkUniqueService(body.Email, body.Phone); err != nil {
 		return err
 	}
@@ -61,33 +60,33 @@ func registerService(ctx *gin.Context, body *registerScheme) error {
 		return err
 	}
 
-	avatar := upload.New(&upload.Option{
+	avatar, err := upload.New(&upload.Option{
 		Folder:      "avatar/user",
-		Filename:    body.Avatar.Filename,
+		File:        body.Avatar,
 		NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 	})
 
-	restaurantAvatar := upload.New(&upload.Option{
+	if err != nil {
+		return err
+	}
+
+	restaurantAvatar, err := upload.New(&upload.Option{
 		Folder:      "avatar/restaurant",
-		Filename:    body.RestaurantAvatar.Filename,
+		File:        body.RestaurantAvatar,
 		NewFilename: strconv.FormatUint(uint64(*restaurant.Id), 10),
 	})
 
-	banner := upload.New(&upload.Option{
+	if err != nil {
+		return err
+	}
+
+	banner, err := upload.New(&upload.Option{
 		Folder:      "banner",
-		Filename:    body.Avatar.Filename,
+		File:        body.Banner,
 		NewFilename: strconv.FormatUint(uint64(*restaurant.Id), 10),
 	})
 
-	if err := ctx.SaveUploadedFile(body.Avatar, avatar.Path); err != nil {
-		return err
-	}
-
-	if err := ctx.SaveUploadedFile(body.RestaurantAvatar, restaurantAvatar.Path); err != nil {
-		return err
-	}
-
-	if err := ctx.SaveUploadedFile(body.Banner, banner.Path); err != nil {
+	if err != nil {
 		return err
 	}
 

@@ -147,7 +147,7 @@ func handleUpdateAdminProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := updateAdminProfileService(ctx, &_user, &body); err != nil {
+	if err := updateAdminProfileService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}

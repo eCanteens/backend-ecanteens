@@ -29,7 +29,7 @@ func handleRegister(ctx *gin.Context) {
 		return
 	}
 
-	if err := registerService(ctx, &body); err != nil {
+	if err := registerService(&body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}

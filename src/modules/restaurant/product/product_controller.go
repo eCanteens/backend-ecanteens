@@ -17,7 +17,7 @@ func handleCreateProduct(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := createProductService(ctx, &_user, &body); err != nil {
+	if err := createProductService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}

@@ -59,7 +59,7 @@ func updateCartNote(id, notes string) error {
 }
 
 func cancelOrderById(id string) error {
-	return config.DB.Debug().Transaction(func(tx *gorm.DB) error {
+	return config.DB.Transaction(func(tx *gorm.DB) error {
 		var ord models.Order
 		
 		if err := tx.Where("id = ?", id).First(&ord).Error; err != nil {
