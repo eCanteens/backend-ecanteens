@@ -8,7 +8,7 @@ import (
 
 // login
 func handleAdminLogin(ctx *gin.Context) {
-	var body AdminLoginScheme
+	var body adminLoginScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -59,7 +59,7 @@ func handleCheckWallet(ctx *gin.Context) {
 // topup
 func handleTopup(ctx *gin.Context) {
 	phone := ctx.Param("phone")
-	var body TopupWithdrawScheme
+	var body topupWithdrawScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -79,7 +79,7 @@ func handleTopup(ctx *gin.Context) {
 // withdraw
 func handleWithdraw(ctx *gin.Context) {
 	phone := ctx.Param("phone")
-	var body TopupWithdrawScheme
+	var body topupWithdrawScheme
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
@@ -112,7 +112,7 @@ func handleTransaction(ctx *gin.Context) {
 
 // mutasi
 func handleMutasi(ctx *gin.Context) {
-	var query MutationQS
+	var query mutationQS
 
 	ctx.ShouldBindQuery(&query)
 
@@ -138,7 +138,7 @@ func handleAdminProfile(ctx *gin.Context) {
 }
 
 func handleUpdateAdminProfile(ctx *gin.Context) {
-	var body UpdateAdminProfileScheme
+	var body updateAdminProfileScheme
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
@@ -156,7 +156,7 @@ func handleUpdateAdminProfile(ctx *gin.Context) {
 }
 
 func handleUpdateAdminPassword(ctx *gin.Context) {
-	var body UpdateAdminPasswordScheme
+	var body updateAdminPasswordScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 

@@ -15,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func adminLoginService(body *AdminLoginScheme) (*models.User, *string, error) {
+func adminLoginService(body *adminLoginScheme) (*models.User, *string, error) {
 	var user models.User
 
 	if err := findAdminEmail(&user, body.Email); err != nil {
@@ -73,7 +73,7 @@ func checkWalletService(phone string) (*models.User, error) {
 	return &user, nil
 }
 
-func topupWithdrawService(phone string, body *TopupWithdrawScheme, tipe string) (*models.Transaction, error) {
+func topupWithdrawService(phone string, body *topupWithdrawScheme, tipe string) (*models.Transaction, error) {
 	var user models.User
 
 	if err := findUser(&user, phone); err != nil {
@@ -105,7 +105,7 @@ func transactionService(id string) (*models.Transaction, error) {
 	return data, nil
 }
 
-func mutasiService(query *MutationQS) (*pagination.Pagination, error) {
+func mutasiService(query *mutationQS) (*pagination.Pagination, error) {
 	var result pagination.Pagination
 
 	if err := findMutasi(&result, query); err != nil {
@@ -115,7 +115,7 @@ func mutasiService(query *MutationQS) (*pagination.Pagination, error) {
 	return &result, nil
 }
 
-func updateAdminProfileService(ctx *gin.Context, user *models.User, body *UpdateAdminProfileScheme) error {
+func updateAdminProfileService(ctx *gin.Context, user *models.User, body *updateAdminProfileScheme) error {
 	if err := checkUniqueService(body.Email, *user.Id); err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func updateAdminProfileService(ctx *gin.Context, user *models.User, body *Update
 	return nil
 }
 
-func updateAdminPasswordService(user *models.User, body *UpdateAdminPasswordScheme) error {
+func updateAdminPasswordService(user *models.User, body *updateAdminPasswordScheme) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
 		return errors.New("password salah")
 	}

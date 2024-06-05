@@ -25,7 +25,9 @@ func handleCreateProduct(ctx *gin.Context) {
 	ctx.JSON(201, helpers.SuccessResponse("Menu berhasil ditambahkan"))
 }
 
-func handleGetAllProduct(ctx *gin.Context) {}
+func handleGetAllProduct(ctx *gin.Context) {
+	
+}
 
 func handleGetOneProduct(ctx *gin.Context) {}
 
