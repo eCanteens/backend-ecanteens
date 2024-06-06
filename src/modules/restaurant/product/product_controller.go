@@ -26,7 +26,21 @@ func handleCreateProduct(ctx *gin.Context) {
 }
 
 func handleGetAllProduct(ctx *gin.Context) {
-	
+	var query productQs
+
+	ctx.ShouldBindQuery(&query)
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	data, err := getAllProductService(&query, &_user)
+
+	if err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, data)
 }
 
 func handleGetOneProduct(ctx *gin.Context) {}
