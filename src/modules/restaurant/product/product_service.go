@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 )
 
@@ -33,4 +34,14 @@ func createProductService(user *models.User, body *createProduct) error {
 	}
 
 	return nil
+}
+
+func getAllProductService(query *productQs, user *models.User) (*pagination.Pagination, error) {
+	var result pagination.Pagination
+
+	if err := findAllProduct(&result, query, user); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
