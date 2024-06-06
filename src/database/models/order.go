@@ -12,7 +12,7 @@ type Order struct {
 	RestaurantId    uint              `gorm:"type:bigint" json:"restaurant_id"`
 	Notes           string            `gorm:"type:varchar(255)" json:"notes"`
 	Amount          uint              `gorm:"type:int" json:"amount"`
-	Status          order.OrderStatus `gorm:"type:varchar(20);default:WAITING" json:"status"` // [WAITING, INPROGRESS, SUCCESS, CANCELED]
+	Status          order.OrderStatus `gorm:"type:varchar(20);default:WAITING" json:"status"` // [WAITING, INPROGRESS, READY, SUCCESS, CANCELED]
 	IsPreorder      bool              `gorm:"type:bool" json:"is_preorder"`
 	FullfilmentDate *time.Time        `gorm:"type:timestamptz" json:"fullfilment_date"`
 	TransactionId   uint              `gorm:"type:bigint" json:"transaction_id"`

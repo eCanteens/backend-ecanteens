@@ -29,7 +29,20 @@ func Find[T any](slice *[]T, test func(*T) bool) (ret *T) {
     for _, s := range *slice {
         if test(&s) {
             ret = &s
+            break
         }
     }
     return
+}
+
+func Map[T any, Y any](slice *[]T, test func(*T) *Y) *[]Y {
+    var result []Y
+
+    for _, s := range *slice {
+        ret := test(&s)
+        if ret != nil {
+            result = append(result, *ret)
+        }
+    }
+    return &result
 }

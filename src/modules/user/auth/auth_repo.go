@@ -17,7 +17,7 @@ func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 	)
 
 	if len(id) > 0 {
-		query = query.Not("id = ?", id[0])
+		query.Not("id = ?", id[0])
 	}
 
 	query.Find(&sameUser)

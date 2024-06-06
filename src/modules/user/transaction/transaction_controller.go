@@ -62,19 +62,20 @@ func addCart(ctx *gin.Context) {
 }
 
 func getOrder(ctx *gin.Context) {
+	var query getOrderQS
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	data, err := getOrderService(*_user.Id)
+	ctx.ShouldBindQuery(&query)
+
+	data, err := getOrderService(*_user.Id, &query)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"data": data,
-	})
+	ctx.JSON(200, data)
 }
 
 func handleOrder(ctx *gin.Context) {

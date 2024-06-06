@@ -9,6 +9,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
 
@@ -113,18 +114,20 @@ func addCartService(user *models.User, body *addCartScheme) error {
 	}
 }
 
-func getOrderService(userId uint) (*[]models.Order, error) {
-	var orders []models.Order
+func getOrderService(userId uint, query *getOrderQS) (*pagination.Pagination, error) {
+	var result pagination.Pagination
 
-	if err := findOrder(&orders, userId); err != nil {
+	if err := findOrder(&result, userId, query); err != nil {
 		return nil, err
 	}
 
-	return &orders, nil
+	return &result, nil
 }
 
 func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	var cart models.Cart
+
+	// Find cart
 	if err := findCartById(body.CartId, &cart, true); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("keranjang tidak ditemukan")
@@ -132,6 +135,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		return nil, err
 	}
 
+	// Make transaction
 	trx := models.Transaction{
 		TransactionCode: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
 		UserId:          *user.Id,
@@ -140,8 +144,14 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		PaymentMethod:   transaction.TransactionPaymentMethod(body.PaymentMethod),
 	}
 
+	// Validate restaurant open
+	if !cart.Restaurant.IsOpen {
+		return nil, errors.New("restoran sedang tutup")
+	}
+
 	var fullfilmentDate *time.Time
 
+	// Validate fullfilment date if preorder
 	if *body.IsPreorder {
 		date, err := time.Parse(time.RFC3339, body.FullfilmentDate)
 		if err != nil {
@@ -151,10 +161,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		fullfilmentDate = &date
 	}
 
-	if !cart.Restaurant.IsOpen {
-		return nil, errors.New("restoran sedang tutup")
-	}
-
+	// Create order
 	ord := models.Order{
 		UserId:          cart.UserId,
 		RestaurantId:    cart.RestaurantId,
@@ -164,6 +171,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		FullfilmentDate: fullfilmentDate,
 	}
 
+	// Insert cart items into order items & calculate amount
 	for _, item := range cart.Items {
 		if item.Product.Stock == 0 {
 			return nil, errors.New("stok produk habis")
@@ -180,16 +188,34 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 
 	ord.Transaction = &trx
 
+	// Validate wallet balance
 	if trx.PaymentMethod == transaction.ECANTEENSPAY && user.Wallet.Balance < trx.Amount {
 		return nil, errors.New("saldo anda tidak mencukupi")
 	}
 
+	// Write order and transaction data into db
 	if err := create(&ord); err != nil {
 		return nil, err
 	}
 
+	// Delete cart & cart items data
 	if err := deleteRecord(&cart); err != nil {
 		return nil, err
+	}
+
+	// if preorder & payment method with ecanteenspay then update user balance & resto owner balance
+	if ord.IsPreorder && trx.PaymentMethod == transaction.ECANTEENSPAY {
+		user.Wallet.Balance -= trx.Amount
+
+		if err := saveRecord(user.Wallet); err != nil {
+			return nil, err
+		}
+
+		cart.Restaurant.Owner.Wallet.Balance += trx.Amount
+
+		if err := saveRecord(cart.Restaurant.Owner.Wallet); err != nil {
+			return nil, err
+		}
 	}
 
 	return &ord, nil

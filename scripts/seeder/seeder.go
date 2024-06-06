@@ -20,4 +20,5 @@ func main() {
 	seeders.FavoriteRestaurantSeeder()
 	seeders.FavoriteProductSeeder()
 	seeders.TransactionSeeder()
+	seeders.OrderSeeder()
 }

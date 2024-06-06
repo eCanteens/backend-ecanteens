@@ -64,7 +64,7 @@ func findReviews(reviews *[]models.RestaurantReview, restaurantId string, query 
 	tx := config.DB.Where("restaurant_id = ?", restaurantId)
 
 	if query.Filter != "" {
-		tx = tx.Where("rating = ?", query.Filter)
+		tx.Where("rating = ?", query.Filter)
 	}
 
 	return tx.Find(reviews).Error

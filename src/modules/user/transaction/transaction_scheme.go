@@ -15,3 +15,11 @@ type orderScheme struct {
 	IsPreorder      *bool  `binding:"required" json:"is_preorder"`
 	FullfilmentDate string `binding:"required_if=IsPreorder true" json:"fullfilment_date"`
 }
+
+type getOrderQS struct {
+	Page      string `form:"page"`
+	Limit     string `form:"limit"`
+	Order     string `form:"order"`
+	Direction string `form:"direction"`
+	Filter    string `form:"filter"`
+}

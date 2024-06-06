@@ -10,6 +10,7 @@ type Product struct {
 	Price        uint   `gorm:"type:int" json:"price"`
 	Stock        uint   `gorm:"type:int" json:"stock"`
 	Sold         uint   `gorm:"type:int" json:"sold"`
+	IsActive     bool   `gorm:"type:bool;default:true" json:"is_active"`
 	Timestamps
 
 	// Relations

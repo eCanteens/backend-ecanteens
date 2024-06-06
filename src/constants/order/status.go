@@ -10,6 +10,7 @@ type OrderStatus string
 const (
 	WAITING    OrderStatus = "WAITING"
 	INPROGRESS OrderStatus = "INPROGRESS"
+	READY      OrderStatus = "READY"
 	SUCCESS    OrderStatus = "SUCCESS"
 	CANCELED   OrderStatus = "CANCELED"
 )
