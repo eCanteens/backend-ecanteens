@@ -7,20 +7,22 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"gorm.io/datatypes"
 )
 
 func ReviewSeeder() {
-	var reviews []*models.RestaurantReview
+	var orders []models.Order
+	var reviews []*models.Review
 
-	for i := 0; i < 10; i++ {
-		for j := 0; j < 10; j++ {
-			reviews = append(reviews, &models.RestaurantReview{
-				Rating:       helpers.RandomElement([]float32{0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5}),
-				UserId:       uint(j + 1),
-				RestaurantId: uint(i + 1),
-				Comment:      gofakeit.Comment(),
-			})
-		}
+	config.DB.Where("status = ?", "SUCCESS").Find(&orders)
+
+	for _, ord := range orders {
+		reviews = append(reviews, &models.Review{
+			OrderId: *ord.Id,
+			Tags:    datatypes.NewJSONType([]string{"Kemasan", "Kebersihan"}),
+			Rating:  helpers.RandomElement([]float32{0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5}),
+			Comment: gofakeit.Comment(),
+		})
 	}
 
 	config.DB.Create(reviews)

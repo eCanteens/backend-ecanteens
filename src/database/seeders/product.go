@@ -37,7 +37,7 @@ func ProductSeeder() {
 		}
 
 		products = append(products, &models.Product{
-			RestaurantId: gofakeit.UintRange(1, 10),
+			RestaurantId: gofakeit.UintRange(1, 5),
 			Name:         productName[randomInt],
 			Description:  gofakeit.ProductDescription(),
 			Image:        os.Getenv("BASE_URL") + "/public/dummy/product.png",

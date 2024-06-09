@@ -36,8 +36,8 @@ func getAllService(query *paginationQS) (*pagination.Pagination, error) {
 	return &result, nil
 }
 
-func getReviewsService(id string, query *reviewQS) (*[]models.RestaurantReview, error) {
-	var reviews []models.RestaurantReview
+func getReviewsService(id string, query *reviewQS) (*[]models.Review, error) {
+	var reviews []models.Review
 
 	if err := findReviews(&reviews, id, query); err != nil {
 		return nil, err

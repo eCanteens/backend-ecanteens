@@ -1,10 +1,10 @@
 package helpers
 
 import (
-    "strings"
-    "regexp"
-    "math/rand"
-	"time"
+	"math/rand/v2"
+	"regexp"
+	"strings"
+
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -21,8 +21,7 @@ func PointerTo[T any](s T) *T {
 }
 
 func RandomElement[T any](nums []T) T {
-	s := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return nums[s.Intn(len(nums))]
+	return nums[rand.IntN(len(nums))]
 }
 
 func Find[T any](slice *[]T, test func(*T) bool) (ret *T) {

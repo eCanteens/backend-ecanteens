@@ -13,7 +13,7 @@ func FavoriteProductSeeder() {
 
 	for i := 0; i < 11; i++ {
 		favorites = append(favorites, &models.FavoriteProduct{
-			UserId:    uint(i) + 1,
+			UserId:    uint(i) + 2,
 			ProductId: gofakeit.UintRange(1, 50),
 		})
 	}

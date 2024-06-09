@@ -13,8 +13,8 @@ func FavoriteRestaurantSeeder() {
 
 	for i := 0; i < 11; i++ {
 		favorites = append(favorites, &models.FavoriteRestaurant{
-			UserId:       uint(i) + 1,
-			RestaurantId: gofakeit.UintRange(1, 10),
+			UserId:       uint(i) + 2,
+			RestaurantId: gofakeit.UintRange(1, 5),
 		})
 	}
 

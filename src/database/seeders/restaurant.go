@@ -24,25 +24,23 @@ func RestaurantSeeder() {
 
 	var restaurants []*models.Restaurant
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		pw, _ := bcrypt.GenerateFromPassword([]byte("password-admin"), bcrypt.DefaultCost)
-
-		owner := models.User{
-			Name:     gofakeit.Name(),
-			Email:    gofakeit.Email(),
-			Phone:    helpers.PointerTo("08" + gofakeit.Numerify("##########")),
-			Password: string(pw),
-			Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg",
-			RoleId:   3,
-		}
 
 		restaurants = append(restaurants, &models.Restaurant{
 			Name:       gofakeit.AppName(),
 			Avatar:     os.Getenv("BASE_URL") + "/public/dummy/avatar-resto.png",
 			Banner:     os.Getenv("BASE_URL") + "/public/dummy/banner.jpeg",
 			CategoryId: 1,
-			Owner:      &owner,
 			IsOpen:     true,
+			Owner: &models.User{
+				Name:     gofakeit.Name(),
+				Email:    gofakeit.Email(),
+				Phone:    helpers.PointerTo("08" + gofakeit.Numerify("##########")),
+				Password: string(pw),
+				Avatar:   os.Getenv("BASE_URL") + "/public/assets/avatar-user.jpg",
+				RoleId:   3,
+			},
 		})
 	}
 

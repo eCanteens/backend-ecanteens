@@ -14,11 +14,11 @@ func init() {
 func main() {
 	seeders.UserSeeder()
 	seeders.RestaurantSeeder()
-	seeders.ReviewSeeder()
 	seeders.ProductSeeder()
 	seeders.ProductFeedbackSeeder()
 	seeders.FavoriteRestaurantSeeder()
 	seeders.FavoriteProductSeeder()
 	seeders.TransactionSeeder()
 	seeders.OrderSeeder()
+	seeders.ReviewSeeder()
 }

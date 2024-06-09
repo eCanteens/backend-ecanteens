@@ -8,8 +8,8 @@ import (
 type User struct {
 	PK
 	Name     string  `gorm:"type:varchar(50);not null" json:"name"`
-	Email    string  `gorm:"type:varchar(50);not null;unique" json:"email"`
-	Phone    *string `gorm:"type:varchar(20);unique" json:"phone"`
+	Email    string  `gorm:"type:varchar(50);not null;unique" json:"email,omitempty"`
+	Phone    *string `gorm:"type:varchar(20);unique" json:"phone,omitempty"`
 	Password string  `gorm:"type:varchar(255);not null" json:"password,omitempty"`
 	Avatar   string  `gorm:"type:varchar(255)" json:"avatar,omitempty"`
 	WalletId uint    `gorm:"type:bigint;" json:"wallet_id,omitempty"`

@@ -29,7 +29,6 @@ func main() {
 		&models.User{},
 		&models.RestaurantCategory{},
 		&models.Restaurant{},
-		&models.RestaurantReview{},
 		&models.FavoriteRestaurant{},
 		&models.ProductCategory{},
 		&models.Product{},
@@ -40,6 +39,7 @@ func main() {
 		&models.Transaction{},
 		&models.Order{},
 		&models.OrderItem{},
+		&models.Review{},
 	)
 
 	fmt.Println("Tables Created")

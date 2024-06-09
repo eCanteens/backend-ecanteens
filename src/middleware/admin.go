@@ -39,7 +39,7 @@ func Admin(ctx *gin.Context) {
 	}
 
 	if user.RoleId != 1 {
-		ctx.AbortWithStatusJSON(403, helpers.ErrorResponse("Role anda tidak mencukupi"))
+		ctx.AbortWithStatusJSON(403, helpers.ErrorResponse("Pengguna tidak ditemukan"))
 		return
 	}
 

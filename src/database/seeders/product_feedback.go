@@ -15,7 +15,7 @@ func ProductFeedbackSeeder() {
 		for j := 0; j < 11; j++ {
 			productFeedbacks = append(productFeedbacks, &models.ProductFeedback{
 				ProductId: uint(i + 1),
-				UserId:    uint(j + 1),
+				UserId:    uint(j + 2),
 				IsLike:    gofakeit.Bool(),
 			})
 		}

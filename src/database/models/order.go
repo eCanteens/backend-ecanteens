@@ -8,14 +8,14 @@ import (
 
 type Order struct {
 	PK
-	UserId          uint              `gorm:"type:bigint" json:"user_id"`
-	RestaurantId    uint              `gorm:"type:bigint" json:"restaurant_id"`
+	UserId          uint              `gorm:"type:bigint" json:"user_id,omitempty"`
+	RestaurantId    uint              `gorm:"type:bigint" json:"restaurant_id,omitempty"`
 	Notes           string            `gorm:"type:varchar(255)" json:"notes"`
-	Amount          uint              `gorm:"type:int" json:"amount"`
-	Status          order.OrderStatus `gorm:"type:varchar(20);default:WAITING" json:"status"` // [WAITING, INPROGRESS, READY, SUCCESS, CANCELED]
+	Amount          uint              `gorm:"type:int" json:"amount,omitempty"`
+	Status          order.OrderStatus `gorm:"type:varchar(20);default:WAITING" json:"status,omitempty"` // [WAITING, INPROGRESS, READY, SUCCESS, CANCELED]
 	IsPreorder      bool              `gorm:"type:bool" json:"is_preorder"`
-	FullfilmentDate *time.Time        `gorm:"type:timestamptz" json:"fullfilment_date"`
-	TransactionId   uint              `gorm:"type:bigint" json:"transaction_id"`
+	FullfilmentDate *time.Time        `gorm:"type:timestamptz" json:"fullfilment_date,omitempty"`
+	TransactionId   uint              `gorm:"type:bigint" json:"transaction_id,omitempty"`
 	Timestamps
 
 	// Relation

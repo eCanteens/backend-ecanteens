@@ -13,9 +13,8 @@ type Restaurant struct {
 	// Relation
 	Owner    *User               `gorm:"foreignKey:owner_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"owner,omitempty"`
 	Category *RestaurantCategory `gorm:"foreignKey:category_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"category,omitempty"`
-	Reviews  []RestaurantReview  `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"reviews,omitempty"`
 
 	// Extra
-	RatingAvg   float64 `json:"rating_avg"`
+	RatingAvg   float32 `json:"rating_avg"`
 	RatingCount int64   `json:"rating_count"`
 }

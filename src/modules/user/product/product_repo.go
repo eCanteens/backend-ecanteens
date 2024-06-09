@@ -29,22 +29,13 @@ func deleteFeedback(userId uint, productId uint) error {
 }
 
 func findFavorite(result *pagination.Pagination, userId uint, query *paginationQS) error {
-	likeCountSubquery := config.DB.Table("product_feedbacks").
-		Select("COUNT(*)").
-		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = TRUE")
-
-	dislikeCountSubquery := config.DB.Table("product_feedbacks").
-		Select("COUNT(*)").
-		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = FALSE")
-
-	favoriteSubquery := config.DB.Table("favorite_products").
-		Select("product_id").
-		Where("user_id = ?", userId)
-
 	q := config.DB.Table("products").
-		Select("products.*, (?) AS like, (?) AS dislike", likeCountSubquery, dislikeCountSubquery).
-		Where("products.id IN (?)", favoriteSubquery).
-		Where("name ILIKE ?", "%"+query.Search+"%").
+		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
+		Joins("JOIN favorite_products fp ON fp.product_id = products.id").
+		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
+		Group("products.id").
+		Where("products.name ILIKE ?", "%"+query.Search+"%").
+		Where("fp.user_id", userId).
 		Preload("Category")
 
 	return result.New(&pagination.Params{
