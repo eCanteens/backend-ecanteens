@@ -69,7 +69,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 				},
 			}
 
-			return saveRecord(cart)
+			return create(cart)
 		}
 
 		// but quantity is 0 then return error
@@ -90,7 +90,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 				Quantity:  *body.Quantity,
 			}
 
-			return saveRecord(cartItem)
+			return create(cartItem)
 		}
 
 		// and quantity is 0 then return error
@@ -100,7 +100,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 		if *body.Quantity > 0 {
 			// if quantity not 0 then update cart item
 			cartItem.Quantity = *body.Quantity
-			return saveRecord(cartItem)
+			return update(cartItem)
 		} else {
 			// if quantity is 0
 			if len(cart.Items) > 1 {
@@ -207,13 +207,13 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	if ord.IsPreorder && trx.PaymentMethod == transaction.ECANTEENSPAY {
 		user.Wallet.Balance -= trx.Amount
 
-		if err := saveRecord(user.Wallet); err != nil {
+		if err := update(user.Wallet); err != nil {
 			return nil, err
 		}
 
 		cart.Restaurant.Owner.Wallet.Balance += trx.Amount
 
-		if err := saveRecord(cart.Restaurant.Owner.Wallet); err != nil {
+		if err := update(cart.Restaurant.Owner.Wallet); err != nil {
 			return nil, err
 		}
 	}

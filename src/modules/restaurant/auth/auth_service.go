@@ -94,7 +94,10 @@ func registerService(body *registerScheme) error {
 	restaurant.Avatar = restaurantAvatar.Url
 	restaurant.Banner = banner.Url
 
-	update(&user)
+	if err := update(&user); err != nil {
+		return err
+	}
+
 	return update(&restaurant)
 }
 
@@ -136,4 +139,37 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
 	return token, nil
+}
+
+func updateProfileService(body *updateProfileScheme, user *models.User) error {
+	if err := checkUniqueService(body.Email, body.Phone, *user.Id); err != nil {
+		return err
+	}
+
+	user.Name = body.Name
+	user.Email = body.Email
+	user.Phone = &body.Phone
+
+	if body.Avatar != nil {
+		filePath, err := upload.New(&upload.Option{
+			Folder:      "avatar/user",
+			File:        body.Avatar,
+			NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		user.Avatar = filePath.Url
+	}
+
+	if err := update(user); err != nil {
+		return err
+	}
+
+	user.Password = ""
+	user.Wallet.Pin = ""
+
+	return nil
 }

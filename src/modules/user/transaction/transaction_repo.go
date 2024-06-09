@@ -16,8 +16,8 @@ func create[T any](data *T) error {
 	return config.DB.Create(data).Error
 }
 
-func saveRecord[T any](data *T) error {
-	return config.DB.Save(data).Error
+func update[T any](data *T) error {
+	return config.DB.Updates(data).Error
 }
 
 func deleteRecord[T any](data *T) error {

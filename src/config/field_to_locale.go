@@ -4,6 +4,8 @@ func fieldToLocale(field string) (intlField string) {
 	switch field {
 	case "name":
 		intlField = "Nama"
+	case "email":
+		intlField = "Email"
 	case "phone":
 		intlField = "Nomor Telepon"
 	case "password":

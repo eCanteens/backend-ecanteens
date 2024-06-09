@@ -27,3 +27,10 @@ type loginScheme struct {
 type refreshScheme struct {
 	RefreshToken string `binding:"required" json:"refresh_token"`
 }
+
+type updateProfileScheme struct {
+	Avatar *multipart.FileHeader `form:"avatar"`
+	Name   string                `binding:"required" json:"name" form:"name"`
+	Phone  string                `binding:"required,numeric,min=11,max=13" json:"phone" form:"phone"`
+	Email  string                `binding:"required,email" json:"email" form:"email"`
+}

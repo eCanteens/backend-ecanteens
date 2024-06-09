@@ -135,7 +135,7 @@ func setupGoogleService(body *setupScheme, user *models.User) error {
 	user.Phone = &body.Phone
 	user.Password = string(hashed)
 
-	if err := save(user); err != nil {
+	if err := update(user); err != nil {
 		return err
 	}
 
@@ -228,7 +228,7 @@ func updateProfileService(user *models.User, body *updateScheme) error {
 		user.Avatar = filePath.Url
 	}
 
-	if err := save(user); err != nil {
+	if err := update(user); err != nil {
 		return err
 	}
 
@@ -247,7 +247,7 @@ func updatePasswordService(user *models.User, body *updatePasswordScheme) error 
 
 	user.Password = string(hashed)
 
-	return save(user)
+	return update(user)
 }
 
 func checkPinService(user *models.User, body *checkPinScheme) error {
@@ -269,5 +269,5 @@ func updatePinService(user *models.User, body *updatePinScheme) error {
 	}
 	user.Wallet.Pin = string(hashed)
 
-	return save(user.Wallet)
+	return update(user.Wallet)
 }
