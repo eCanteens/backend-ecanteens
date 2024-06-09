@@ -107,3 +107,41 @@ func handleUpdateProfile(ctx *gin.Context) {
 
 	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui"))
 }
+
+func handleUpdateResto(ctx *gin.Context) {
+	var body updateRestoScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := updateRestoService(&body, _user.Restaurant); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Restoran berhasil diperbarui"))
+}
+
+func handleUpdatePassword(ctx *gin.Context) {
+	var body updatePasswordScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := updatePasswordService(&_user, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
+}

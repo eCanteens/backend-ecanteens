@@ -34,3 +34,15 @@ type updateProfileScheme struct {
 	Phone  string                `binding:"required,numeric,min=11,max=13" json:"phone" form:"phone"`
 	Email  string                `binding:"required,email" json:"email" form:"email"`
 }
+
+type updateRestoScheme struct {
+	Avatar     *multipart.FileHeader `form:"avatar"`
+	Name       string                `binding:"required" json:"name" form:"name"`
+	CategoryId uint                  `binding:"required,numeric" json:"category_id" form:"category_id"`
+	Banner     *multipart.FileHeader `form:"banner"`
+}
+
+type updatePasswordScheme struct {
+	OldPassword string `binding:"required" mod:"trim" json:"old_password"`
+	NewPassword string `binding:"required,min=8" mod:"trim" json:"new_password"`
+}

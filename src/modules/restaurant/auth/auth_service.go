@@ -173,3 +173,50 @@ func updateProfileService(body *updateProfileScheme, user *models.User) error {
 
 	return nil
 }
+
+func updateRestoService(body *updateRestoScheme, resto *models.Restaurant) error {
+	resto.Name = body.Name
+	resto.CategoryId = body.CategoryId
+
+	if body.Avatar != nil {
+		file, err := upload.New(&upload.Option{
+			Folder:      "avatar/restaurant",
+			File:        body.Avatar,
+			NewFilename: strconv.FormatUint(uint64(*resto.Id), 10),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		resto.Avatar = file.Url
+	}
+
+	if body.Banner != nil {
+		file, err := upload.New(&upload.Option{
+			Folder:      "banner",
+			File:        body.Banner,
+			NewFilename: strconv.FormatUint(uint64(*resto.Id), 10),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		resto.Banner = file.Url
+	}
+
+	return update(resto)
+}
+
+func updatePasswordService(user *models.User, body *updatePasswordScheme) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
+		return errors.New("password salah")
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+
+	user.Password = string(hashed)
+
+	return update(user)
+}

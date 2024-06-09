@@ -16,5 +16,7 @@ func Routes(router *gin.RouterGroup) {
 	{
 		authorized.GET("/profile", handleProfile)
 		authorized.PUT("/profile", handleUpdateProfile)
+		authorized.PUT("/restaurant", handleUpdateResto)
+		authorized.PUT("/password", handleUpdatePassword)
 	}
 }
