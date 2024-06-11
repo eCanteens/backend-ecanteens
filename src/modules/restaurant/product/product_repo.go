@@ -33,3 +33,7 @@ func findAllProduct(result *pagination.Pagination[models.Product], query *produc
 		Direction: query.Direction,
 	})
 }
+
+func update(product *models.Product, id string) error {
+	return config.DB.Model(&models.Product{}).Where("id = ?", id).Updates(product).Error
+}

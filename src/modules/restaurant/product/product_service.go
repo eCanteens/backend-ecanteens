@@ -45,3 +45,34 @@ func getAllProductService(query *productQs, user *models.User) (*pagination.Pagi
 
 	return result, nil
 }
+
+func updateProductService(user *models.User, body *updateProduct, id string) error {
+	product := &models.Product{
+		RestaurantId: *user.Restaurant.Id,
+		Name:         body.Name,
+		Price:        body.Price,
+		Stock:        body.Stock,
+		Description:  body.Description,
+		CategoryId:   body.CategoryId,
+	}
+
+	if body.Image != nil {
+		filepath, err := upload.New(&upload.Option{
+			Folder:      "product",
+			File:        body.Image,
+			NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		product.Image = filepath.Url
+	}
+
+	if err := update(product, id); err != nil {
+		return err
+	}
+
+	return nil
+}

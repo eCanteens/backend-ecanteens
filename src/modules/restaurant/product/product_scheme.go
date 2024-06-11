@@ -11,6 +11,15 @@ type createProduct struct {
 	CategoryId  uint                  `binding:"required,numeric" form:"category_id" json:"category_id" mod:"trim"`
 }
 
+type updateProduct struct {
+	Image       *multipart.FileHeader `form:"image"`
+	Name        string                `binding:"required" mod:"trim" json:"name" form:"name"`
+	Price       uint                  `binding:"required" mod:"trim" json:"price" form:"price"`
+	Stock       uint                  `binding:"required" mod:"trim" json:"stock" form:"stock"`
+	Description string                `binding:"required" mod:"trim" json:"description" form:"description"`
+	CategoryId  uint                  `binding:"required,numeric" mod:"trim" json:"category_id" form:"category_id"`
+}
+
 type productQs struct {
 	Page      string `form:"page"`
 	Search    string `form:"search" mod:"trim"`

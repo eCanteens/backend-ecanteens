@@ -11,7 +11,6 @@ func Routes(router *gin.RouterGroup) {
 	{
 		authorized.POST("/", handleCreateProduct)
 		authorized.GET("/", handleGetAllProduct)
-		authorized.GET("/:id", handleGetOneProduct)
 		authorized.PUT("/:id", handleUpdateProduct)
 		authorized.DELETE("/:id", handleDeleteProduct)
 	}
