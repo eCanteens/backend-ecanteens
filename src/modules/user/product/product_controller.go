@@ -8,7 +8,6 @@ import (
 
 func addFeedback(ctx *gin.Context) {
 	var body feedbackScheme
-	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
 	if err := helpers.Bind(ctx, &body); err != nil {
@@ -16,7 +15,10 @@ func addFeedback(ctx *gin.Context) {
 		return
 	}
 
-	if err := addFeedbackService(&body, *user.(models.User).Id, id); err != nil {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := addFeedbackService(&body, *_user.Id, id); err != nil {
 		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
 		return
 	}

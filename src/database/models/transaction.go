@@ -1,15 +1,15 @@
 package models
 
-import "github.com/eCanteens/backend-ecanteens/src/constants/transaction"
+import "github.com/eCanteens/backend-ecanteens/src/enums"
 
 type Transaction struct {
 	PK
-	TransactionCode string                               `gorm:"type:varchar(255);unique" json:"transaction_id"`
-	UserId          uint                                 `gorm:"type:bigint" json:"user_id"`
-	Type            transaction.TransactionType          `gorm:"type:varchar(20)" json:"type"`   // [PAY, TOPUP, WITHDRAW]
-	Status          transaction.TransactionStatus        `gorm:"type:varchar(20)" json:"status"` // [INPROGRESS, SUCCESS, CANCELED]
-	Amount          uint                                 `gorm:"type:int" json:"amount"`
-	PaymentMethod   transaction.TransactionPaymentMethod `gorm:"type:varchar(20)" json:"payment_method"`
+	TransactionCode string                         `gorm:"type:varchar(255);unique" json:"transaction_id"`
+	UserId          uint                           `gorm:"type:bigint" json:"user_id"`
+	Type            enums.TransactionType          `gorm:"type:varchar(20)" json:"type"`   // [PAY, TOPUP, WITHDRAW]
+	Status          enums.TransactionStatus        `gorm:"type:varchar(20)" json:"status"` // [INPROGRESS, SUCCESS, CANCELED]
+	Amount          uint                           `gorm:"type:int" json:"amount"`
+	PaymentMethod   enums.TransactionPaymentMethod `gorm:"type:varchar(20)" json:"payment_method"` // [ECANTEENSPAY, CASH]
 	Timestamps
 
 	// Relation

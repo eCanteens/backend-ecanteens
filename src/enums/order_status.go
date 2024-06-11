@@ -1,4 +1,4 @@
-package order
+package enums
 
 import (
 	"database/sql/driver"
@@ -8,11 +8,11 @@ import (
 type OrderStatus string
 
 const (
-	WAITING    OrderStatus = "WAITING"
-	INPROGRESS OrderStatus = "INPROGRESS"
-	READY      OrderStatus = "READY"
-	SUCCESS    OrderStatus = "SUCCESS"
-	CANCELED   OrderStatus = "CANCELED"
+	OrderStatusWaiting    OrderStatus = "WAITING"
+	OrderStatusInProgress OrderStatus = "INPROGRESS"
+	OrderStatusReady      OrderStatus = "READY"
+	OrderStatusSuccess    OrderStatus = "SUCCESS"
+	OrderStatusCanceled   OrderStatus = "CANCELED"
 )
 
 func (ct *OrderStatus) Scan(value interface{}) error {

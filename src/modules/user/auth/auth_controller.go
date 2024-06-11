@@ -66,13 +66,14 @@ func handleGoogle(ctx *gin.Context) {
 
 func handleSetup(ctx *gin.Context) {
 	var body setupScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if err := setupGoogleService(&body, &_user); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -170,13 +171,14 @@ func handleUpdateProfile(ctx *gin.Context) {
 
 func handleUpdatePassword(ctx *gin.Context) {
 	var body updatePasswordScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if err := updatePasswordService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -188,13 +190,14 @@ func handleUpdatePassword(ctx *gin.Context) {
 
 func handleCheckPin(ctx *gin.Context) {
 	var body checkPinScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if err := checkPinService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -206,13 +209,14 @@ func handleCheckPin(ctx *gin.Context) {
 
 func handleUpdatePin(ctx *gin.Context) {
 	var body updatePinScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if err := updatePinService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))

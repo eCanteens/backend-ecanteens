@@ -1,4 +1,4 @@
-package transaction
+package enums
 
 import (
 	"database/sql/driver"
@@ -8,8 +8,8 @@ import (
 type TransactionPaymentMethod string
 
 const (
-	CASH         TransactionPaymentMethod = "CASH"
-	ECANTEENSPAY TransactionPaymentMethod = "ECANTEENSPAY"
+	TrxPaymentCash         TransactionPaymentMethod = "CASH"
+	TrxPaymentEcanteensPay TransactionPaymentMethod = "ECANTEENSPAY"
 )
 
 func (ct *TransactionPaymentMethod) Scan(value interface{}) error {
@@ -19,7 +19,7 @@ func (ct *TransactionPaymentMethod) Scan(value interface{}) error {
 	case string:
 		*ct = TransactionPaymentMethod(v)
 	default:
-		return fmt.Errorf("unsupported Scan type for TransactionPaymentMethod: %T", value)
+		return fmt.Errorf("unsupported Scan type for PaymentMethod: %T", value)
 	}
 	return nil
 }

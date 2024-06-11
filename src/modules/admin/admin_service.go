@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"github.com/golang-jwt/jwt/v5"
@@ -83,7 +83,7 @@ func topupWithdrawService(phone string, body *topupWithdrawScheme, tipe string) 
 		return nil, err
 	}
 
-	data, err := createTransaction(&user, body.Amount, transaction.TransactionType(tipe))
+	data, err := createTransaction(&user, body.Amount, enums.TransactionType(tipe))
 
 	if err != nil {
 		return nil, err

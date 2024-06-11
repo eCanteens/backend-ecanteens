@@ -16,6 +16,10 @@ type orderScheme struct {
 	FullfilmentDate string `binding:"required_if=IsPreorder true" json:"fullfilment_date"`
 }
 
+type cancelOrderScheme struct {
+	Reason string `binding:"required" json:"reason"`
+}
+
 type getOrderQS struct {
 	Page      string `form:"page"`
 	Limit     string `form:"limit"`

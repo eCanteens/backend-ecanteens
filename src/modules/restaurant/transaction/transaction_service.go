@@ -3,8 +3,9 @@ package transaction
 import (
 	"errors"
 
-	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/enums"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
@@ -33,7 +34,7 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	switch body.Status {
 	case "INPROGRESS":
 		if order.Status == "WAITING" {
-			if order.Transaction.PaymentMethod == transaction.ECANTEENSPAY && !order.IsPreorder {
+			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && !order.IsPreorder {
 				user.Wallet.Balance += order.Transaction.Amount
 
 				if order.User.Wallet.Balance < order.Transaction.Amount {
@@ -42,7 +43,7 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 
 				order.User.Wallet.Balance -= order.Transaction.Amount
 
-				order.Transaction.Status = transaction.SUCCESS
+				order.Transaction.Status = enums.TrxStatusSuccess
 
 				if err := transferBalance(order.User.Wallet, user.Wallet, order.Transaction); err != nil {
 					return err
@@ -57,7 +58,7 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 		}
 	case "CANCELED":
 		if order.Status == "WAITING" {
-			if order.Transaction.PaymentMethod == transaction.ECANTEENSPAY && order.IsPreorder {
+			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && order.IsPreorder {
 				order.User.Wallet.Balance += order.Transaction.Amount
 
 				if user.Wallet.Balance < order.Transaction.Amount {
@@ -66,17 +67,20 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 
 				user.Wallet.Balance -= order.Transaction.Amount
 
-				order.Transaction.Status = transaction.CANCELED
+				order.Transaction.Status = enums.TrxStatusCanceled
 
 				if err := transferBalance(user.Wallet, order.User.Wallet, order.Transaction); err != nil {
 					return err
 				}
 			} else {
-				order.Transaction.Status = transaction.CANCELED
+				order.Transaction.Status = enums.TrxStatusCanceled
 				if err := update(order.Transaction); err != nil {
 					return err
 				}
 			}
+
+			order.CancelReason = &body.Reason
+			order.CancelBy = helpers.PointerTo(enums.OrderCancelByResto)
 
 			return updateOrderStatus(id, *user.Restaurant.Id, body.Status)
 		}

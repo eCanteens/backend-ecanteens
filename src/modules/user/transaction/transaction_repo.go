@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"github.com/eCanteens/backend-ecanteens/src/constants/order"
-	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/enums"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
@@ -83,8 +83,8 @@ func findOrder(result *pagination.Pagination[models.Order], userId uint, query *
 	})
 }
 
-func updateCartNote(id, notes string) error {
-	tx := config.DB.Model(&models.Cart{}).Where("id = ?", id).Update("notes", notes)
+func updateCartNote(id string, userId uint, notes string) error {
+	tx := config.DB.Model(&models.Cart{}).Where("id = ?", id).Where("user_id = ?", userId).Update("notes", notes)
 
 	if tx.RowsAffected == 0 {
 		return errors.New("keranjang tidak ditemukan")
@@ -93,11 +93,11 @@ func updateCartNote(id, notes string) error {
 	return tx.Error
 }
 
-func cancelOrderById(id string) error {
+func cancelOrderById(reason, id string, userId uint) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
-		var ord models.Order
+		var order models.Order
 
-		if err := tx.Where("id = ?", id).First(&ord).Error; err != nil {
+		if err := tx.Where("id = ?", id).Where("user_id = ?", userId).Where("status = ?", enums.OrderStatusWaiting).First(&order).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return errors.New("pesanan tidak ditemukan")
 			}
@@ -105,14 +105,17 @@ func cancelOrderById(id string) error {
 			return err
 		}
 
-		if ord.Status != order.WAITING {
-			return errors.New("pesanan tidak bisa dibatalkan karena sudah dikonfirmasi oleh restoran")
+		order.Status = enums.OrderStatusCanceled
+		order.CancelBy = helpers.PointerTo(enums.OrderCancelByUser)
+		order.CancelReason = &reason
+
+		if err := tx.Save(&order).Error; err != nil {
+			return err
 		}
 
-		ord.Status = order.CANCELED
-
-		tx.Save(&ord)
-		tx.Model(&models.Transaction{}).Where("id = ?", ord.TransactionId).Update("status", transaction.CANCELED)
+		if err := tx.Model(&models.Transaction{}).Where("id = ?", order.TransactionId).Update("status", enums.TrxStatusCanceled).Error; err != nil {
+			return err
+		}
 
 		return nil
 	})

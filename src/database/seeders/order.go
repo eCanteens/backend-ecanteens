@@ -6,9 +6,8 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"github.com/eCanteens/backend-ecanteens/src/constants/order"
-	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 )
 
@@ -54,33 +53,35 @@ func OrderSeeder() {
 				UserId:       *user.Id,
 				RestaurantId: restaurantId,
 				Notes:        gofakeit.Comment(),
-				Status:       order.OrderStatus(gofakeit.RandomString([]string{"WAITING", "INPROGRESS", "READY", "SUCCESS", "CANCELED"})),
+				Status:       enums.OrderStatus(gofakeit.RandomString([]string{"WAITING", "INPROGRESS", "READY", "SUCCESS", "CANCELED"})),
 				IsPreorder:   gofakeit.Bool(),
 				Amount:       amount,
 				Items:        ordItems,
 				Transaction: &models.Transaction{
 					TransactionCode: fmt.Sprintf("EC-%d-%d", gofakeit.DateRange(time.Now().AddDate(0, -1, 0), time.Now()).Unix(), 3),
 					UserId:          *user.Id,
-					Type:            transaction.PAY,
+					Type:            enums.TrxTypePay,
 					Amount:          amount,
-					PaymentMethod:   transaction.TransactionPaymentMethod(gofakeit.RandomString([]string{"CASH", "ECANTEENSPAY"})),
+					PaymentMethod:   enums.TransactionPaymentMethod(gofakeit.RandomString([]string{"CASH", "ECANTEENSPAY"})),
 				},
 			}
 
 			// Set fullfilment date
-			if ord.IsPreorder && ord.Status == order.WAITING {
+			if ord.IsPreorder && ord.Status == enums.OrderStatusWaiting {
 				ord.FullfilmentDate = helpers.PointerTo(gofakeit.DateRange(time.Now(), time.Now().AddDate(0, 0, 5)))
 			} else if ord.IsPreorder {
 				ord.FullfilmentDate = helpers.PointerTo(gofakeit.DateRange(time.Now().AddDate(0, -1, 0), time.Now()))
 			}
 
 			// Set transaction status
-			if (ord.Status == order.WAITING && ord.IsPreorder && ord.Transaction.PaymentMethod == transaction.ECANTEENSPAY) || ord.Status == order.SUCCESS {
-				ord.Transaction.Status = transaction.SUCCESS
-			} else if ord.Status == order.CANCELED {
-				ord.Transaction.Status = transaction.CANCELED
+			if (ord.Status == enums.OrderStatusWaiting && ord.IsPreorder && ord.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay) || ord.Status == enums.OrderStatusSuccess {
+				ord.Transaction.Status = enums.TrxStatusSuccess
+			} else if ord.Status == enums.OrderStatusCanceled {
+				ord.Transaction.Status = enums.TrxStatusCanceled
+				ord.CancelReason = helpers.PointerTo(gofakeit.Comment())
+				ord.CancelBy = helpers.PointerTo(enums.OrderCancelBy(gofakeit.RandomString([]string{"RESTO", "USER"})))
 			} else {
-				ord.Transaction.Status = transaction.INPROGRESS
+				ord.Transaction.Status = enums.TrxStatusInProgress
 			}
 
 			orders = append(orders, &ord)

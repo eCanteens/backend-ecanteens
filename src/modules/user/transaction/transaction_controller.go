@@ -31,7 +31,10 @@ func updateCart(ctx *gin.Context) {
 		return
 	}
 
-	if err := updateCartService(id, &body); err != nil {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := updateCartService(id, &body, *_user.Id); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
@@ -41,13 +44,14 @@ func updateCart(ctx *gin.Context) {
 
 func addCart(ctx *gin.Context) {
 	var body addCartScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	if err := addCartService(&_user, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
@@ -80,13 +84,14 @@ func getOrder(ctx *gin.Context) {
 
 func handleOrder(ctx *gin.Context) {
 	var body orderScheme
-	user, _ := ctx.Get("user")
-	_user := user.(models.User)
 
 	if err := helpers.Bind(ctx, &body); err != nil {
 		ctx.AbortWithStatusJSON(400, err)
 		return
 	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
 
 	data, err := orderService(&body, &_user)
 
@@ -101,9 +106,18 @@ func handleOrder(ctx *gin.Context) {
 }
 
 func handleCancelOrder(ctx *gin.Context) {
+	var body cancelOrderScheme
 	id := ctx.Param("id")
 
-	if err := cancelOrderService(id); err != nil {
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := cancelOrderService(&body, id, *_user.Id); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}

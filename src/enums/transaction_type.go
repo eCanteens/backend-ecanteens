@@ -1,4 +1,4 @@
-package transaction
+package enums
 
 import (
 	"database/sql/driver"
@@ -8,9 +8,9 @@ import (
 type TransactionType string
 
 const (
-	PAY      TransactionType = "PAY"
-	TOPUP    TransactionType = "TOPUP"
-	WITHDRAW TransactionType = "WITHDRAW"
+	TrxTypePay      TransactionType = "PAY"
+	TrxTypeTopUp    TransactionType = "TOPUP"
+	TrxTypeWithdraw TransactionType = "WITHDRAW"
 )
 
 func (ct *TransactionType) Scan(value interface{}) error {

@@ -11,10 +11,11 @@ import (
 
 func productCategorySeeder() {
 	productCategory := []*models.ProductCategory{
-		{ Name: "Makanan" },
+		{ Name: "Makanan Berat" },
 		{ Name: "Minuman" },
 		{ Name: "Jajanan" },
-		{ Name: "Sidedish" },
+		{ Name: "Makanan Pendamping" },
+		{ Name: "Lainnya" },
 	}
 
 	config.DB.Create(&productCategory)
@@ -26,14 +27,18 @@ func ProductSeeder() {
 	var products []*models.Product
 
 	for i := 0; i < 50; i++ {
-		randomInt := gofakeit.IntRange(0, 4)
-		productName := []string{gofakeit.Breakfast(), gofakeit.Lunch(), gofakeit.Snack(), gofakeit.Fruit(), gofakeit.Dessert(),}
+		randomInt := gofakeit.IntRange(0, 5)
+		productName := []string{gofakeit.Breakfast(), gofakeit.Lunch(), gofakeit.Drink(), gofakeit.Snack(), gofakeit.Fruit(), gofakeit.Dessert()}
 		var category uint = 1
 
 		if randomInt == 2 {
+			category = 2
+		} else if randomInt == 3 {
 			category = 3
-		} else if randomInt == 3 || randomInt == 4 {
+		} else if randomInt == 4 {
 			category = 4
+		} else {
+			category = 5
 		}
 
 		products = append(products, &models.Product{

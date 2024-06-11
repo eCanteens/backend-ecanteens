@@ -1,4 +1,4 @@
-package transaction
+package enums
 
 import (
 	"database/sql/driver"
@@ -8,9 +8,9 @@ import (
 type TransactionStatus string
 
 const (
-	INPROGRESS TransactionStatus = "INPROGRESS"
-	SUCCESS    TransactionStatus = "SUCCESS"
-	CANCELED   TransactionStatus = "CANCELED"
+	TrxStatusInProgress TransactionStatus = "INPROGRESS"
+	TrxStatusSuccess    TransactionStatus = "SUCCESS"
+	TrxStatusCanceled   TransactionStatus = "CANCELED"
 )
 
 func (ct *TransactionStatus) Scan(value interface{}) error {

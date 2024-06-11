@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/eCanteens/backend-ecanteens/src/constants/order"
-	"github.com/eCanteens/backend-ecanteens/src/constants/transaction"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
@@ -23,8 +22,8 @@ func getCartService(user *models.User) (*[]models.Cart, error) {
 	return &carts, nil
 }
 
-func updateCartService(id string, body *updateCartNoteScheme) error {
-	return updateCartNote(id, body.Notes)
+func updateCartService(id string, body *updateCartNoteScheme, userId uint) error {
+	return updateCartNote(id, userId, body.Notes)
 }
 
 func addCartService(user *models.User, body *addCartScheme) error {
@@ -139,9 +138,9 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	trx := models.Transaction{
 		TransactionCode: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
 		UserId:          *user.Id,
-		Type:            transaction.PAY,
-		Status:          transaction.INPROGRESS,
-		PaymentMethod:   transaction.TransactionPaymentMethod(body.PaymentMethod),
+		Type:            enums.TrxTypePay,
+		Status:          enums.TrxStatusInProgress,
+		PaymentMethod:   enums.TransactionPaymentMethod(body.PaymentMethod),
 	}
 
 	// Validate restaurant open
@@ -166,7 +165,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		UserId:          cart.UserId,
 		RestaurantId:    cart.RestaurantId,
 		Notes:           cart.Notes,
-		Status:          order.WAITING,
+		Status:          enums.OrderStatusWaiting,
 		IsPreorder:      *body.IsPreorder,
 		FullfilmentDate: fullfilmentDate,
 	}
@@ -189,7 +188,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	ord.Transaction = &trx
 
 	// Validate wallet balance
-	if trx.PaymentMethod == transaction.ECANTEENSPAY && user.Wallet.Balance < trx.Amount {
+	if trx.PaymentMethod == enums.TrxPaymentEcanteensPay && user.Wallet.Balance < trx.Amount {
 		return nil, errors.New("saldo anda tidak mencukupi")
 	}
 
@@ -204,7 +203,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	}
 
 	// if preorder & payment method with ecanteenspay then update user balance & resto owner balance
-	if ord.IsPreorder && trx.PaymentMethod == transaction.ECANTEENSPAY {
+	if ord.IsPreorder && trx.PaymentMethod == enums.TrxPaymentEcanteensPay {
 		user.Wallet.Balance -= trx.Amount
 
 		if err := update(user.Wallet); err != nil {
@@ -221,6 +220,6 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	return &ord, nil
 }
 
-func cancelOrderService(id string) error {
-	return cancelOrderById(id)
+func cancelOrderService(body *cancelOrderScheme, id string, userId uint) error {
+	return cancelOrderById(body.Reason, id, userId)
 }

@@ -10,4 +10,5 @@ type getOrderQS struct {
 
 type updateOrderScheme struct {
 	Status string `binding:"required,oneof=INPROGRESS READY CANCELED" json:"status"`
+	Reason string `binding:"required_if=Status CANCELED" json:"reason"`
 }
