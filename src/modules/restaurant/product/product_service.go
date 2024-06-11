@@ -39,7 +39,7 @@ func createProductService(user *models.User, body *createProduct) error {
 func getAllProductService(query *productQs, user *models.User) (*pagination.Pagination[models.Product], error) {
 	var result = pagination.New(models.Product{})
 
-	if err := findAllProduct(result, query, user); err != nil {
+	if err := findAll(result, query, user); err != nil {
 		return nil, err
 	}
 
@@ -75,4 +75,14 @@ func updateProductService(user *models.User, body *updateProduct, id string) err
 	}
 
 	return nil
+}
+
+func deleteProductService(user *models.User, productId string) error {
+	id, err := strconv.ParseUint(productId, 10, 32)
+
+	if err != nil {
+		return err
+	}
+
+	return delete(uint(id), *user.Restaurant.Id)
 }

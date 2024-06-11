@@ -63,4 +63,15 @@ func handleUpdateProduct(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Menu berhasil diupdate"))
 }
 
-func handleDeleteProduct(ctx *gin.Context) {}
+func handleDeleteProduct(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+	id := ctx.Param("id")
+
+	if err := deleteProductService(&_user, id); err != nil {
+		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Menu berhasil dihapus"))
+}
