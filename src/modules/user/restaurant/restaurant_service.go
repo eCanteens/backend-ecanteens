@@ -8,32 +8,24 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
+	var result = pagination.New(models.Restaurant{})
 
-	if query.Order == "" {
-		query.Order = "created_at"
-	}
-
-	if query.Direction == "" {
-		query.Direction = "desc"
-	}
-
-	if err := findFavorite(&result, userId, query); err != nil {
+	if err := findFavorite(result, userId, query); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
-func getAllService(query *paginationQS) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func getAllService(query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
+	var result = pagination.New(models.Restaurant{})
 
-	if err := find(&result, query); err != nil {
+	if err := find(result, query); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func getReviewsService(id string, query *reviewQS) (*[]models.Review, error) {
@@ -56,14 +48,14 @@ func getDetailService(id string) (*models.Restaurant, error) {
 	return &restaurant, nil
 }
 
-func getRestosProductsService(id string, query *paginationQS) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func getRestosProductsService(id string, query *paginationQS) (*pagination.Pagination[models.Product], error) {
+	var result = pagination.New(models.Product{})
 
-	if err := findRestosProducts(&result, id, query); err != nil {
+	if err := findRestosProducts(result, id, query); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func addFavoriteService(userId uint, restaurantId string) error {

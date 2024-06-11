@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func findFavorite(result *pagination.Pagination, userId uint, query *paginationQS) error {
+func findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {
 	q := config.DB.Table("restaurants").
 		Joins("JOIN favorite_restaurants fr ON fr.restaurant_id = restaurants.id").
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
@@ -18,9 +18,8 @@ func findFavorite(result *pagination.Pagination, userId uint, query *paginationQ
 		Where("restaurants.name ILIKE ?", "%"+query.Search+"%").
 		Preload("Category")
 
-	return result.New(&pagination.Params{
+	return result.Execute(&pagination.Params{
 		Query:     q,
-		Model:     &[]models.Restaurant{},
 		Page:      query.Page,
 		Limit:     query.Limit,
 		Order:     query.Order,
@@ -28,7 +27,7 @@ func findFavorite(result *pagination.Pagination, userId uint, query *paginationQ
 	})
 }
 
-func find(result *pagination.Pagination, query *paginationQS) error {
+func find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error {
 	q := config.DB.Table("restaurants").
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
 		Joins("JOIN reviews ON reviews.order_id = orders.id").
@@ -37,9 +36,8 @@ func find(result *pagination.Pagination, query *paginationQS) error {
 		Where("restaurants.name ILIKE ?", "%"+query.Search+"%").
 		Preload("Category")
 
-	return result.New(&pagination.Params{
+	return result.Execute(&pagination.Params{
 		Query:     q,
-		Model:     &[]models.Restaurant{},
 		Page:      query.Page,
 		Limit:     query.Limit,
 		Order:     query.Order,
@@ -79,7 +77,7 @@ func findOne(restaurant *models.Restaurant, id string) error {
 		First(restaurant).Error
 }
 
-func findRestosProducts(result *pagination.Pagination, id string, query *paginationQS) error {
+func findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS) error {
 	q := config.DB.Table("products").
 		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
 		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
@@ -88,9 +86,8 @@ func findRestosProducts(result *pagination.Pagination, id string, query *paginat
 		Group("products.id").
 		Preload("Category")
 
-	return result.New(&pagination.Params{
+	return result.Execute(&pagination.Params{
 		Query:     q,
-		Model:     &[]models.Product{},
 		Page:      query.Page,
 		Limit:     query.Limit,
 		Order:     query.Order,

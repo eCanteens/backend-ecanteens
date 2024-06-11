@@ -10,7 +10,7 @@ func create(product *models.Product) error {
 	return config.DB.Create(product).Error
 }
 
-func findAllProduct(result *pagination.Pagination, query *productQs, user *models.User) error {
+func findAllProduct(result *pagination.Pagination[models.Product], query *productQs, user *models.User) error {
 	likeCountSubquery := config.DB.Table("product_feedbacks").
 		Select("COUNT(*)").
 		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = TRUE")
@@ -25,9 +25,8 @@ func findAllProduct(result *pagination.Pagination, query *productQs, user *model
 		Where("products.name ILIKE ?", "%"+query.Search+"%").
 		Preload("Category")
 
-	return result.New(&pagination.Params{
+	return result.Execute(&pagination.Params{
 		Query:     q,
-		Model:     &[]models.Product{},
 		Page:      query.Page,
 		Limit:     query.Limit,
 		Order:     query.Order,

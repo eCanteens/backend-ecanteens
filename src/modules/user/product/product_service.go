@@ -44,14 +44,14 @@ func removeFeedbackService(userId uint, productId string) error {
 	return deleteFeedback(userId, uint(id))
 }
 
-func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination[models.Product], error) {
+	var result = pagination.New(models.Product{})
 
-	if err := findFavorite(&result, userId, query); err != nil {
+	if err := findFavorite(result, userId, query); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func addFavoriteService(userId uint, productId string) error {

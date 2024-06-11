@@ -72,7 +72,7 @@ func findTransaction(transaction *models.Transaction, id string) (*models.Transa
 	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
 }
 
-func findMutasi(result *pagination.Pagination, query *mutationQS) error {
+func findMutasi(result *pagination.Pagination[models.Transaction], query *mutationQS) error {
 	search := query.Search
 	page := query.Page
 	order := query.Order
@@ -99,12 +99,11 @@ func findMutasi(result *pagination.Pagination, query *mutationQS) error {
 
 	params := &pagination.Params{
 		Query:     db,
-		Model:     &[]models.Transaction{},
 		Page:      page,
 		Limit:     "25",
 		Order:     order,
 		Direction: direction,
 	}
 
-	return result.New(params)
+	return result.Execute(params)
 }

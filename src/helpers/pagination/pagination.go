@@ -1,6 +1,7 @@
 package pagination
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 
@@ -15,21 +16,24 @@ type meta struct {
 	LastPage    int   `json:"last_page"`
 }
 
-type Pagination struct {
-	Meta meta        `json:"meta"`
-	Data interface{} `json:"data"`
+type Pagination[T any] struct {
+	Meta meta `json:"meta"`
+	Data *[]T `json:"data"`
 }
 
 type Params struct {
 	Query     *gorm.DB
-	Model     any
 	Page      string
 	Limit     string
 	Order     string
 	Direction string
 }
 
-func (pagination *Pagination) New(params *Params) error {
+func New[T any](model T) *Pagination[T] {
+	return &Pagination[T]{Data: &[]T{}}
+}
+
+func (pagination *Pagination[any]) Execute(params *Params) error {
 	if params.Query == nil {
 		params.Query = config.DB
 	}
@@ -54,13 +58,13 @@ func (pagination *Pagination) New(params *Params) error {
 		params.Direction = "desc"
 	}
 
+	fmt.Println("oioioi")
 	var totalData int64
-	params.Query.Model(params.Model).Count(&totalData)
+	params.Query.Model(pagination.Data).Count(&totalData)
 	offset := (pagination.Meta.CurrentPage - 1) * pagination.Meta.PerPage
 
 	pagination.Meta.Total = totalData
 	pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))
-	pagination.Data = params.Model
 
-	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(params.Model).Error
+	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(pagination.Data).Error
 }

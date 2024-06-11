@@ -104,14 +104,14 @@ func transactionService(id string) (*models.Transaction, error) {
 	return data, nil
 }
 
-func mutasiService(query *mutationQS) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func mutasiService(query *mutationQS) (*pagination.Pagination[models.Transaction], error) {
+	var result = pagination.New(models.Transaction{})
 
-	if err := findMutasi(&result, query); err != nil {
+	if err := findMutasi(result, query); err != nil {
 		return nil, errors.New("belum ada mutasi")
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func updateAdminProfileService(user *models.User, body *updateAdminProfileScheme) error {

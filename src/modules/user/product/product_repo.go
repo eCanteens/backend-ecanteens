@@ -28,7 +28,7 @@ func deleteFeedback(userId uint, productId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.ProductFeedback{}).Error
 }
 
-func findFavorite(result *pagination.Pagination, userId uint, query *paginationQS) error {
+func findFavorite(result *pagination.Pagination[models.Product], userId uint, query *paginationQS) error {
 	q := config.DB.Table("products").
 		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
 		Joins("JOIN favorite_products fp ON fp.product_id = products.id").
@@ -38,9 +38,8 @@ func findFavorite(result *pagination.Pagination, userId uint, query *paginationQ
 		Where("fp.user_id", userId).
 		Preload("Category")
 
-	return result.New(&pagination.Params{
+	return result.Execute(&pagination.Params{
 		Query:     q,
-		Model:     &[]models.Product{},
 		Page:      query.Page,
 		Limit:     query.Limit,
 		Order:     query.Order,

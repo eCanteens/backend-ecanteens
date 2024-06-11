@@ -46,28 +46,36 @@ func findOneProduct(product *models.Product, id uint) error {
 	return config.DB.Where("id = ?", id).Preload("Restaurant").First(product).Error
 }
 
-func findOrder(result *pagination.Pagination, userId uint, query *getOrderQS) error {
+func findOrder(result *pagination.Pagination[models.Order], userId uint, query *getOrderQS) error {
 	tx := config.DB.Where("user_id = ?", userId).Preload("Items").Preload("Transaction").Preload("Restaurant")
 
 	if query.Filter == "1" {
+		// Berlangsung
 		tx.Where(
-			config.DB.Where("status = ?", "WAITING").Where("is_preorder = ?", false),
-		).Or(
-			config.DB.Where("status = ?", "INPROGRESS").Where("is_preorder = ?", false),
-		).Or(
-			config.DB.Where("status = ?", "READY"),
-		).Or(
-			config.DB.Where("is_preorder = ?", true).Where("fullfilment_date <= ?", time.Now()).Not("status = ?", "SUCCESS").Not("status = ?", "CANCELED"),
+			config.DB.
+				Where(config.DB.Where("status = ?", "WAITING").Where("is_preorder = ?", false)).
+				Or(config.DB.Where("status = ?", "INPROGRESS").Where("is_preorder = ?", false)).
+				Or(config.DB.Where("status = ?", "READY")).
+				Or(config.DB.Where("is_preorder = ?", true).Where("fullfilment_date <= ?", time.Now()).Not("status = ?", "SUCCESS").Not("status = ?", "CANCELED")),
 		)
 	} else if query.Filter == "2" {
-		tx.Where("is_preorder = ?", true).Where("fullfilment_date > ?", time.Now()).Not("status = ?", "SUCCESS").Not("status = ?", "CANCELED")
+		// Dijadwalkan
+		tx.Where(
+			config.DB.
+				Where("is_preorder = ?", true).
+				Where("fullfilment_date > ?", time.Now()).
+				Not("status = ?", "SUCCESS").
+				Not("status = ?", "CANCELED"),
+		)
 	} else if query.Filter == "3" {
-		tx.Where("status = ?", "SUCCESS").Or("status = ?", "CANCELED")
+		// Riwayat
+		tx.Where(
+			config.DB.Where("status = ?", "SUCCESS").Or("status = ?", "CANCELED"),
+		)
 	}
 
-	return result.New(&pagination.Params{
+	return result.Execute(&pagination.Params{
 		Query:     tx,
-		Model:     &[]models.Order{},
 		Page:      query.Page,
 		Limit:     query.Limit,
 		Order:     query.Order,

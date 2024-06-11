@@ -36,12 +36,12 @@ func createProductService(user *models.User, body *createProduct) error {
 	return nil
 }
 
-func getAllProductService(query *productQs, user *models.User) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func getAllProductService(query *productQs, user *models.User) (*pagination.Pagination[models.Product], error) {
+	var result = pagination.New(models.Product{})
 
-	if err := findAllProduct(&result, query, user); err != nil {
+	if err := findAllProduct(result, query, user); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }

@@ -114,14 +114,14 @@ func addCartService(user *models.User, body *addCartScheme) error {
 	}
 }
 
-func getOrderService(userId uint, query *getOrderQS) (*pagination.Pagination, error) {
-	var result pagination.Pagination
+func getOrderService(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
+	var result = pagination.New(models.Order{})
 
-	if err := findOrder(&result, userId, query); err != nil {
+	if err := findOrder(result, userId, query); err != nil {
 		return nil, err
 	}
 
-	return &result, nil
+	return result, nil
 }
 
 func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
