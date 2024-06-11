@@ -1,7 +1,6 @@
 package pagination
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 
@@ -58,7 +57,6 @@ func (pagination *Pagination[any]) Execute(params *Params) error {
 		params.Direction = "desc"
 	}
 
-	fmt.Println("oioioi")
 	var totalData int64
 	params.Query.Model(pagination.Data).Count(&totalData)
 	offset := (pagination.Meta.CurrentPage - 1) * pagination.Meta.PerPage

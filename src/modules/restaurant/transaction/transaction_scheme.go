@@ -7,3 +7,7 @@ type getOrderQS struct {
 	Direction string `form:"direction"`
 	Filter    string `form:"filter"`
 }
+
+type updateOrderScheme struct {
+	Status string `binding:"required,oneof=INPROGRESS READY CANCELED" json:"status"`
+}

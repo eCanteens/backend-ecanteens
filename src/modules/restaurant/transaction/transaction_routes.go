@@ -10,5 +10,6 @@ func Routes(router *gin.RouterGroup) {
 	authorized.Use(middleware.Resto)
 	{
 		authorized.GET("/orders", handleGetOrder)
+		authorized.PUT("/orders/:id", handleUpdateOrder)
 	}
 }

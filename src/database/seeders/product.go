@@ -42,7 +42,7 @@ func ProductSeeder() {
 			Description:  gofakeit.ProductDescription(),
 			Image:        os.Getenv("BASE_URL") + "/public/dummy/product.png",
 			CategoryId:   category,
-			Price:        (gofakeit.UintRange(1_000, 20_000) / 100) * 100,
+			Price:        (gofakeit.UintRange(1_000, 10_000) / 100) * 100,
 			Stock:        gofakeit.UintRange(0, 20),
 			Sold:         gofakeit.UintRange(0, 200),
 		})

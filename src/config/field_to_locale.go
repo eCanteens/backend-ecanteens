@@ -1,11 +1,11 @@
 package config
 
+import "strings"
+
 func fieldToLocale(field string) (intlField string) {
 	switch field {
 	case "name":
 		intlField = "Nama"
-	case "email":
-		intlField = "Email"
 	case "phone":
 		intlField = "Nomor Telepon"
 	case "password":
@@ -29,7 +29,7 @@ func fieldToLocale(field string) (intlField string) {
 	case "payment_method":
 		intlField = "Metode Pembayaran"
 	default:
-		intlField = field
+		intlField = strings.ToUpper(string(field[0])) + field[1:]
 	}
 
 	return

@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"errors"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -9,8 +10,12 @@ import (
 	"gorm.io/gorm"
 )
 
+func update[T any](data *T) error {
+	return config.DB.Updates(data).Error
+}
+
 func findOrder(result *pagination.Pagination[models.Order], restaurantId uint, query *getOrderQS) error {
-	tx := config.DB.Debug().Where("restaurant_id = ?", restaurantId).
+	tx := config.DB.Where("restaurant_id = ?", restaurantId).
 		Preload("Items").
 		Preload("Transaction").
 		Preload("User", func(db *gorm.DB) *gorm.DB {
@@ -45,5 +50,44 @@ func findOrder(result *pagination.Pagination[models.Order], restaurantId uint, q
 		Limit:     query.Limit,
 		Order:     query.Order,
 		Direction: query.Direction,
+	})
+}
+
+func findOrderById(id string, restaurantId uint, order *models.Order) error {
+	return config.DB.
+		Where("id = ?", id).
+		Where("restaurant_id = ?", restaurantId).
+		Preload("Transaction").
+		Preload("User.Wallet").
+		First(order).Error
+}
+
+func updateOrderStatus(id string, restaurantId uint, status string) error {
+	if affected := config.DB.Model(&models.Order{}).
+		Where("id = ?", id).
+		Where("restaurant_id = ?", restaurantId).
+		Update("status", status).
+		RowsAffected; affected == 0 {
+		return errors.New("pesanan gagal diperbarui")
+	}
+
+	return nil
+}
+
+func transferBalance(src *models.Wallet, dst *models.Wallet, trx *models.Transaction) error {
+	return config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Updates(src).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Updates(dst).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Updates(trx).Error; err != nil {
+			return err
+		}
+
+		return nil
 	})
 }
