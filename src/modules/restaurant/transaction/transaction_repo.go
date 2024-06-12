@@ -6,12 +6,13 @@ import (
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
 
 func update[T any](data *T) error {
-	return config.DB.Updates(data).Error
+	return config.DB.Save(data).Error
 }
 
 func findOrder(result *pagination.Pagination[models.Order], restaurantId uint, query *getOrderQS) error {
@@ -74,8 +75,12 @@ func updateOrderStatus(id string, restaurantId uint, status string) error {
 	return nil
 }
 
-func transferBalance(src *models.Wallet, dst *models.Wallet, trx *models.Transaction) error {
+func transferBalance(src *models.Wallet, dst *models.Wallet, trx *models.Transaction, status enums.TransactionStatus) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
+		src.Balance -= trx.Amount
+		dst.Balance += trx.Amount
+		trx.Status = status
+
 		if err := tx.Updates(src).Error; err != nil {
 			return err
 		}

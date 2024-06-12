@@ -34,7 +34,7 @@ func findById(user *models.User, id uint) error {
 }
 
 func update[T any](model T) error {
-	return config.DB.Updates(model).Error
+	return config.DB.Save(model).Error
 }
 
 func updatePassword(id uint, user *models.User) error {

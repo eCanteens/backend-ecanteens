@@ -3,8 +3,8 @@ package auth
 import "mime/multipart"
 
 type checkRegisterScheme struct {
-	Email string `binding:"required,email" json:"email"`
-	Phone string `binding:"required,numeric,min=11,max=13" json:"phone"`
+	Email string `binding:"required,email" json:"email" mod:"trim"`
+	Phone string `binding:"required,numeric,min=11,max=13" json:"phone" mod:"trim"`
 }
 
 type registerScheme struct {
@@ -31,8 +31,8 @@ type refreshScheme struct {
 type updateProfileScheme struct {
 	Avatar *multipart.FileHeader `form:"avatar"`
 	Name   string                `binding:"required" json:"name" form:"name"`
-	Phone  string                `binding:"required,numeric,min=11,max=13" json:"phone" form:"phone"`
-	Email  string                `binding:"required,email" json:"email" form:"email"`
+	Phone  string                `binding:"required,numeric,min=11,max=13" mod:"trim" json:"phone" form:"phone"`
+	Email  string                `binding:"required,email" mod:"trim" json:"email" form:"email"`
 }
 
 type updateRestoScheme struct {

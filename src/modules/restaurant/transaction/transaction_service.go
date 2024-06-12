@@ -35,17 +35,11 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	case "INPROGRESS":
 		if order.Status == "WAITING" {
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && !order.IsPreorder {
-				user.Wallet.Balance += order.Transaction.Amount
-
 				if order.User.Wallet.Balance < order.Transaction.Amount {
 					return errors.New("saldo pembeli tidak cukup")
 				}
 
-				order.User.Wallet.Balance -= order.Transaction.Amount
-
-				order.Transaction.Status = enums.TrxStatusSuccess
-
-				if err := transferBalance(order.User.Wallet, user.Wallet, order.Transaction); err != nil {
+				if err := transferBalance(order.User.Wallet, user.Wallet, order.Transaction, enums.TrxStatusSuccess); err != nil {
 					return err
 				}
 			}
@@ -59,17 +53,11 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	case "CANCELED":
 		if order.Status == "WAITING" {
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && order.IsPreorder {
-				order.User.Wallet.Balance += order.Transaction.Amount
-
 				if user.Wallet.Balance < order.Transaction.Amount {
 					return errors.New("saldo anda tidak cukup untuk mengembalikan saldo pembeli")
 				}
 
-				user.Wallet.Balance -= order.Transaction.Amount
-
-				order.Transaction.Status = enums.TrxStatusCanceled
-
-				if err := transferBalance(user.Wallet, order.User.Wallet, order.Transaction); err != nil {
+				if err := transferBalance(user.Wallet, order.User.Wallet, order.Transaction, enums.TrxStatusCanceled); err != nil {
 					return err
 				}
 			} else {

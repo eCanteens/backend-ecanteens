@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
@@ -114,7 +113,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 }
 
 func getOrderService(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
-	var result = pagination.New(models.Order{})
+	result := pagination.New(models.Order{})
 
 	if err := findOrder(result, userId, query); err != nil {
 		return nil, err
@@ -127,7 +126,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	var cart models.Cart
 
 	// Find cart
-	if err := findCartById(body.CartId, &cart, true); err != nil {
+	if err := findCartById(body.CartId, &cart, *user.Id, true); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("keranjang tidak ditemukan")
 		}
@@ -135,8 +134,8 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	}
 
 	// Make transaction
-	trx := models.Transaction{
-		TransactionCode: fmt.Sprintf("EC-%d-%d", time.Now().Unix(), *user.Id),
+	transaction := models.Transaction{
+		TransactionCode: helpers.GenerateTrxCode(*user.Id),
 		UserId:          *user.Id,
 		Type:            enums.TrxTypePay,
 		Status:          enums.TrxStatusInProgress,
@@ -161,7 +160,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	}
 
 	// Create order
-	ord := models.Order{
+	order := models.Order{
 		UserId:          cart.UserId,
 		RestaurantId:    cart.RestaurantId,
 		Notes:           cart.Notes,
@@ -175,51 +174,51 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		if item.Product.Stock == 0 {
 			return nil, errors.New("stok produk habis")
 		}
-		ord.Items = append(ord.Items, models.OrderItem{
+		order.Items = append(order.Items, models.OrderItem{
 			ProductId: item.ProductId,
 			Quantity:  item.Quantity,
 			Price:     item.Product.Price,
 		})
 
-		ord.Amount += item.Quantity * item.Product.Price
-		trx.Amount += item.Quantity * item.Product.Price
+		order.Amount += item.Quantity * item.Product.Price
+		transaction.Amount += item.Quantity * item.Product.Price
 	}
 
-	ord.Transaction = &trx
+	order.Transaction = &transaction
 
 	// Validate wallet balance
-	if trx.PaymentMethod == enums.TrxPaymentEcanteensPay && user.Wallet.Balance < trx.Amount {
+	if transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && user.Wallet.Balance < transaction.Amount {
 		return nil, errors.New("saldo anda tidak mencukupi")
 	}
 
-	// Write order and transaction data into db
-	if err := create(&ord); err != nil {
-		return nil, err
+	if err := orderRepo(user, &cart, &order); err != nil {
+		return nil, errors.New("gagal saat memproses pesanan")
 	}
 
-	// Delete cart & cart items data
-	if err := deleteRecord(&cart); err != nil {
-		return nil, err
-	}
-
-	// if preorder & payment method with ecanteenspay then update user balance & resto owner balance
-	if ord.IsPreorder && trx.PaymentMethod == enums.TrxPaymentEcanteensPay {
-		user.Wallet.Balance -= trx.Amount
-
-		if err := update(user.Wallet); err != nil {
-			return nil, err
-		}
-
-		cart.Restaurant.Owner.Wallet.Balance += trx.Amount
-
-		if err := update(cart.Restaurant.Owner.Wallet); err != nil {
-			return nil, err
-		}
-	}
-
-	return &ord, nil
+	return &order, nil
 }
 
-func cancelOrderService(body *cancelOrderScheme, id string, userId uint) error {
-	return cancelOrderById(body.Reason, id, userId)
+func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
+	var status enums.OrderStatus
+
+	switch body.Status {
+	case "SUCCESS":
+		status = enums.OrderStatusReady
+	case "CANCELED":
+		status = enums.OrderStatusWaiting
+	default:
+		return errors.New("status tidak diketahui")
+	}
+
+	var order models.Order
+
+	if err := findOrderByIdAndStatus(&order, id, userId, status); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("pesanan tidak ditemukan")
+		}
+
+		return err
+	}
+
+	return updateStatusOrder(&order, body)
 }

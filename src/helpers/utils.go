@@ -1,10 +1,11 @@
 package helpers
 
 import (
+	"fmt"
 	"math/rand/v2"
 	"regexp"
 	"strings"
-
+	"time"
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -44,4 +45,8 @@ func Map[T any, Y any](slice *[]T, test func(*T) *Y) *[]Y {
         }
     }
     return &result
+}
+
+func GenerateTrxCode(userId uint) string {
+    return fmt.Sprintf("EC-%d-%d", time.Now().Unix(), userId)
 }

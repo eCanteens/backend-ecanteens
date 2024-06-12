@@ -105,8 +105,8 @@ func handleOrder(ctx *gin.Context) {
 	}))
 }
 
-func handleCancelOrder(ctx *gin.Context) {
-	var body cancelOrderScheme
+func handleUpdateOrder(ctx *gin.Context) {
+	var body updateOrderScheme
 	id := ctx.Param("id")
 
 	if err := helpers.Bind(ctx, &body); err != nil {
@@ -117,10 +117,10 @@ func handleCancelOrder(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := cancelOrderService(&body, id, *_user.Id); err != nil {
+	if err := updateOrderService(&body, id, *_user.Id); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Pesanan berhasil dibatalkan"))
+	ctx.JSON(200, helpers.SuccessResponse("Pesanan berhasil diperbarui"))
 }

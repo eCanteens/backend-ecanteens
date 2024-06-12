@@ -16,8 +16,9 @@ type orderScheme struct {
 	FullfilmentDate string `binding:"required_if=IsPreorder true" json:"fullfilment_date"`
 }
 
-type cancelOrderScheme struct {
-	Reason string `binding:"required" json:"reason"`
+type updateOrderScheme struct {
+	Status string `binding:"required,oneof=SUCCESS CANCELED" json:"status"`
+	Reason string `binding:"required_if=Status CANCELED" json:"reason"`
 }
 
 type getOrderQS struct {

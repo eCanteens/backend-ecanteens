@@ -3,7 +3,6 @@ package helpers
 import (
 	"errors"
 
-	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -20,7 +19,7 @@ func ParseError(err error) ([]ApiError, error) {
 		for i, fe := range ve {
 			out[i] = ApiError{
 				Field: ToSnakeCase(fe.Field()),
-				Msg:   config.MsgForTag(fe.Tag(), fe.Field(), fe.Param()),
+				Msg:   MsgForTag(fe.Tag(), fe.Field(), fe.Param()),
 			}
 		}
 		return out, nil

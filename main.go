@@ -24,7 +24,7 @@ func init() {
 func main() {
 	router := gin.Default()
 
-	config.Upload(router)
+	router.MaxMultipartMemory = config.App.MaxMultipartMemory
 	router.Use(middleware.Cors)
 	router.Use(middleware.RateLimiter)
 

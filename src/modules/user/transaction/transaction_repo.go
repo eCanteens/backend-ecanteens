@@ -17,7 +17,7 @@ func create[T any](data *T) error {
 }
 
 func update[T any](data *T) error {
-	return config.DB.Updates(data).Error
+	return config.DB.Save(data).Error
 }
 
 func deleteRecord[T any](data *T) error {
@@ -33,8 +33,8 @@ func findCart(userId uint, cart *[]models.Cart, preload bool) error {
 	return tx.Find(cart).Error
 }
 
-func findCartById(id uint, cart *models.Cart, preload bool) error {
-	tx := config.DB.Where("id = ?", id).Preload("Items")
+func findCartById(id uint, cart *models.Cart, userId uint, preload bool) error {
+	tx := config.DB.Where("id = ?", id).Where("user_id = ?", userId).Preload("Items")
 	if preload {
 		tx.Preload("Restaurant.Category").Preload("Restaurant.Owner.Wallet").Preload("Items.Product")
 	}
@@ -93,27 +93,57 @@ func updateCartNote(id string, userId uint, notes string) error {
 	return tx.Error
 }
 
-func cancelOrderById(reason, id string, userId uint) error {
+func findOrderByIdAndStatus(order *models.Order, id string, userId uint, status enums.OrderStatus) error {
+	return config.DB.Where("id = ?", id).Where("user_id = ?", userId).Where("status = ?", status).First(&order).Error
+}
+
+func updateStatusOrder(order *models.Order, body *updateOrderScheme) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
-		var order models.Order
+		status := enums.OrderStatus(body.Status)
+		order.Status = status
 
-		if err := tx.Where("id = ?", id).Where("user_id = ?", userId).Where("status = ?", enums.OrderStatusWaiting).First(&order).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return errors.New("pesanan tidak ditemukan")
-			}
-
-			return err
+		if status == enums.OrderStatusCanceled {
+			order.CancelBy = helpers.PointerTo(enums.OrderCancelByUser)
+			order.CancelReason = &body.Reason
 		}
-
-		order.Status = enums.OrderStatusCanceled
-		order.CancelBy = helpers.PointerTo(enums.OrderCancelByUser)
-		order.CancelReason = &reason
 
 		if err := tx.Save(&order).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Model(&models.Transaction{}).Where("id = ?", order.TransactionId).Update("status", enums.TrxStatusCanceled).Error; err != nil {
+		if err := tx.Model(&models.Transaction{}).Where("id = ?", order.TransactionId).Update("status", body.Status).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func orderRepo(user *models.User, cart *models.Cart, order *models.Order) error {
+	return config.DB.Transaction(func(tx *gorm.DB) error {
+		if order.IsPreorder && order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
+			user.Wallet.Balance -= order.Transaction.Amount
+			cart.Restaurant.Owner.Wallet.Balance += order.Transaction.Amount
+			order.Transaction.Status = enums.TrxStatusSuccess
+
+			// Update Buyer Wallet
+			if err := tx.Updates(user.Wallet).Error; err != nil {
+				return err
+			}
+
+			// Update Seller Wallet
+			if err := tx.Updates(cart.Restaurant.Owner.Wallet).Error; err != nil {
+				return err
+			}
+		}
+
+		// Write order and transaction data into db
+		if err := create(&order); err != nil {
+			return err
+		}
+
+		// Delete cart & cart items data
+		if err := deleteRecord(&cart); err != nil {
 			return err
 		}
 
