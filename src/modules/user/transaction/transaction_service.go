@@ -199,20 +199,9 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 }
 
 func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
-	var status enums.OrderStatus
-
-	switch body.Status {
-	case "SUCCESS":
-		status = enums.OrderStatusReady
-	case "CANCELED":
-		status = enums.OrderStatusWaiting
-	default:
-		return errors.New("status tidak diketahui")
-	}
-
 	var order models.Order
 
-	if err := findOrderByIdAndStatus(&order, id, userId, status); err != nil {
+	if err := findOrderById(&order, id, userId); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("pesanan tidak ditemukan")
 		}
@@ -220,5 +209,18 @@ func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
 		return err
 	}
 
-	return updateStatusOrder(&order, body)
+	switch body.Status {
+	case "SUCCESS":
+		if order.Status == enums.OrderStatusReady {
+			return updateStatusOrder(&order, body)
+		}
+	case "CANCELED":
+		if order.Status == enums.OrderStatusWaiting {
+			return updateStatusOrder(&order, body)
+		}
+	default:
+		return errors.New("status tidak diketahui")
+	}
+
+	return errors.New("pesanan gagal diperbarui")
 }

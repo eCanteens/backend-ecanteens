@@ -34,43 +34,39 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	switch body.Status {
 	case "INPROGRESS":
 		if order.Status == "WAITING" {
+			order.Status = enums.OrderStatusInProgress
+
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && !order.IsPreorder {
 				if order.User.Wallet.Balance < order.Transaction.Amount {
 					return errors.New("saldo pembeli tidak cukup")
 				}
 
-				if err := transferBalance(order.User.Wallet, user.Wallet, order.Transaction, enums.TrxStatusSuccess); err != nil {
-					return err
-				}
+				return updateOrderWithTransfer(user, order.User, &order)
 			}
 
-			return updateOrderStatus(id, *user.Restaurant.Id, body.Status)
+			return update(&order)
 		}
 	case "READY":
 		if order.Status == "INPROGRESS" {
-			return updateOrderStatus(id, *user.Restaurant.Id, body.Status)
+			order.Status = enums.OrderStatusReady
+			return update(&order)
 		}
 	case "CANCELED":
 		if order.Status == "WAITING" {
+			order.Status = enums.OrderStatusCanceled
+			order.CancelReason = &body.Reason
+			order.CancelBy = helpers.PointerTo(enums.OrderCancelByResto)
+			order.Transaction.Status = enums.TrxStatusCanceled
+
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && order.IsPreorder {
 				if user.Wallet.Balance < order.Transaction.Amount {
 					return errors.New("saldo anda tidak cukup untuk mengembalikan saldo pembeli")
 				}
 
-				if err := transferBalance(user.Wallet, order.User.Wallet, order.Transaction, enums.TrxStatusCanceled); err != nil {
-					return err
-				}
-			} else {
-				order.Transaction.Status = enums.TrxStatusCanceled
-				if err := update(order.Transaction); err != nil {
-					return err
-				}
+				return updateOrderWithTransfer(user, order.User, &order)
 			}
 
-			order.CancelReason = &body.Reason
-			order.CancelBy = helpers.PointerTo(enums.OrderCancelByResto)
-
-			return updateOrderStatus(id, *user.Restaurant.Id, body.Status)
+			return updateOrderTransaction(&order)
 		}
 	default:
 		return errors.New("status tidak diketahui")

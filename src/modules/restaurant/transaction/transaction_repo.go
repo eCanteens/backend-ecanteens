@@ -1,7 +1,6 @@
 package transaction
 
 import (
-	"errors"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
@@ -63,33 +62,51 @@ func findOrderById(id string, restaurantId uint, order *models.Order) error {
 		First(order).Error
 }
 
-func updateOrderStatus(id string, restaurantId uint, status string) error {
-	if affected := config.DB.Model(&models.Order{}).
-		Where("id = ?", id).
-		Where("restaurant_id = ?", restaurantId).
-		Update("status", status).
-		RowsAffected; affected == 0 {
-		return errors.New("pesanan gagal diperbarui")
-	}
-
-	return nil
-}
-
 func transferBalance(src *models.Wallet, dst *models.Wallet, trx *models.Transaction, status enums.TransactionStatus) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
 		src.Balance -= trx.Amount
 		dst.Balance += trx.Amount
 		trx.Status = status
 
-		if err := tx.Updates(src).Error; err != nil {
+		if err := tx.Save(src).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Updates(dst).Error; err != nil {
+		if err := tx.Save(dst).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Updates(trx).Error; err != nil {
+		if err := tx.Save(trx).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func updateOrderWithTransfer(seller *models.User, buyer *models.User, order *models.Order) error {
+	return config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := config.DB.Save(&order).Error; err != nil {
+			return err
+		}
+
+		switch order.Status {
+		case enums.OrderStatusInProgress:
+			return transferBalance(buyer.Wallet, seller.Wallet, order.Transaction, enums.TrxStatusSuccess)
+		case enums.OrderStatusCanceled:
+			return transferBalance(seller.Wallet, buyer.Wallet, order.Transaction, enums.TrxStatusCanceled)
+		}
+		return nil
+	})
+}
+
+func updateOrderTransaction(order *models.Order) error {
+	return config.DB.Transaction(func(tx *gorm.DB) error {
+		if err := config.DB.Save(&order).Error; err != nil {
+			return err
+		}
+
+		if err := config.DB.Save(&order.Transaction).Error; err != nil {
 			return err
 		}
 

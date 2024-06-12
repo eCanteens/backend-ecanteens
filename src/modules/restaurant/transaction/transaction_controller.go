@@ -40,5 +40,16 @@ func handleUpdateOrder(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Status order berhasil diperbarui"))
+	msg := "Pesanan berhasil"
+
+	switch body.Status {
+	case "INPROGRESS":
+		msg += " diterima"
+	case "CANCELED":
+		msg += " ditolak"
+	case "READY":
+		msg = "Status pesanan berhasil diperbarui"
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse(msg))
 }

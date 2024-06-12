@@ -93,8 +93,8 @@ func updateCartNote(id string, userId uint, notes string) error {
 	return tx.Error
 }
 
-func findOrderByIdAndStatus(order *models.Order, id string, userId uint, status enums.OrderStatus) error {
-	return config.DB.Where("id = ?", id).Where("user_id = ?", userId).Where("status = ?", status).First(&order).Error
+func findOrderById(order *models.Order, id string, userId uint) error {
+	return config.DB.Where("id = ?", id).Where("user_id = ?", userId).Preload("Transaction").First(&order).Error
 }
 
 func updateStatusOrder(order *models.Order, body *updateOrderScheme) error {
@@ -111,8 +111,10 @@ func updateStatusOrder(order *models.Order, body *updateOrderScheme) error {
 			return err
 		}
 
-		if err := tx.Model(&models.Transaction{}).Where("id = ?", order.TransactionId).Update("status", body.Status).Error; err != nil {
-			return err
+		if order.Transaction.PaymentMethod == enums.TrxPaymentCash {
+			if err := tx.Model(&models.Transaction{}).Where("id = ?", order.TransactionId).Update("status", body.Status).Error; err != nil {
+				return err
+			}
 		}
 
 		return nil

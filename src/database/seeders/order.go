@@ -74,7 +74,7 @@ func OrderSeeder() {
 			}
 
 			// Set transaction status
-			if (ord.Status == enums.OrderStatusWaiting && ord.IsPreorder && ord.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay) || ord.Status == enums.OrderStatusSuccess {
+			if (ord.Status == enums.OrderStatusWaiting && ord.IsPreorder && ord.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay) || (ord.Status != enums.OrderStatusWaiting && ord.Status != enums.OrderStatusCanceled && ord.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay) {
 				ord.Transaction.Status = enums.TrxStatusSuccess
 			} else if ord.Status == enums.OrderStatusCanceled {
 				ord.Transaction.Status = enums.TrxStatusCanceled
