@@ -25,4 +25,5 @@ type Order struct {
 	Restaurant  *Restaurant  `gorm:"foreignKey:restaurant_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"restaurant,omitempty"`
 	Items       []OrderItem  `gorm:"foreignKey:order_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"items,omitempty"`
 	Transaction *Transaction `gorm:"foreignKey:transaction_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"transaction,omitempty"`
+	Review      *Review      `gorm:"foreignKey:order_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"review,omitempty"`
 }

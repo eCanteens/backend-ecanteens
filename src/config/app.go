@@ -1,32 +1,32 @@
 package config
 
-type Cors struct {
+type cors struct {
 	AllowOrigin     []string
 	AllowCredential bool
 	AllowHeaders    []string
 	AllowMethod     []string
 }
 
-type Limiter struct {
+type limiter struct {
 	Rate  float64
 	Burst int
 }
 
-type Config struct {
+type config struct {
 	MaxMultipartMemory int64
-	Cors               *Cors
-	Limiter            *Limiter
+	Cors               *cors
+	Limiter            *limiter
 }
 
-var App = Config{
+var App = config{
 	MaxMultipartMemory: 8 << 20, // 8 MiB
-	Cors: &Cors{
+	Cors: &cors{
 		AllowOrigin:     []string{"*"},
 		AllowCredential: true,
 		AllowHeaders:    []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "Accept", "Origin", "Cache-Control", "X-Requested-With"},
 		AllowMethod:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 	},
-	Limiter: &Limiter{
+	Limiter: &limiter{
 		Rate:  20,
 		Burst: 30,
 	},

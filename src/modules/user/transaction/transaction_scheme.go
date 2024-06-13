@@ -1,8 +1,8 @@
 package transaction
 
 type addCartScheme struct {
-	ProductId uint  `binding:"required,numeric" json:"product_id"`
-	Quantity  *uint `binding:"required,numeric" json:"quantity"`
+	ProductId uint  `binding:"required" json:"product_id"`
+	Quantity  *uint `binding:"required" json:"quantity"`
 }
 
 type updateCartNoteScheme struct {
@@ -10,7 +10,7 @@ type updateCartNoteScheme struct {
 }
 
 type orderScheme struct {
-	CartId          uint   `binding:"required,numeric" json:"cart_id"`
+	CartId          uint   `binding:"required" json:"cart_id"`
 	PaymentMethod   string `binding:"required,oneof=CASH ECANTEENSPAY" json:"payment_method"`
 	IsPreorder      *bool  `binding:"required" json:"is_preorder"`
 	FullfilmentDate string `binding:"required_if=IsPreorder true" json:"fullfilment_date"`
@@ -19,6 +19,12 @@ type orderScheme struct {
 type updateOrderScheme struct {
 	Status string `binding:"required,oneof=SUCCESS CANCELED" json:"status"`
 	Reason string `binding:"required_if=Status CANCELED" json:"reason"`
+}
+
+type postReviewScheme struct {
+	Rating  float32  `binding:"required" json:"rating"`
+	Tags    []string `binding:"required" json:"tags"`
+	Comment string   `json:"comment"`
 }
 
 type getOrderQS struct {

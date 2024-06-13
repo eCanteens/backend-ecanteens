@@ -105,6 +105,26 @@ func handleOrder(ctx *gin.Context) {
 	}))
 }
 
+func handlePostReview(ctx *gin.Context) {
+	var body postReviewScheme
+	id := ctx.Param("id")
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	if err := postReviewService(&body, id, *_user.Id); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Ulasan berhasil dibuat"))
+}
+
 func handleUpdateOrder(ctx *gin.Context) {
 	var body updateOrderScheme
 	id := ctx.Param("id")

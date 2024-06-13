@@ -93,8 +93,14 @@ func updateCartNote(id string, userId uint, notes string) error {
 	return tx.Error
 }
 
-func findOrderById(order *models.Order, id string, userId uint) error {
-	return config.DB.Where("id = ?", id).Where("user_id = ?", userId).Preload("Transaction").First(&order).Error
+func findOrderById(order *models.Order, id string, userId uint, preloads []string) error {
+	tx := config.DB.Where("id = ?", id).Where("user_id = ?", userId)
+
+	for _, preload := range preloads {
+		tx.Preload(preload)
+	}
+
+	return tx.First(&order).Error
 }
 
 func updateStatusOrder(order *models.Order, body *updateOrderScheme) error {

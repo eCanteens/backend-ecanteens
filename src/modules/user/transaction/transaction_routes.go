@@ -14,6 +14,7 @@ func Routes(router *gin.RouterGroup) {
 		authorized.POST("/carts", addCart)
 		authorized.GET("/orders", getOrder)
 		authorized.POST("/orders", handleOrder)
+		authorized.POST("/orders/:id/review", handlePostReview)
 		authorized.PUT("/orders/:id", handleUpdateOrder)
 	}
 }

@@ -2,12 +2,14 @@ package transaction
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -201,7 +203,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
 	var order models.Order
 
-	if err := findOrderById(&order, id, userId); err != nil {
+	if err := findOrderById(&order, id, userId, []string{"Transaction"}); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("pesanan tidak ditemukan")
 		}
@@ -223,4 +225,34 @@ func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
 	}
 
 	return errors.New("pesanan gagal diperbarui")
+}
+
+func postReviewService(body *postReviewScheme, id string, userId uint) error {
+	var order models.Order
+	if err := findOrderById(&order, id, userId, []string{"Review"}); err != nil {
+		return err
+	}
+
+	if order.Status != enums.OrderStatusSuccess {
+		return errors.New("tidak bisa mengirim ulasan jika pesanan belum selesai")
+	}
+
+	if order.Review != nil {
+		return errors.New("anda sudah mengirim ulasan")
+	}
+
+	orderId, err := strconv.ParseUint(id, 10, 64)
+
+	if err != nil {
+		return err
+	}
+
+	review := models.Review{
+		OrderId: uint(orderId),
+		Rating:  body.Rating,
+		Tags:    datatypes.NewJSONType(body.Tags),
+		Comment: body.Comment,
+	}
+
+	return create(&review)
 }
