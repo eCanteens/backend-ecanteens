@@ -143,6 +143,8 @@ function cron() {
 
 if [[ $1 = "fresh" ]]; then
   fresh $2
+elif [[ $1 = "cron" ]]; then
+  cron
 elif [[ $1 = "help" ]] || [[ $1 = "" ]]; then
   help
 else
