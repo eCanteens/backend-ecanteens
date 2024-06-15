@@ -9,6 +9,7 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/register/check", handleCheckRegister)
 	router.POST("/register", handleRegister)
 	router.POST("/login", handleLogin)
+	router.POST("/logout", handleLogout)
 	router.POST("/refresh", handleRefresh)
 
 	authorized := router.Group("/")

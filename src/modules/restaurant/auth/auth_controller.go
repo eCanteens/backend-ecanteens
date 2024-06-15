@@ -56,6 +56,22 @@ func handleLogin(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
 
+func handleLogout(ctx *gin.Context) {
+	var body refreshScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := logoutService(&body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Logout berhasil"))
+}
+
 func handleRefresh(ctx *gin.Context) {
 	var body refreshScheme
 

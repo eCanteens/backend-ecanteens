@@ -7,7 +7,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/smtp"
@@ -85,10 +87,25 @@ func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 
 	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
+	go create(&models.Token{
+		UserId:   *user.Id,
+		Token:    token.RefreshToken,
+		LastUsed: time.Now(),
+	})
+
 	user.Password = ""
+	user.Wallet.IsPinSet = user.Wallet.Pin != ""
 	user.Wallet.Pin = ""
 
 	return &user, token, nil
+}
+
+func logoutService(body *refreshScheme) error {
+	if err := deleteToken(body.RefreshToken); err != nil {
+		return errors.New("anda sudah logout")
+	}
+
+	return nil
 }
 
 func googleService(body *googleScheme) (*models.User, *jwt.UserToken, error) {
@@ -120,6 +137,12 @@ func googleService(body *googleScheme) (*models.User, *jwt.UserToken, error) {
 
 	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
+	go create(&models.Token{
+		UserId:   *user.Id,
+		Token:    token.RefreshToken,
+		LastUsed: time.Now(),
+	})
+
 	user.Password = ""
 	user.Wallet.Pin = ""
 
@@ -146,22 +169,30 @@ func setupGoogleService(body *setupScheme, user *models.User) error {
 }
 
 func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
-	claim, err := jwt.Parse(body.RefreshToken)
-	if err != nil {
-		return nil, err
+	var refreshToken models.Token
+
+	if err := findToken(&refreshToken, body.RefreshToken); err != nil {
+		return nil, errors.New("refresh token tidak valid")
 	}
 
-	if claim["type"].(string) != "refresh" {
-		return nil, errors.New("token tidak valid")
+	if refreshToken.User == nil {
+		return nil, errors.New("pengguna tidak ditemukan")
 	}
 
-	var user models.User
-
-	if err := findById(&user, uint(claim["sub"].(float64))); err != nil {
-		return nil, err
+	if time.Since(refreshToken.LastUsed) < config.App.Auth.AccessTokenExpiresIn {
+		return nil, errors.New("belum bisa refresh token")
 	}
 
-	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
+	if time.Since(refreshToken.LastUsed) > config.App.Auth.RefreshTokenExpiresIn {
+		go deleteById(&refreshToken)
+		return nil, errors.New("refresh token kadaluarsa")
+	}
+
+	refreshToken.LastUsed = time.Now()
+	token := jwt.GenerateUserToken(*refreshToken.User.Id, refreshToken.User.RoleId)
+	refreshToken.Token = token.RefreshToken
+
+	go update(&refreshToken)
 
 	return token, nil
 }
@@ -217,7 +248,7 @@ func updateProfileService(user *models.User, body *updateScheme) error {
 	if body.Avatar != nil {
 		filePath, err := upload.New(&upload.Option{
 			Folder:      "avatar/user",
-			File:    body.Avatar,
+			File:        body.Avatar,
 			NewFilename: strconv.FormatUint(uint64(*user.Id), 10),
 		})
 

@@ -71,12 +71,60 @@ On_IPurple='\033[0;105m'  # Purple
 On_ICyan='\033[0;106m'    # Cyan
 On_IWhite='\033[0;107m'   # White
 
+# Fungsi untuk mencetak baris grid dengan pemecahan jika terlalu panjang
+print_row() {
+    local left=$1
+    local right=$2
+    local cols=`tput cols`
+    local width=$((cols - 17))  # Lebar yang diizinkan setelah "|| "
+
+    if [ $width -gt 73 ]; then
+      width=73
+    fi
+    
+    # Cetak bagian kiri
+    printf "  ${Green}%-6s${Color_Off} || " "$left"
+
+    # Memecah bagian kanan jika terlalu panjang
+    while [[ ${#right} -gt $width ]]; do
+        # Ambil potongan yang bisa dicetak dalam satu baris
+        part=${right:0:$width}
+        echo "$part"
+        # Hilangkan bagian yang sudah dicetak
+        right=${right:$width}
+        # Tambahkan indentasi untuk baris berikutnya
+        printf "         || "
+    done
+    
+    # Cetak sisa bagian kanan
+    echo "$right"
+}
+
 function help() {
-  echo -e "================================================================================================"
+  cols=`tput cols`
+  total_length=$((cols - 3))
+  right_length=$((cols - 3 - 11))
+
+
+  if [ $cols -gt 87 ]; then
+    total_length=87
+    right_length=$((87-11))
+  fi
+
+  # header
+  printf '=%.0s' $(seq $((total_length))); echo
   echo -e "${BICyan}Available commands:${Color_Off}"
-  echo -e "============++=================================================================================="
-  echo -e "  ${Green}fresh${Color_Off}     ||    drop all and recreate tables, use --seed to seeding after recreate tables"
-  echo -e "============++=================================================================================="
+
+  # print top line
+  printf '=========++'; printf '=%.0s' $(seq $((right_length))); echo
+
+  # print lines with its content
+  print_row "fresh" "drop all and recreate tables, use --seed to seeding after recreate tables"
+  print_row "cron" "starts cron job"
+
+  # print bottom line
+  printf '=========++'; printf '=%.0s' $(seq $((right_length))); echo
+
 }
 
 function fresh() {
@@ -89,8 +137,9 @@ function fresh() {
   fi
 }
 
-
-
+function cron() {
+  go run scripts/cron/cron.go
+}
 
 if [[ $1 = "fresh" ]]; then
   fresh $2

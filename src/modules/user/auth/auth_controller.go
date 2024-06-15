@@ -42,6 +42,22 @@ func handleLogin(ctx *gin.Context) {
 	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
 }
 
+func handleLogout(ctx *gin.Context) {
+	var body refreshScheme
+
+	if err := helpers.Bind(ctx, &body); err != nil {
+		ctx.AbortWithStatusJSON(400, err)
+		return
+	}
+
+	if err := logoutService(&body); err != nil {
+		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(200, helpers.SuccessResponse("Logout berhasil"))
+}
+
 func handleGoogle(ctx *gin.Context) {
 	var body googleScheme
 
@@ -101,7 +117,7 @@ func handleRefresh(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, gin.H{
-		"token": token,
+		"data": token,
 	})
 }
 
@@ -141,12 +157,11 @@ func handleProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	_user.Password = ""
-	isPinSet := _user.Wallet.Pin != ""
+	_user.Wallet.IsPinSet = _user.Wallet.Pin != ""
 	_user.Wallet.Pin = ""
 
 	ctx.JSON(200, gin.H{
 		"data":       _user,
-		"is_pin_set": isPinSet,
 	})
 }
 

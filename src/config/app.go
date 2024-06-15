@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type cors struct {
 	AllowOrigin     []string
 	AllowCredential bool
@@ -12,10 +14,16 @@ type limiter struct {
 	Burst int
 }
 
+type auth struct {
+	AccessTokenExpiresIn  time.Duration
+	RefreshTokenExpiresIn time.Duration
+}
+
 type config struct {
 	MaxMultipartMemory int64
 	Cors               *cors
 	Limiter            *limiter
+	Auth               *auth
 }
 
 var App = config{
@@ -29,5 +37,9 @@ var App = config{
 	Limiter: &limiter{
 		Rate:  20,
 		Burst: 30,
+	},
+	Auth: &auth{
+		AccessTokenExpiresIn: time.Hour, // 1 hour
+		RefreshTokenExpiresIn: time.Hour * 24 * 5, // 5 days
 	},
 }

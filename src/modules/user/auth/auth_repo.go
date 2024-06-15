@@ -3,10 +3,23 @@ package auth
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"gorm.io/gorm"
 )
 
-func create(user *models.User) error {
-	return config.DB.Create(user).Error
+func create[T any](data *T) error {
+	return config.DB.Create(data).Error
+}
+
+func deleteById[T any](data *T) error {
+	return config.DB.Unscoped().Delete(data).Error
+}
+
+func deleteToken(token string) error {
+	if affected := config.DB.Unscoped().Where("token = ?", token).Delete(&models.Token{}).RowsAffected; affected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
 }
 
 func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
@@ -20,7 +33,7 @@ func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 		query.Not("id = ?", id[0])
 	}
 
-	query.Find(&sameUser)
+	query.Limit(2).Find(&sameUser)
 
 	return &sameUser
 }
@@ -29,11 +42,13 @@ func findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Where("role_id = ?", 2).Preload("Wallet").First(user).Error
 }
 
-func findById(user *models.User, id uint) error {
-	return config.DB.Where("id = ?", id).Where("role_id = ?", 2).First(user).Error
+func findToken(model *models.Token, token string) error {
+	return config.DB.Where("token = ?", token).Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Where("role_id = ?", 2)
+	}).First(model).Error
 }
 
-func update[T any](model T) error {
+func update[T any](model *T) error {
 	return config.DB.Save(model).Error
 }
 

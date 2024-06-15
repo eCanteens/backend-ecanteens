@@ -17,8 +17,8 @@ type User struct {
 	Timestamps
 
 	// Relations
-	Wallet              *Wallet      `gorm:"foreignKey:wallet_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"wallet,omitempty"`
-	Restaurant          *Restaurant  `gorm:"foreignKey:owner_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"restaurant,omitempty"`
+	Wallet     *Wallet     `gorm:"foreignKey:wallet_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"wallet,omitempty"`
+	Restaurant *Restaurant `gorm:"foreignKey:owner_id;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"restaurant,omitempty"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {

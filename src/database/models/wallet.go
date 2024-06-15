@@ -5,4 +5,7 @@ type Wallet struct {
 	Pin     string `gorm:"type:varchar(255)" json:"pin,omitempty"`
 	Balance uint   `gorm:"type:int" json:"balance"`
 	Timestamps
+
+	// Extra
+	IsPinSet bool `gorm:"-:migration;->"`
 }

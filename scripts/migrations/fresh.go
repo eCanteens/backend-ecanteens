@@ -27,6 +27,7 @@ func main() {
 	config.DB.Migrator().CreateTable(
 		&models.Wallet{},
 		&models.User{},
+		&models.Token{},
 		&models.RestaurantCategory{},
 		&models.Restaurant{},
 		&models.FavoriteRestaurant{},

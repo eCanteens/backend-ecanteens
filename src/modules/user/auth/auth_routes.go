@@ -8,6 +8,7 @@ import (
 func Routes(router *gin.RouterGroup) {
 	router.POST("/register", handleRegister)
 	router.POST("/login", handleLogin)
+	router.POST("/logout", handleLogout)
 	router.POST("/google", handleGoogle)
 	router.POST("/refresh", handleRefresh)
 	router.POST("/forgot-password", handleForgot)
