@@ -137,7 +137,7 @@ func handleUpdateOrder(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := updateOrderService(&body, id, *_user.Id); err != nil {
+	if err := updateOrderService(&body, id, &_user); err != nil {
 		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
 		return
 	}

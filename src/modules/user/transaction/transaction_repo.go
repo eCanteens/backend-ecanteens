@@ -7,7 +7,6 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/enums"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
@@ -103,24 +102,21 @@ func findOrderById(order *models.Order, id string, userId uint, preloads []strin
 	return tx.First(&order).Error
 }
 
-func updateStatusOrder(order *models.Order, body *updateOrderScheme) error {
+func updateOrderTransaction(order *models.Order, amountDst *models.Wallet) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
-		status := enums.OrderStatus(body.Status)
-		order.Status = status
-
-		if status == enums.OrderStatusCanceled {
-			order.CancelBy = helpers.PointerTo(enums.OrderCancelByUser)
-			order.CancelReason = &body.Reason
-		}
-
-		if err := tx.Save(&order).Error; err != nil {
+		// Update wallet
+		if err := tx.Save(amountDst).Error; err != nil {
 			return err
 		}
 
-		if order.Transaction.PaymentMethod == enums.TrxPaymentCash {
-			if err := tx.Model(&models.Transaction{}).Where("id = ?", order.TransactionId).Update("status", body.Status).Error; err != nil {
-				return err
-			}
+		// Update order
+		if err := tx.Save(order).Error; err != nil {
+			return err
+		}
+
+		// Update transaction
+		if err := tx.Save(order.Transaction).Error; err != nil {
+			return err
 		}
 
 		return nil
@@ -129,29 +125,20 @@ func updateStatusOrder(order *models.Order, body *updateOrderScheme) error {
 
 func orderRepo(user *models.User, cart *models.Cart, order *models.Order) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
-		if order.IsPreorder && order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
-			user.Wallet.Balance -= order.Transaction.Amount
-			cart.Restaurant.Owner.Wallet.Balance += order.Transaction.Amount
-			order.Transaction.Status = enums.TrxStatusSuccess
-
-			// Update Buyer Wallet
+		if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
+			// Update Buyer Balance
 			if err := tx.Updates(user.Wallet).Error; err != nil {
-				return err
-			}
-
-			// Update Seller Wallet
-			if err := tx.Updates(cart.Restaurant.Owner.Wallet).Error; err != nil {
 				return err
 			}
 		}
 
 		// Write order and transaction data into db
-		if err := create(&order); err != nil {
+		if err := create(order); err != nil {
 			return err
 		}
 
 		// Delete cart & cart items data
-		if err := deleteRecord(&cart); err != nil {
+		if err := deleteRecord(cart); err != nil {
 			return err
 		}
 

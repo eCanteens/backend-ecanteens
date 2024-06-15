@@ -74,12 +74,26 @@ func OrderSeeder() {
 			}
 
 			// Set transaction status
-			if (ord.Status == enums.OrderStatusWaiting && ord.IsPreorder && ord.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay) || (ord.Status != enums.OrderStatusWaiting && ord.Status != enums.OrderStatusCanceled && ord.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay) {
+			if (ord.Status == enums.OrderStatusSuccess) {
 				ord.Transaction.Status = enums.TrxStatusSuccess
 			} else if ord.Status == enums.OrderStatusCanceled {
 				ord.Transaction.Status = enums.TrxStatusCanceled
-				ord.CancelReason = helpers.PointerTo(gofakeit.Comment())
 				ord.CancelBy = helpers.PointerTo(enums.OrderCancelBy(gofakeit.RandomString([]string{"RESTO", "USER"})))
+
+				if *ord.CancelBy == enums.OrderCancelByUser {
+					ord.CancelReason = helpers.PointerTo(gofakeit.RandomString([]string{
+						"Mau nambah menu yang lain",
+						"Mau ganti menu",
+						"Uangnya ga cukup",
+					}))
+				} else {
+					ord.CancelReason = helpers.PointerTo(gofakeit.RandomString([]string{
+						"Stoknya abis",
+						"Udah mau tutup",
+						"Lagi banyak pesanan",
+						gofakeit.Comment(),
+					}))
+				}
 			} else {
 				ord.Transaction.Status = enums.TrxStatusInProgress
 			}

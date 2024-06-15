@@ -189,8 +189,12 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	order.Transaction = &transaction
 
 	// Validate wallet balance
-	if transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && user.Wallet.Balance < transaction.Amount {
-		return nil, errors.New("saldo anda tidak mencukupi")
+	if transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
+		if user.Wallet.Balance < transaction.Amount {
+			return nil, errors.New("saldo anda tidak mencukupi")
+		}
+
+		user.Wallet.Balance -= transaction.Amount
 	}
 
 	if err := orderRepo(user, &cart, &order); err != nil {
@@ -200,10 +204,10 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	return &order, nil
 }
 
-func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
+func updateOrderService(body *updateOrderScheme, id string, user *models.User) error {
 	var order models.Order
 
-	if err := findOrderById(&order, id, userId, []string{"Transaction"}); err != nil {
+	if err := findOrderById(&order, id, *user.Id, []string{"Transaction", "Restaurant.Owner.Wallet"}); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("pesanan tidak ditemukan")
 		}
@@ -214,11 +218,27 @@ func updateOrderService(body *updateOrderScheme, id string, userId uint) error {
 	switch body.Status {
 	case "SUCCESS":
 		if order.Status == enums.OrderStatusReady {
-			return updateStatusOrder(&order, body)
+			order.Status = enums.OrderStatusSuccess
+
+			order.Transaction.Status = enums.TrxStatusSuccess
+
+			// Return balance to user
+			user.Wallet.Balance += order.Transaction.Amount
+
+			return updateOrderTransaction(&order, user.Wallet)
 		}
 	case "CANCELED":
 		if order.Status == enums.OrderStatusWaiting {
-			return updateStatusOrder(&order, body)
+			order.Status = enums.OrderStatusCanceled
+			order.CancelBy = helpers.PointerTo(enums.OrderCancelByUser)
+			order.CancelReason = &body.Reason
+
+			order.Transaction.Status = enums.TrxStatusCanceled
+
+			// Release balance to resto
+			order.Restaurant.Owner.Wallet.Balance += order.Transaction.Amount
+
+			return updateOrderTransaction(&order, order.Restaurant.Owner.Wallet)
 		}
 	default:
 		return errors.New("status tidak diketahui")

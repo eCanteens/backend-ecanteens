@@ -35,15 +35,6 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	case "INPROGRESS":
 		if order.Status == "WAITING" {
 			order.Status = enums.OrderStatusInProgress
-
-			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && !order.IsPreorder {
-				if order.User.Wallet.Balance < order.Transaction.Amount {
-					return errors.New("saldo pembeli tidak cukup")
-				}
-
-				return updateOrderWithTransfer(user, order.User, &order)
-			}
-
 			return update(&order)
 		}
 	case "READY":
@@ -58,12 +49,8 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 			order.CancelBy = helpers.PointerTo(enums.OrderCancelByResto)
 			order.Transaction.Status = enums.TrxStatusCanceled
 
-			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay && order.IsPreorder {
-				if user.Wallet.Balance < order.Transaction.Amount {
-					return errors.New("saldo anda tidak cukup untuk mengembalikan saldo pembeli")
-				}
-
-				return updateOrderWithTransfer(user, order.User, &order)
+			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
+				updateOrderWithReturn(&order)
 			}
 
 			return updateOrderTransaction(&order)

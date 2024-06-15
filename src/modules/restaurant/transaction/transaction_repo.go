@@ -5,7 +5,6 @@ import (
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/gorm"
 )
@@ -62,51 +61,35 @@ func findOrderById(id string, restaurantId uint, order *models.Order) error {
 		First(order).Error
 }
 
-func transferBalance(src *models.Wallet, dst *models.Wallet, trx *models.Transaction, status enums.TransactionStatus) error {
+func updateOrderWithReturn(order *models.Order) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
-		src.Balance -= trx.Amount
-		dst.Balance += trx.Amount
-		trx.Status = status
-
-		if err := tx.Save(src).Error; err != nil {
+		// Update order
+		if err := config.DB.Save(order).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Save(dst).Error; err != nil {
+		// Update transaction
+		if err := config.DB.Save(order.Transaction).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Save(trx).Error; err != nil {
+		// Return balance to buyer
+		order.User.Wallet.Balance += order.Transaction.Amount
+		if err := config.DB.Save(order.User.Wallet).Error; err != nil {
 			return err
 		}
 
-		return nil
-	})
-}
-
-func updateOrderWithTransfer(seller *models.User, buyer *models.User, order *models.Order) error {
-	return config.DB.Transaction(func(tx *gorm.DB) error {
-		if err := config.DB.Save(&order).Error; err != nil {
-			return err
-		}
-
-		switch order.Status {
-		case enums.OrderStatusInProgress:
-			return transferBalance(buyer.Wallet, seller.Wallet, order.Transaction, enums.TrxStatusSuccess)
-		case enums.OrderStatusCanceled:
-			return transferBalance(seller.Wallet, buyer.Wallet, order.Transaction, enums.TrxStatusCanceled)
-		}
 		return nil
 	})
 }
 
 func updateOrderTransaction(order *models.Order) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
-		if err := config.DB.Save(&order).Error; err != nil {
+		if err := config.DB.Save(order).Error; err != nil {
 			return err
 		}
 
-		if err := config.DB.Save(&order.Transaction).Error; err != nil {
+		if err := config.DB.Save(order.Transaction).Error; err != nil {
 			return err
 		}
 
