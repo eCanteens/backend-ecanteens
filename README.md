@@ -25,6 +25,8 @@ eCanteens Introducing the revolutionary Canteen app, the ultimate solution for s
 
 To run this project, you will need to add the following environment variables to your .env file
 
+`BASE_URL`
+
 `DATABASE_URL`
 
 `JWT_KEY`
@@ -36,6 +38,10 @@ To run this project, you will need to add the following environment variables to
 `SMTP_AUTH_EMAIL`
 
 `SMTP_AUTH_PASSWORD`
+
+`GOOGLE_CLIENT_ID`
+
+`FIREBASE_AUTH_KEY`
 
 
 ## Documentation

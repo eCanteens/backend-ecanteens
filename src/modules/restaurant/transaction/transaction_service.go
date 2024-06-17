@@ -50,7 +50,7 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 			order.Transaction.Status = enums.TrxStatusCanceled
 
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
-				updateOrderWithReturn(&order)
+				return updateOrderWithReturn(&order)
 			}
 
 			return updateOrderTransaction(&order)
