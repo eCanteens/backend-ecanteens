@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 )
@@ -16,7 +17,7 @@ func createProductService(user *models.User, body *createProduct) error {
 	})
 
 	if err != nil {
-		return err
+		return customerror.New("Gagal saat menyimpan file", 500)
 	}
 
 	product := &models.Product{
@@ -30,7 +31,7 @@ func createProductService(user *models.User, body *createProduct) error {
 	}
 
 	if err := create(product); err != nil {
-		return err
+		return customerror.GormError(err, "Produk")
 	}
 
 	return nil
@@ -40,7 +41,7 @@ func getAllProductService(query *productQs, user *models.User) (*pagination.Pagi
 	var result = pagination.New(models.Product{})
 
 	if err := findAll(result, query, user); err != nil {
-		return nil, err
+		return nil, customerror.GormError(err, "Produk")
 	}
 
 	return result, nil
@@ -64,14 +65,14 @@ func updateProductService(user *models.User, body *updateProduct, id string) err
 		})
 
 		if err != nil {
-			return err
+			return customerror.New("Gagal saat menyimpan file", 500)
 		}
 
 		product.Image = filepath.Url
 	}
 
 	if err := update(product, id); err != nil {
-		return err
+		return customerror.GormError(err, "Produk")
 	}
 
 	return nil
@@ -81,8 +82,12 @@ func deleteProductService(user *models.User, productId string) error {
 	id, err := strconv.ParseUint(productId, 10, 32)
 
 	if err != nil {
-		return err
+		return customerror.New("Id produk tidak valid", 400)
 	}
 
-	return delete(uint(id), *user.Restaurant.Id)
+	if err := delete(uint(id), *user.Restaurant.Id); err != nil {
+		return customerror.GormError(err, "Produk")
+	}
+
+	return nil
 }

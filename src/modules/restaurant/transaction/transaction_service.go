@@ -1,20 +1,18 @@
 package transaction
 
 import (
-	"errors"
-
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
-	"gorm.io/gorm"
 )
 
 func getOrderService(restaurantId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
 	var result = pagination.New(models.Order{})
 
 	if err := findOrder(result, restaurantId, query); err != nil {
-		return nil, err
+		return nil, customerror.GormError(err, "Pesanan")
 	}
 
 	return result, nil
@@ -24,23 +22,27 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	var order models.Order
 
 	if err := findOrderById(id, *user.Restaurant.Id, &order); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("pesanan tidak ditemukan")
-		}
-
-		return err
+		return customerror.GormError(err, "Pesanan")
 	}
 
 	switch body.Status {
 	case "INPROGRESS":
 		if order.Status == "WAITING" {
 			order.Status = enums.OrderStatusInProgress
-			return update(&order)
+			if err := update(&order); err != nil {
+				return customerror.GormError(err, "Pesanan")
+			}
+
+			return nil
 		}
 	case "READY":
 		if order.Status == "INPROGRESS" {
 			order.Status = enums.OrderStatusReady
-			return update(&order)
+			if err := update(&order); err != nil {
+				return customerror.GormError(err, "Pesanan")
+			}
+
+			return nil
 		}
 	case "CANCELED":
 		if order.Status == "WAITING" {
@@ -50,14 +52,22 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 			order.Transaction.Status = enums.TrxStatusCanceled
 
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
-				return updateOrderWithReturn(&order)
+				if err := updateOrderWithReturn(&order); err != nil {
+					return customerror.GormError(err, "Pesanan")
+				}
+
+				return nil
 			}
 
-			return updateOrderTransaction(&order)
+			if err := updateOrderTransaction(&order); err != nil {
+				return customerror.GormError(err, "Pesanan")
+			}
+
+			return nil
 		}
 	default:
-		return errors.New("status tidak diketahui")
+		return customerror.New("Status tidak diketahui", 400)
 	}
 
-	return errors.New("pesanan gagal diperbarui")
+	return customerror.New("Pesanan gagal diperbarui", 400)
 }

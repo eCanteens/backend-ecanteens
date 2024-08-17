@@ -2,35 +2,62 @@ package admin
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/validation"
 	"github.com/gin-gonic/gin"
 )
 
+type Controller interface {
+	adminLogin(ctx *gin.Context)
+	dashoard(ctx *gin.Context)
+	checkWallet(ctx *gin.Context)
+	topup(ctx *gin.Context)
+	withdraw(ctx *gin.Context)
+	transaction(ctx *gin.Context)
+	mutasi(ctx *gin.Context)
+	adminProfile(ctx *gin.Context)
+	updateAdminProfile(ctx *gin.Context)
+	updateAdminPassword(ctx *gin.Context)
+}
+
+type controller struct {
+	service Service
+}
+
+func NewController(service Service) Controller {
+	return &controller{
+		service: service,
+	}
+}
+
 // login
-func handleAdminLogin(ctx *gin.Context) {
+func (c *controller) adminLogin(ctx *gin.Context) {
 	var body adminLoginScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
-	data, token, err := adminLoginService(&body)
+	data, token, err := c.service.adminLogin(&body)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
+	response.Success(ctx, 200, gin.H{
+		"token": token,
+		"data":  data,
+		"message": "Login berhasil",
+	})
 }
 
 // dashboard
-func handleDashoard(ctx *gin.Context) {
-	data, err := dashboardService()
+func (c *controller) dashoard(ctx *gin.Context) {
+	data, err := c.service.dashboard()
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -40,86 +67,94 @@ func handleDashoard(ctx *gin.Context) {
 }
 
 // check wallet
-func handleCheckWallet(ctx *gin.Context) {
+func (c *controller) checkWallet(ctx *gin.Context) {
 	phone := ctx.Param("phone")
 
-	data, err := checkWalletService(phone)
+	data, err := c.service.checkWallet(phone)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
 	data.Password = ""
 	data.Wallet.Pin = ""
 
-	ctx.JSON(200, helpers.SuccessResponse("User ditemukan", helpers.Data{"data": data}))
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
 }
 
 // topup
-func handleTopup(ctx *gin.Context) {
+func (c *controller) topup(ctx *gin.Context) {
 	phone := ctx.Param("phone")
 	var body topupWithdrawScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
-	data, err := topupWithdrawService(phone, &body, "TOPUP")
+	data, err := c.service.topupWithdraw(phone, &body, "TOPUP")
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Top Up Berhasil", helpers.Data{"data": data}))
+	response.Success(ctx, 200, gin.H{
+		"message": "Top Up berhasil",
+		"data":    data,
+	})
 }
 
 // withdraw
-func handleWithdraw(ctx *gin.Context) {
+func (c *controller) withdraw(ctx *gin.Context) {
 	phone := ctx.Param("phone")
 	var body topupWithdrawScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
-	data, err := topupWithdrawService(phone, &body, "WITHDRAW")
+	data, err := c.service.topupWithdraw(phone, &body, "WITHDRAW")
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Withdraw Berhasil", helpers.Data{"data": data}))
+	response.Success(ctx, 200, gin.H{
+		"data":    data,
+		"message": "Withdraw berhasil",
+	})
 }
 
 // transaction
-func handleTransaction(ctx *gin.Context) {
+func (c *controller) transaction(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	data, err := transactionService(id)
+	data, err := c.service.transaction(id)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, gin.H{"data": data})
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
 }
 
 // mutasi
-func handleMutasi(ctx *gin.Context) {
+func (c *controller) mutasi(ctx *gin.Context) {
 	var query mutationQS
 
 	ctx.ShouldBindQuery(&query)
 
-	data, err := mutasiService(&query)
+	data, err := c.service.mutasi(&query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -127,7 +162,7 @@ func handleMutasi(ctx *gin.Context) {
 }
 
 // profile
-func handleAdminProfile(ctx *gin.Context) {
+func (c *controller) adminProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	_user.Password = ""
@@ -137,38 +172,41 @@ func handleAdminProfile(ctx *gin.Context) {
 	})
 }
 
-func handleUpdateAdminProfile(ctx *gin.Context) {
+func (c *controller) updateAdminProfile(ctx *gin.Context) {
 	var body updateAdminProfileScheme
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := updateAdminProfileService(&_user, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+	if err := c.service.updateAdminProfile(&_user, &body); err != nil {
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui", helpers.Data{"data": _user}))
+	response.Success(ctx, 200, gin.H{
+		"message": "Profil berhasil diperbarui",
+		"data":    _user,
+	})
 }
 
-func handleUpdateAdminPassword(ctx *gin.Context) {
+func (c *controller) updateAdminPassword(ctx *gin.Context) {
 	var body updateAdminPasswordScheme
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
-	if err := updateAdminPasswordService(&_user, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+	if err := c.service.updateAdminPassword(&_user, &body); err != nil {
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
+	response.Success(ctx, 200, gin.H{
+		"message": "Password berhasil diperbarui",
+	})
 }

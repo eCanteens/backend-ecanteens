@@ -7,6 +7,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type MapClaims = jwt.MapClaims
+
+func New(claim *jwt.MapClaims) string {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_KEY")))
+
+	return tokenString
+}
+
 func Parse(token string) (jwt.MapClaims, error) {
 	parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -24,12 +33,4 @@ func Parse(token string) (jwt.MapClaims, error) {
 
 	claim, _ := parsedToken.Claims.(jwt.MapClaims)
 	return claim, err
-}
-
-
-func New(claim *jwt.MapClaims) string {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_KEY")))
-
-	return tokenString
 }

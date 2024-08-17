@@ -11,15 +11,33 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func findAdminEmail(user *models.User, email string) error {
+type Repository interface {
+	findAdminEmail(user *models.User, email string) error
+	count(table string, count *int64) error
+	checkEmail(email string, id ...uint) *[]models.User
+	save(user *models.User) error
+	findUser(user *models.User, phone string) error
+	topupWithdraw(amount uint, user *models.User, tipe string) error
+	createTransaction(user *models.User, amount uint, tipe enums.TransactionType) (*models.Transaction, error)
+	findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error)
+	findMutasi(result *pagination.Pagination[models.Transaction], query *mutationQS) error
+}
+
+type repository struct{}
+
+func NewRepository() Repository {
+	return &repository{}
+}
+
+func (r *repository) findAdminEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Where("role_id = ?", 1).First(user).Error
 }
 
-func count(table string, count *int64) error {
+func (r *repository) count(table string, count *int64) error {
 	return config.DB.Table(table).Count(count).Error
 }
 
-func checkEmail(email string, id ...uint) *[]models.User {
+func (r *repository) checkEmail(email string, id ...uint) *[]models.User {
 	var sameUser []models.User
 
 	query := config.DB.Where(
@@ -35,15 +53,15 @@ func checkEmail(email string, id ...uint) *[]models.User {
 	return &sameUser
 }
 
-func save(user *models.User) error {
+func (r *repository) save(user *models.User) error {
 	return config.DB.Save(user).Error
 }
 
-func findUser(user *models.User, phone string) error {
+func (r *repository) findUser(user *models.User, phone string) error {
 	return config.DB.Where("phone = ?", phone).Preload("Wallet").First(user).Error
 }
 
-func topupWithdraw(amount uint, user *models.User, tipe string) error {
+func (r *repository) topupWithdraw(amount uint, user *models.User, tipe string) error {
 	if tipe == "TOPUP" {
 		user.Wallet.Balance += amount
 	} else if tipe == "WITHDRAW" {
@@ -56,7 +74,7 @@ func topupWithdraw(amount uint, user *models.User, tipe string) error {
 	return config.DB.Save(user.Wallet).Error
 }
 
-func createTransaction(user *models.User, amount uint, tipe enums.TransactionType) (*models.Transaction, error) {
+func (r *repository) createTransaction(user *models.User, amount uint, tipe enums.TransactionType) (*models.Transaction, error) {
 	transaction := models.Transaction{
 		TransactionCode: helpers.GenerateTrxCode(*user.Id),
 		UserId:          *user.Id,
@@ -67,11 +85,11 @@ func createTransaction(user *models.User, amount uint, tipe enums.TransactionTyp
 	return &transaction, config.DB.Create(&transaction).Error
 }
 
-func findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error) {
+func (r *repository) findTransaction(transaction *models.Transaction, id string) (*models.Transaction, error) {
 	return transaction, config.DB.Where("transaction_id = ?", id).Preload("User.Wallet").First(transaction).Error
 }
 
-func findMutasi(result *pagination.Pagination[models.Transaction], query *mutationQS) error {
+func (r *repository) findMutasi(result *pagination.Pagination[models.Transaction], query *mutationQS) error {
 	search := query.Search
 	page := query.Page
 	order := query.Order

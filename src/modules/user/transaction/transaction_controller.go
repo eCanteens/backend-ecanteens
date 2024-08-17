@@ -2,7 +2,8 @@ package transaction
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/validation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +14,7 @@ func getCart(ctx *gin.Context) {
 	data, err := getCartService(&_user)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -26,8 +27,7 @@ func updateCart(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var body updateCartNoteScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -35,18 +35,17 @@ func updateCart(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := updateCartService(id, &body, *_user.Id); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(201, helpers.SuccessResponse("Catatan berhasil ditambahkan"))
+	response.Success(ctx, 200, gin.H{"message": "Catatan berhasil ditambahkan"})
 }
 
 func addCart(ctx *gin.Context) {
 	var body addCartScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -54,14 +53,14 @@ func addCart(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := addCartService(&_user, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
 	if *body.Quantity == 0 {
-		ctx.JSON(201, helpers.SuccessResponse("Produk berhasil dihapus dari keranjang"))
-	} else {
-		ctx.JSON(201, helpers.SuccessResponse("Produk berhasil ditambahkan ke keranjang"))
+		response.Success(ctx, 200, gin.H{"message": "Produk berhasil dihapus dari keranjang"})
+		} else {
+		response.Success(ctx, 201, gin.H{"message": "Produk berhasil ditambahkan ke keranjang"})
 	}
 }
 
@@ -75,7 +74,7 @@ func getOrder(ctx *gin.Context) {
 	data, err := getOrderService(*_user.Id, &query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -85,8 +84,7 @@ func getOrder(ctx *gin.Context) {
 func handleOrder(ctx *gin.Context) {
 	var body orderScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -96,21 +94,21 @@ func handleOrder(ctx *gin.Context) {
 	data, err := orderService(&body, &_user)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(201, helpers.SuccessResponse("Pesanan berhasil dibuat", helpers.Data{
+	response.Success(ctx, 201, gin.H{
+		"message": "Pesanan berhasil dibuat",
 		"data": data,
-	}))
+	})
 }
 
 func handlePostReview(ctx *gin.Context) {
 	var body postReviewScheme
 	id := ctx.Param("id")
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -118,19 +116,18 @@ func handlePostReview(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := postReviewService(&body, id, *_user.Id); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Ulasan berhasil dibuat"))
+	response.Success(ctx, 200, gin.H{"message": "Ulasan berhasil dibuat"})
 }
 
 func handleUpdateOrder(ctx *gin.Context) {
 	var body updateOrderScheme
 	id := ctx.Param("id")
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -138,7 +135,7 @@ func handleUpdateOrder(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := updateOrderService(&body, id, &_user); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -151,5 +148,5 @@ func handleUpdateOrder(ctx *gin.Context) {
 		msg += " dibatalkan"
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse(msg))
+	response.Success(ctx, 200, gin.H{"message": msg})
 }

@@ -1,22 +1,21 @@
 package middleware
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func Auth(ctx *gin.Context) {
 	token := ctx.Request.Header.Get("Authorization")
 
 	if token == "" {
-		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Anda belum login!"))
+		response.Error(ctx, "Anda belum login!", 401)
 		return
 	}
 
@@ -24,27 +23,24 @@ func Auth(ctx *gin.Context) {
 
 	claim, err := jwt.Parse(token)
 	if err != nil {
-		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse(err.Error()))
+		response.Error(ctx, "Anda belum login!", 401)
 		return
 	}
 
 	if claim["type"].(string) != "access" {
-		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Token tidak valid"))
+		response.Error(ctx, "Token tidak valid", 401)
 		return
 	}
 
 	if uint(claim["role"].(float64)) != 2 {
-		ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Pengguna tidak ditemukan"))
+		response.Error(ctx, "Pengguna tidak ditemukan", 404)
 		return
 	}
 
 	var user models.User
 	if err := config.DB.Where("id = ?", claim["sub"]).Preload("Wallet").First(&user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.AbortWithStatusJSON(401, helpers.ErrorResponse("Pengguna tidak ditemukan"))
-		} else {
-			ctx.AbortWithStatusJSON(500, helpers.ErrorResponse(err.Error()))
-		}
+		custErr := customerror.GormError(err, "Pengguna")
+		response.Error(ctx, custErr.Message, custErr.StatusCode)
 		return
 	}
 

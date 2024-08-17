@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserToken struct {
@@ -25,7 +24,7 @@ func generateRefreshToken() string {
 func GenerateUserToken(id uint, roleId uint) *UserToken {
 	var token UserToken
 
-	token.AccessToken = New(&jwt.MapClaims{
+	token.AccessToken = New(&MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
 		"sub":  id,
 		"iat":  time.Now().Unix(),
@@ -41,7 +40,7 @@ func GenerateUserToken(id uint, roleId uint) *UserToken {
 }
 
 func GenerateResetToken(id uint) string {
-	return New(&jwt.MapClaims{
+	return New(&MapClaims{
 		"iss":  os.Getenv("BASE_URL"),
 		"sub":  id,
 		"iat":  time.Now().Unix(),

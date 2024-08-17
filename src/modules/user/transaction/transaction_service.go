@@ -1,30 +1,33 @@
 package transaction
 
 import (
-	"errors"
 	"strconv"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 )
 
 func getCartService(user *models.User) (*[]models.Cart, error) {
 	var carts []models.Cart
 
 	if err := findCart(*user.Id, &carts, true); err != nil {
-		return nil, err
+		return nil, customerror.GormError(err, "Keranjang")
 	}
 
 	return &carts, nil
 }
 
 func updateCartService(id string, body *updateCartNoteScheme, userId uint) error {
-	return updateCartNote(id, userId, body.Notes)
+	if err := updateCartNote(id, userId, body.Notes); err != nil {
+		return customerror.GormError(err, "Keranjang")
+	}
+
+	return nil
 }
 
 func addCartService(user *models.User, body *addCartScheme) error {
@@ -32,22 +35,19 @@ func addCartService(user *models.User, body *addCartScheme) error {
 	var carts []models.Cart
 
 	if err := findOneProduct(&product, body.ProductId); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("produk tidak ditemukan")
-		}
-		return err
+		return customerror.GormError(err, "produk")
 	}
 
 	if product.Stock == 0 {
-		return errors.New("stok produk habis")
+		return customerror.New("Stok produk habis", 400)
 	}
 
 	if !product.Restaurant.IsOpen {
-		return errors.New("restoran sedang tutup")
+		return customerror.New("Restoran sedang tutup", 400)
 	}
 
 	if err := findCart(*user.Id, &carts, false); err != nil {
-		return err
+		return customerror.GormError(err, "Keranjang")
 	}
 
 	cart := helpers.Find(&carts, func(cart *models.Cart) bool {
@@ -69,11 +69,15 @@ func addCartService(user *models.User, body *addCartScheme) error {
 				},
 			}
 
-			return create(cart)
+			if err := create(cart); err != nil {
+				return customerror.GormError(err, "Keranjang")
+			}
+
+			return nil
 		}
 
 		// but quantity is 0 then return error
-		return errors.New("produk tidak ditemukan di keranjang")
+		return customerror.New("Produk tidak ditemukan di keranjang", 404)
 	}
 
 	cartItem := helpers.Find(&cart.Items, func(item *models.CartItem) bool {
@@ -90,25 +94,40 @@ func addCartService(user *models.User, body *addCartScheme) error {
 				Quantity:  *body.Quantity,
 			}
 
-			return create(cartItem)
+			if err := create(cartItem); err != nil {
+				return customerror.GormError(err, "Keranjang")
+			}
+			return nil
 		}
 
 		// and quantity is 0 then return error
-		return errors.New("produk tidak ditemukan di keranjang")
+		return customerror.New("Produk tidak ditemukan di keranjang", 404)
 	} else {
 		// if cart & cart item found
 		if *body.Quantity > 0 {
 			// if quantity not 0 then update cart item
 			cartItem.Quantity = *body.Quantity
-			return update(cartItem)
+			if err := update(cartItem); err != nil {
+				return customerror.GormError(err, "Keranjang")
+			}
+
+			return nil
 		} else {
 			// if quantity is 0
 			if len(cart.Items) > 1 {
 				// if cart items more than 1 then delete cart item
-				return deleteRecord(cartItem)
+				if err := deleteRecord(cartItem); err != nil {
+					return customerror.GormError(err, "Keranjang")
+				}
+
+				return nil
 			} else {
 				// if cart items just 1 then delete cart
-				return deleteRecord(cart)
+				if err := deleteRecord(cart); err != nil {
+					return customerror.GormError(err, "Keranjang")
+				}
+
+				return nil
 			}
 		}
 	}
@@ -118,7 +137,7 @@ func getOrderService(userId uint, query *getOrderQS) (*pagination.Pagination[mod
 	result := pagination.New(models.Order{})
 
 	if err := findOrder(result, userId, query); err != nil {
-		return nil, err
+		return nil, customerror.GormError(err, "Pesanan")
 	}
 
 	return result, nil
@@ -129,10 +148,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 
 	// Find cart
 	if err := findCartById(body.CartId, &cart, *user.Id, true); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("keranjang tidak ditemukan")
-		}
-		return nil, err
+		return nil, customerror.GormError(err, "Keranjang")
 	}
 
 	// Make transaction
@@ -146,7 +162,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 
 	// Validate restaurant open
 	if !cart.Restaurant.IsOpen {
-		return nil, errors.New("restoran sedang tutup")
+		return nil, customerror.New("Restoran sedang tutup", 404)
 	}
 
 	var fullfilmentDate *time.Time
@@ -155,7 +171,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	if *body.IsPreorder {
 		date, err := time.Parse(time.RFC3339, body.FullfilmentDate)
 		if err != nil {
-			return nil, errors.New("format waktu tidak valid")
+			return nil, customerror.New("Format waktu tidak valid", 400)
 		}
 
 		fullfilmentDate = &date
@@ -174,7 +190,7 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	// Insert cart items into order items & calculate amount
 	for _, item := range cart.Items {
 		if item.Product.Stock == 0 {
-			return nil, errors.New("stok produk habis")
+			return nil, customerror.New("Stok produk habis", 400)
 		}
 		order.Items = append(order.Items, models.OrderItem{
 			ProductId: item.ProductId,
@@ -191,14 +207,14 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 	// Validate wallet balance
 	if transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
 		if user.Wallet.Balance < transaction.Amount {
-			return nil, errors.New("saldo anda tidak mencukupi")
+			return nil, customerror.New("Saldo anda tidak mencukupi", 400)
 		}
 
 		user.Wallet.Balance -= transaction.Amount
 	}
 
 	if err := orderRepo(user, &cart, &order); err != nil {
-		return nil, errors.New("gagal saat memproses pesanan")
+		return nil, customerror.New("Gagal saat memproses pesanan", 500)
 	}
 
 	return &order, nil
@@ -208,11 +224,7 @@ func updateOrderService(body *updateOrderScheme, id string, user *models.User) e
 	var order models.Order
 
 	if err := findOrderById(&order, id, *user.Id, []string{"Transaction", "Restaurant.Owner.Wallet"}); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("pesanan tidak ditemukan")
-		}
-
-		return err
+		return customerror.GormError(err, "Pesanan")
 	}
 
 	switch body.Status {
@@ -225,7 +237,11 @@ func updateOrderService(body *updateOrderScheme, id string, user *models.User) e
 			// Return balance to user
 			user.Wallet.Balance += order.Transaction.Amount
 
-			return updateOrderTransaction(&order, user.Wallet)
+			if err := updateOrderTransaction(&order, user.Wallet); err != nil {
+				return customerror.GormError(err, "Pesanan")
+			}
+
+			return nil
 		}
 	case "CANCELED":
 		if order.Status == enums.OrderStatusWaiting {
@@ -238,33 +254,37 @@ func updateOrderService(body *updateOrderScheme, id string, user *models.User) e
 			// Release balance to resto
 			order.Restaurant.Owner.Wallet.Balance += order.Transaction.Amount
 
-			return updateOrderTransaction(&order, order.Restaurant.Owner.Wallet)
+			if err := updateOrderTransaction(&order, order.Restaurant.Owner.Wallet); err != nil {
+				return customerror.GormError(err, "Pesanan")
+			}
+
+			return nil
 		}
 	default:
-		return errors.New("status tidak diketahui")
+		return customerror.New("Status tidak diketahui", 400)
 	}
 
-	return errors.New("pesanan gagal diperbarui")
+	return customerror.New("Pesanan gagal diperbarui", 400)
 }
 
 func postReviewService(body *postReviewScheme, id string, userId uint) error {
 	var order models.Order
 	if err := findOrderById(&order, id, userId, []string{"Review"}); err != nil {
-		return err
+		return customerror.GormError(err, "Pesanan")
 	}
 
 	if order.Status != enums.OrderStatusSuccess {
-		return errors.New("tidak bisa mengirim ulasan jika pesanan belum selesai")
+		return customerror.New("Tidak bisa mengirim ulasan jika pesanan belum selesai", 400)
 	}
 
 	if order.Review != nil {
-		return errors.New("anda sudah mengirim ulasan")
+		return customerror.New("Anda sudah mengirim ulasan", 400)
 	}
 
 	orderId, err := strconv.ParseUint(id, 10, 64)
 
 	if err != nil {
-		return err
+		return customerror.New("Id pesanan tidak valid", 400)
 	}
 
 	review := models.Review{
@@ -274,5 +294,9 @@ func postReviewService(body *postReviewScheme, id string, userId uint) error {
 		Comment: body.Comment,
 	}
 
-	return create(&review)
+	if err := create(&review); err != nil {
+		return customerror.GormError(err, "Ulasan")
+	}
+
+	return nil
 }

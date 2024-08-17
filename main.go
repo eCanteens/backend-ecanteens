@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/validation"
 	"github.com/eCanteens/backend-ecanteens/src/middleware"
 	"github.com/eCanteens/backend-ecanteens/src/modules/admin"
 	restoAuth "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/auth"
@@ -27,8 +27,9 @@ func main() {
 	router.MaxMultipartMemory = config.App.MaxMultipartMemory
 	router.Use(middleware.Cors)
 	router.Use(middleware.RateLimiter)
+	router.Use(middleware.Gzip)
 
-	customValidator := helpers.NewCustomValidator()
+	customValidator := validation.NewCustomValidator()
 	binding.Validator = customValidator
 
 	router.Static("/public", "./public")

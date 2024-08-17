@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/jwt"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/upload"
 	"golang.org/x/crypto/bcrypt"
@@ -17,12 +17,12 @@ func checkUniqueService(email string, phone string, id ...uint) error {
 	sameUser := checkEmailAndPhone(email, phone, id...)
 
 	if len(*sameUser) > 1 {
-		return errors.New("email dan nomor telepon sudah digunakan")
+		return customerror.New("Email dan nomor telepon sudah digunakan", 400)
 	} else if len(*sameUser) == 1 {
 		var fields []string
 
 		if (*sameUser)[0].Email == email {
-			fields = append(fields, "email")
+			fields = append(fields, "Email")
 		}
 
 		if (*sameUser)[0].Phone != nil && phone != "" {
@@ -32,7 +32,7 @@ func checkUniqueService(email string, phone string, id ...uint) error {
 		}
 
 		errMsg := strings.Join(fields, " dan ") + " sudah digunakan"
-		return errors.New(errMsg)
+		return customerror.New(errMsg, 400)
 	}
 
 	return nil
@@ -59,7 +59,7 @@ func registerService(body *registerScheme) error {
 	}
 
 	if err := create(&restaurant); err != nil {
-		return err
+		return customerror.GormError(err, "Restoran")
 	}
 
 	avatar, err := upload.New(&upload.Option{
@@ -69,7 +69,7 @@ func registerService(body *registerScheme) error {
 	})
 
 	if err != nil {
-		return err
+		return customerror.New("Gagal saat menyimpan file", 500)
 	}
 
 	restaurantAvatar, err := upload.New(&upload.Option{
@@ -79,7 +79,7 @@ func registerService(body *registerScheme) error {
 	})
 
 	if err != nil {
-		return err
+		return customerror.New("Gagal saat menyimpan file", 500)
 	}
 
 	banner, err := upload.New(&upload.Option{
@@ -89,7 +89,7 @@ func registerService(body *registerScheme) error {
 	})
 
 	if err != nil {
-		return err
+		return customerror.New("Gagal saat menyimpan file", 500)
 	}
 
 	user.Avatar = avatar.Url
@@ -97,21 +97,25 @@ func registerService(body *registerScheme) error {
 	restaurant.Banner = banner.Url
 
 	if err := update(&user); err != nil {
-		return err
+		return customerror.GormError(err, "Pengguna")
 	}
 
-	return update(&restaurant)
+	if err := update(&restaurant); err != nil {
+		return customerror.GormError(err, "Restoran")
+	}
+
+	return nil
 }
 
 func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
-		return nil, nil, errors.New("email atau password salah")
+		return nil, nil, customerror.New("Email atau password salah", 400)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return nil, nil, errors.New("email atau password salah")
+		return nil, nil, customerror.New("Email atau password salah", 400)
 	}
 
 	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
@@ -130,7 +134,7 @@ func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 
 func logoutService(body *refreshScheme) error {
 	if err := deleteToken(body.RefreshToken); err != nil {
-		return errors.New("anda sudah logout")
+		return customerror.New("Anda sudah logout", 400)
 	}
 
 	return nil
@@ -140,20 +144,16 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 	var refreshToken models.Token
 
 	if err := findToken(&refreshToken, body.RefreshToken); err != nil {
-		return nil, errors.New("refresh token tidak valid")
+		return nil, customerror.New("refresh token tidak valid", 400)
 	}
 
 	if refreshToken.User == nil {
-		return nil, errors.New("pengguna tidak ditemukan")
-	}
-
-	if time.Since(refreshToken.LastUsed) < config.App.Auth.AccessTokenExpiresIn {
-		return nil, errors.New("belum bisa refresh token")
+		return nil, customerror.New("pengguna tidak ditemukan", 400)
 	}
 
 	if time.Since(refreshToken.LastUsed) > config.App.Auth.RefreshTokenExpiresIn {
 		go deleteById(&refreshToken)
-		return nil, errors.New("refresh token kadaluarsa")
+		return nil, customerror.New("refresh token kadaluarsa", 400)
 	}
 
 	refreshToken.LastUsed = time.Now()
@@ -182,14 +182,14 @@ func updateProfileService(body *updateProfileScheme, user *models.User) error {
 		})
 
 		if err != nil {
-			return err
+			return customerror.New("Gagal saat menyimpan file", 500)
 		}
 
 		user.Avatar = filePath.Url
 	}
 
 	if err := update(user); err != nil {
-		return err
+		return customerror.GormError(err, "Pengguna")
 	}
 
 	user.Password = ""
@@ -210,7 +210,7 @@ func updateRestoService(body *updateRestoScheme, resto *models.Restaurant) error
 		})
 
 		if err != nil {
-			return err
+			return customerror.New("Gagal saat menyimpan file", 500)
 		}
 
 		resto.Avatar = file.Url
@@ -224,23 +224,31 @@ func updateRestoService(body *updateRestoScheme, resto *models.Restaurant) error
 		})
 
 		if err != nil {
-			return err
+			return customerror.New("Gagal saat menyimpan file", 500)
 		}
 
 		resto.Banner = file.Url
 	}
 
-	return update(resto)
+	if err := update(resto); err != nil {
+		return customerror.GormError(err, "Restoran")
+	}
+
+	return nil
 }
 
 func updatePasswordService(user *models.User, body *updatePasswordScheme) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
-		return errors.New("password salah")
+		return customerror.New("Password salah", 400)
 	}
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
 
 	user.Password = string(hashed)
 
-	return update(user)
+	if err := update(user); err != nil {
+		return customerror.GormError(err, "Pengguna")
+	}
+
+	return nil
 }

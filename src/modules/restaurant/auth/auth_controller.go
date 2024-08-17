@@ -2,92 +2,94 @@ package auth
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/validation"
 	"github.com/gin-gonic/gin"
 )
 
 func handleCheckRegister(ctx *gin.Context) {
 	var body checkRegisterScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	if err := checkUniqueService(body.Email, body.Phone); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Data berhasil divalidasi"))
+	response.Success(ctx, 200, gin.H{"message": "Data sudah valid"})
 }
 
 func handleRegister(ctx *gin.Context) {
 	var body registerScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	if err := registerService(&body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(201, helpers.SuccessResponse("Register berhasil"))
+	response.Success(ctx, 201, gin.H{"message": "Register berhasil"})
 }
 
 func handleLogin(ctx *gin.Context) {
 	var body loginScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	data, token, err := loginService(&body)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Login berhasil", helpers.Data{"token": token, "data": data}))
+	response.Success(ctx, 200, gin.H{
+		"message": "Login berhasil",
+		"token": token,
+		"data":  data,
+	})
 }
 
 func handleLogout(ctx *gin.Context) {
 	var body refreshScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	if err := logoutService(&body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Logout berhasil"))
+	response.Success(ctx, 200, gin.H{
+		"message": "Logout berhasil",
+	})
 }
 
 func handleRefresh(ctx *gin.Context) {
 	var body refreshScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	token, err := refreshService(&body)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, gin.H{
+	response.Success(ctx, 200, gin.H{
 		"token": token,
 	})
 }
@@ -108,8 +110,7 @@ func handleProfile(ctx *gin.Context) {
 func handleUpdateProfile(ctx *gin.Context) {
 	var body updateProfileScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -117,18 +118,17 @@ func handleUpdateProfile(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := updateProfileService(&body, &_user); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Profil berhasil diperbarui"))
+	response.Success(ctx, 200, gin.H{"message": "Profil berhasil diperbarui"})
 }
 
 func handleUpdateResto(ctx *gin.Context) {
 	var body updateRestoScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -136,18 +136,17 @@ func handleUpdateResto(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := updateRestoService(&body, _user.Restaurant); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Restoran berhasil diperbarui"))
+	response.Success(ctx, 200, gin.H{"message": "Restoran berhasil diperbarui"})
 }
 
 func handleUpdatePassword(ctx *gin.Context) {
 	var body updatePasswordScheme
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
@@ -155,9 +154,9 @@ func handleUpdatePassword(ctx *gin.Context) {
 	_user := user.(models.User)
 
 	if err := updatePasswordService(&_user, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Password berhasil diperbarui"))
+	response.Success(ctx, 200, gin.H{"message": "Password berhasil diperbarui"})
 }

@@ -2,7 +2,8 @@ package transaction
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/validation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +17,7 @@ func handleGetOrder(ctx *gin.Context) {
 	data, err := getOrderService(*_user.Restaurant.Id, &query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -27,16 +28,15 @@ func handleUpdateOrder(ctx *gin.Context) {
 	var body updateOrderScheme
 	id := ctx.Param("id")
 
-	if err := helpers.Bind(ctx, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, err)
+	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
 	}
 
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err:= updateOrderService(id, &_user, &body); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+	if err := updateOrderService(id, &_user, &body); err != nil {
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -51,5 +51,5 @@ func handleUpdateOrder(ctx *gin.Context) {
 		msg = "Status pesanan berhasil diperbarui"
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse(msg))
+	response.Success(ctx, 200, gin.H{"message": msg})
 }

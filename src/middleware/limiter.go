@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
@@ -14,7 +14,7 @@ var limiter = rate.NewLimiter(rate.Limit(config.App.Limiter.Rate), config.App.Li
 
 func RateLimiter(ctx *gin.Context) {
 	if !limiter.Allow() {
-		ctx.AbortWithStatusJSON(429, helpers.ErrorResponse("Too Many Request"))
+		response.Error(ctx, "Too Many Request", 429)
 		fmt.Println("Too Many Request")
 	}
 }

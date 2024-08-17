@@ -2,7 +2,7 @@ package restaurant
 
 import (
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
-	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ func getFavorite(ctx *gin.Context) {
 	data, err := getFavoriteService(*user.(models.User).Id, &query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -30,7 +30,7 @@ func getAll(ctx *gin.Context) {
 	data, err := getAllService(&query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -46,7 +46,7 @@ func getReviews(ctx *gin.Context) {
 	data, err := getReviewsService(id, &query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -59,7 +59,7 @@ func getDetail(ctx *gin.Context) {
 	data, err := getDetailService(id)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -77,7 +77,7 @@ func getRestosProducts(ctx *gin.Context) {
 	data, err := getRestosProductsService(id, &query)
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
@@ -89,11 +89,11 @@ func addFavorite(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	if err := addFavoriteService(*user.(models.User).Id, id); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Restoran berhasil ditambahkan ke favorit"))
+	response.Success(ctx, 200, gin.H{"message": "Restoran berhasil ditambahkan ke favorit"})
 }
 
 func removeFavorite(ctx *gin.Context) {
@@ -101,9 +101,9 @@ func removeFavorite(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	if err := removeFavoriteService(*user.(models.User).Id, id); err != nil {
-		ctx.AbortWithStatusJSON(400, helpers.ErrorResponse(err.Error()))
+		response.ServiceError(ctx, err)
 		return
 	}
 
-	ctx.JSON(200, helpers.SuccessResponse("Restoran berhasil dihapus dari favorit"))
+	response.Success(ctx, 200, gin.H{"message": "Restoran berhasil dihapus dari favorit"})
 }
