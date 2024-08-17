@@ -40,11 +40,11 @@ func (s *service) adminLogin(body *adminLoginScheme) (*models.User, *string, err
 	var user models.User
 
 	if err := s.repo.findAdminEmail(&user, body.Email); err != nil {
-		return nil, nil, customerror.New("email admin salah", 400)
+		return nil, nil, customerror.New("Email admin salah", 400)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return nil, nil, customerror.New("password admin salah", 400)
+		return nil, nil, customerror.New("Password admin salah", 400)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

@@ -11,16 +11,16 @@ func ServiceError(ctx *gin.Context, err error) {
 	if err != nil {
 		var customErr *customerror.CustomError
 		if errors.As(err, &customErr) {
-			ctx.JSON(customErr.StatusCode, gin.H{"message": customErr.Message})
+			ctx.JSON(customErr.StatusCode, gin.H{"status": "error", "message": customErr.Message})
 		} else {
-			ctx.JSON(500, gin.H{"message": "Terjadi kesalahan"})
+			ctx.JSON(500, gin.H{"status": "error", "message": "Terjadi kesalahan"})
 		}
 	}
 }
 
 func Error(ctx *gin.Context, msg string, statusCode int) {
 	ctx.AbortWithStatusJSON(statusCode, gin.H{
-		"status": "error",
+		"status":  "error",
 		"message": msg,
 	})
 }

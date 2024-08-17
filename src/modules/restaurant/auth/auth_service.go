@@ -144,16 +144,16 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 	var refreshToken models.Token
 
 	if err := findToken(&refreshToken, body.RefreshToken); err != nil {
-		return nil, customerror.New("refresh token tidak valid", 400)
+		return nil, customerror.New("Refresh token tidak valid", 400)
 	}
 
 	if refreshToken.User == nil {
-		return nil, customerror.New("pengguna tidak ditemukan", 400)
+		return nil, customerror.New("Rengguna tidak ditemukan", 400)
 	}
 
 	if time.Since(refreshToken.LastUsed) > config.App.Auth.RefreshTokenExpiresIn {
 		go deleteById(&refreshToken)
-		return nil, customerror.New("refresh token kadaluarsa", 400)
+		return nil, customerror.New("Refresh token kadaluarsa", 400)
 	}
 
 	refreshToken.LastUsed = time.Now()

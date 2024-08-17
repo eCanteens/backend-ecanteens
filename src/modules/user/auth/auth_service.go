@@ -198,7 +198,7 @@ func forgotService(body *forgotScheme) error {
 	var user models.User
 
 	if err := findByEmail(&user, body.Email); err != nil {
-		return customerror.New("pengguna tidak ditemukan", 404)
+		return customerror.New("Pengguna tidak ditemukan", 404)
 	}
 
 	tokenString := jwt.GenerateResetToken(*user.Id)

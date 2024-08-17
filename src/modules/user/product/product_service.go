@@ -101,7 +101,7 @@ func removeFavoriteService(userId uint, productId string) error {
 	favorites := checkFavorite(userId, uint(id))
 
 	if len(*favorites) == 0 {
-		return customerror.New("produk tidak ada di dalam list favorit anda", 400)
+		return customerror.New("Produk tidak ada di dalam list favorit anda", 400)
 	}
 
 	if err := deleteFavorite(userId, uint(id)); err != nil {
