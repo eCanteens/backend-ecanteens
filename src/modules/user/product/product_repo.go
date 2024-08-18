@@ -6,7 +6,24 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, error) {
+type Repository interface {
+	checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, error)
+	updateFeedback(id uint, body *feedbackScheme) error
+	createFeedback(feedback *models.ProductFeedback) error
+	deleteFeedback(userId uint, productId uint) error
+	findFavorite(result *pagination.Pagination[models.Product], userId uint, query *paginationQS) error
+	checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct
+	createFavorite(favorite *models.FavoriteProduct) error
+	deleteFavorite(userId uint, productId uint) error
+}
+
+type repository struct{}
+
+func NewRepository() Repository {
+	return &repository{}
+}
+
+func (r *repository) checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, error) {
 	var feedbacks []models.ProductFeedback
 
 	if err := config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).Find(&feedbacks).Error; err != nil {
@@ -16,19 +33,19 @@ func checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, erro
 	return &feedbacks, nil
 }
 
-func updateFeedback(id uint, body *feedbackScheme) error {
+func (r *repository) updateFeedback(id uint, body *feedbackScheme) error {
 	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.IsLike).Error
 }
 
-func createFeedback(feedback *models.ProductFeedback) error {
+func (r *repository) createFeedback(feedback *models.ProductFeedback) error {
 	return config.DB.Create(feedback).Error
 }
 
-func deleteFeedback(userId uint, productId uint) error {
+func (r *repository) deleteFeedback(userId uint, productId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.ProductFeedback{}).Error
 }
 
-func findFavorite(result *pagination.Pagination[models.Product], userId uint, query *paginationQS) error {
+func (r *repository) findFavorite(result *pagination.Pagination[models.Product], userId uint, query *paginationQS) error {
 	q := config.DB.Table("products").
 		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
 		Joins("JOIN favorite_products fp ON fp.product_id = products.id").
@@ -47,7 +64,7 @@ func findFavorite(result *pagination.Pagination[models.Product], userId uint, qu
 	})
 }
 
-func checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct {
+func (r *repository) checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct {
 	var favorites []models.FavoriteProduct
 
 	config.DB.Where("user_id = ?", userId).Where("product_id = ?", ProductId).Find(&favorites)
@@ -55,10 +72,10 @@ func checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct {
 	return &favorites
 }
 
-func createFavorite(favorite *models.FavoriteProduct) error {
+func (r *repository) createFavorite(favorite *models.FavoriteProduct) error {
 	return config.DB.Create(favorite).Error
 }
 
-func deleteFavorite(userId uint, productId uint) error {
+func (r *repository) deleteFavorite(userId uint, productId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("product_id = ?", productId).Delete(&models.FavoriteProduct{}).Error
 }

@@ -9,11 +9,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func update[T any](data *T) error {
+type Repository interface {
+	updateOrder(data *models.Order) error
+	findOrder(result *pagination.Pagination[models.Order], restaurantId uint, query *getOrderQS) error
+	findOrderById(id string, restaurantId uint, order *models.Order) error
+	updateOrderWithReturn(order *models.Order) error
+	updateOrderTransaction(order *models.Order) error
+}
+
+type repository struct{}
+
+func NewRepository() Repository {
+	return &repository{}
+}
+
+func (r *repository) updateOrder(data *models.Order) error {
 	return config.DB.Save(data).Error
 }
 
-func findOrder(result *pagination.Pagination[models.Order], restaurantId uint, query *getOrderQS) error {
+func (r *repository) findOrder(result *pagination.Pagination[models.Order], restaurantId uint, query *getOrderQS) error {
 	tx := config.DB.Where("restaurant_id = ?", restaurantId).
 		Preload("Items").
 		Preload("Transaction").
@@ -52,7 +66,7 @@ func findOrder(result *pagination.Pagination[models.Order], restaurantId uint, q
 	})
 }
 
-func findOrderById(id string, restaurantId uint, order *models.Order) error {
+func (r *repository) findOrderById(id string, restaurantId uint, order *models.Order) error {
 	return config.DB.
 		Where("id = ?", id).
 		Where("restaurant_id = ?", restaurantId).
@@ -61,7 +75,7 @@ func findOrderById(id string, restaurantId uint, order *models.Order) error {
 		First(order).Error
 }
 
-func updateOrderWithReturn(order *models.Order) error {
+func (r *repository) updateOrderWithReturn(order *models.Order) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
 		// Update order
 		if err := config.DB.Save(order).Error; err != nil {
@@ -83,7 +97,7 @@ func updateOrderWithReturn(order *models.Order) error {
 	})
 }
 
-func updateOrderTransaction(order *models.Order) error {
+func (r *repository) updateOrderTransaction(order *models.Order) error {
 	return config.DB.Transaction(func(tx *gorm.DB) error {
 		if err := config.DB.Save(order).Error; err != nil {
 			return err

@@ -5,16 +5,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	productRepo       = NewRepository()
+	productService    = NewService(productRepo)
+	productController = NewController(productService)
+)
+
 func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.GET("/favorites", getFavorite)
+		authorized.GET("/favorites", productController.getFavorite)
 
-		authorized.POST("/:id/feedback", addFeedback)
-		authorized.DELETE("/:id/feedback", removeFeedback)
+		authorized.POST("/:id/feedback", productController.addFeedback)
+		authorized.DELETE("/:id/feedback", productController.removeFeedback)
 
-		authorized.POST("/:id/favorite", addFavorite)
-		authorized.DELETE("/:id/favorite", removeFavorite)
+		authorized.POST("/:id/favorite", productController.addFavorite)
+		authorized.DELETE("/:id/favorite", productController.removeFavorite)
 	}
 }

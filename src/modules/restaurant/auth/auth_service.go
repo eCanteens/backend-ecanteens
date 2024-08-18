@@ -13,8 +13,29 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func checkUniqueService(email string, phone string, id ...uint) error {
-	sameUser := checkEmailAndPhone(email, phone, id...)
+type Service interface {
+	checkUnique(email string, phone string, id ...uint) error
+	register(body *registerScheme) error
+	login(body *loginScheme) (*models.User, *jwt.UserToken, error)
+	logout(body *refreshScheme) error
+	refresh(body *refreshScheme) (*jwt.UserToken, error)
+	updateProfile(body *updateProfileScheme, user *models.User) error
+	updateResto(body *updateRestoScheme, resto *models.Restaurant) error
+	updatePassword(user *models.User, body *updatePasswordScheme) error
+}
+
+type service struct {
+	repo Repository
+}
+
+func NewService(repo Repository) Service {
+	return &service{
+		repo: repo,
+	}
+}
+
+func (s *service) checkUnique(email string, phone string, id ...uint) error {
+	sameUser := s.repo.checkEmailAndPhone(email, phone, id...)
 
 	if len(*sameUser) > 1 {
 		return customerror.New("Email dan nomor telepon sudah digunakan", 400)
@@ -38,8 +59,8 @@ func checkUniqueService(email string, phone string, id ...uint) error {
 	return nil
 }
 
-func registerService(body *registerScheme) error {
-	if err := checkUniqueService(body.Email, body.Phone); err != nil {
+func (s *service) register(body *registerScheme) error {
+	if err := s.checkUnique(body.Email, body.Phone); err != nil {
 		return err
 	}
 
@@ -58,7 +79,7 @@ func registerService(body *registerScheme) error {
 		Owner:      &user,
 	}
 
-	if err := create(&restaurant); err != nil {
+	if err := s.repo.createResto(&restaurant); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 
@@ -96,21 +117,21 @@ func registerService(body *registerScheme) error {
 	restaurant.Avatar = restaurantAvatar.Url
 	restaurant.Banner = banner.Url
 
-	if err := update(&user); err != nil {
+	if err := s.repo.updateUser(&user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
 
-	if err := update(&restaurant); err != nil {
+	if err := s.repo.updateResto(&restaurant); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 
 	return nil
 }
 
-func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
+func (s *service) login(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 	var user models.User
 
-	if err := findByEmail(&user, body.Email); err != nil {
+	if err := s.repo.findByEmail(&user, body.Email); err != nil {
 		return nil, nil, customerror.New("Email atau password salah", 400)
 	}
 
@@ -120,7 +141,7 @@ func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 
 	token := jwt.GenerateUserToken(*user.Id, user.RoleId)
 
-	go create(&models.Token{
+	go s.repo.createToken(&models.Token{
 		UserId:   *user.Id,
 		Token:    token.RefreshToken,
 		LastUsed: time.Now(),
@@ -132,18 +153,18 @@ func loginService(body *loginScheme) (*models.User, *jwt.UserToken, error) {
 	return &user, token, nil
 }
 
-func logoutService(body *refreshScheme) error {
-	if err := deleteToken(body.RefreshToken); err != nil {
+func (s *service) logout(body *refreshScheme) error {
+	if err := s.repo.deleteToken(body.RefreshToken); err != nil {
 		return customerror.New("Anda sudah logout", 400)
 	}
 
 	return nil
 }
 
-func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
+func (s *service) refresh(body *refreshScheme) (*jwt.UserToken, error) {
 	var refreshToken models.Token
 
-	if err := findToken(&refreshToken, body.RefreshToken); err != nil {
+	if err := s.repo.findToken(&refreshToken, body.RefreshToken); err != nil {
 		return nil, customerror.New("Refresh token tidak valid", 400)
 	}
 
@@ -152,7 +173,7 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 	}
 
 	if time.Since(refreshToken.LastUsed) > config.App.Auth.RefreshTokenExpiresIn {
-		go deleteById(&refreshToken)
+		go s.repo.deleteTokenById(&refreshToken)
 		return nil, customerror.New("Refresh token kadaluarsa", 400)
 	}
 
@@ -160,13 +181,13 @@ func refreshService(body *refreshScheme) (*jwt.UserToken, error) {
 	token := jwt.GenerateUserToken(*refreshToken.User.Id, refreshToken.User.RoleId)
 	refreshToken.Token = token.RefreshToken
 
-	go update(&refreshToken)
+	go s.repo.updateToken(&refreshToken)
 
 	return token, nil
 }
 
-func updateProfileService(body *updateProfileScheme, user *models.User) error {
-	if err := checkUniqueService(body.Email, body.Phone, *user.Id); err != nil {
+func (s *service) updateProfile(body *updateProfileScheme, user *models.User) error {
+	if err := s.checkUnique(body.Email, body.Phone, *user.Id); err != nil {
 		return err
 	}
 
@@ -188,7 +209,7 @@ func updateProfileService(body *updateProfileScheme, user *models.User) error {
 		user.Avatar = filePath.Url
 	}
 
-	if err := update(user); err != nil {
+	if err := s.repo.updateUser(user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
 
@@ -198,7 +219,7 @@ func updateProfileService(body *updateProfileScheme, user *models.User) error {
 	return nil
 }
 
-func updateRestoService(body *updateRestoScheme, resto *models.Restaurant) error {
+func (s *service) updateResto(body *updateRestoScheme, resto *models.Restaurant) error {
 	resto.Name = body.Name
 	resto.CategoryId = body.CategoryId
 
@@ -230,14 +251,14 @@ func updateRestoService(body *updateRestoScheme, resto *models.Restaurant) error
 		resto.Banner = file.Url
 	}
 
-	if err := update(resto); err != nil {
+	if err := s.repo.updateResto(resto); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 
 	return nil
 }
 
-func updatePasswordService(user *models.User, body *updatePasswordScheme) error {
+func (s *service) updatePassword(user *models.User, body *updatePasswordScheme) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
 		return customerror.New("Password salah", 400)
 	}
@@ -246,7 +267,7 @@ func updatePasswordService(user *models.User, body *updatePasswordScheme) error 
 
 	user.Password = string(hashed)
 
-	if err := update(user); err != nil {
+	if err := s.repo.updateUser(user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
 

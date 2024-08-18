@@ -12,29 +12,49 @@ import (
 	"gorm.io/datatypes"
 )
 
-func getCartService(user *models.User) (*[]models.Cart, error) {
+type Service interface {
+	getCart(user *models.User) (*[]models.Cart, error)
+	updateCart(id string, body *updateCartNoteScheme, userId uint) error
+	addCart(user *models.User, body *addCartScheme) error
+	getOrder(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error)
+	order(body *orderScheme, user *models.User) (*models.Order, error)
+	updateOrder(body *updateOrderScheme, id string, user *models.User) error
+	postReview(body *postReviewScheme, id string, userId uint) error
+}
+
+type service struct {
+	repo Repository
+}
+
+func NewService(repo Repository) Service {
+	return &service{
+		repo: repo,
+	}
+}
+
+func (s *service) getCart(user *models.User) (*[]models.Cart, error) {
 	var carts []models.Cart
 
-	if err := findCart(*user.Id, &carts, true); err != nil {
+	if err := s.repo.findCart(*user.Id, &carts, true); err != nil {
 		return nil, customerror.GormError(err, "Keranjang")
 	}
 
 	return &carts, nil
 }
 
-func updateCartService(id string, body *updateCartNoteScheme, userId uint) error {
-	if err := updateCartNote(id, userId, body.Notes); err != nil {
+func (s *service) updateCart(id string, body *updateCartNoteScheme, userId uint) error {
+	if err := s.repo.updateCartNote(id, userId, body.Notes); err != nil {
 		return customerror.GormError(err, "Keranjang")
 	}
 
 	return nil
 }
 
-func addCartService(user *models.User, body *addCartScheme) error {
+func (s *service) addCart(user *models.User, body *addCartScheme) error {
 	var product models.Product
 	var carts []models.Cart
 
-	if err := findOneProduct(&product, body.ProductId); err != nil {
+	if err := s.repo.findOneProduct(&product, body.ProductId); err != nil {
 		return customerror.GormError(err, "produk")
 	}
 
@@ -46,7 +66,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 		return customerror.New("Restoran sedang tutup", 400)
 	}
 
-	if err := findCart(*user.Id, &carts, false); err != nil {
+	if err := s.repo.findCart(*user.Id, &carts, false); err != nil {
 		return customerror.GormError(err, "Keranjang")
 	}
 
@@ -69,7 +89,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 				},
 			}
 
-			if err := create(cart); err != nil {
+			if err := s.repo.createCart(cart); err != nil {
 				return customerror.GormError(err, "Keranjang")
 			}
 
@@ -94,7 +114,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 				Quantity:  *body.Quantity,
 			}
 
-			if err := create(cartItem); err != nil {
+			if err := s.repo.createCartItem(cartItem); err != nil {
 				return customerror.GormError(err, "Keranjang")
 			}
 			return nil
@@ -107,7 +127,7 @@ func addCartService(user *models.User, body *addCartScheme) error {
 		if *body.Quantity > 0 {
 			// if quantity not 0 then update cart item
 			cartItem.Quantity = *body.Quantity
-			if err := update(cartItem); err != nil {
+			if err := s.repo.updateCartItem(cartItem); err != nil {
 				return customerror.GormError(err, "Keranjang")
 			}
 
@@ -116,14 +136,14 @@ func addCartService(user *models.User, body *addCartScheme) error {
 			// if quantity is 0
 			if len(cart.Items) > 1 {
 				// if cart items more than 1 then delete cart item
-				if err := deleteRecord(cartItem); err != nil {
+				if err := s.repo.deleteCartItem(cartItem); err != nil {
 					return customerror.GormError(err, "Keranjang")
 				}
 
 				return nil
 			} else {
 				// if cart items just 1 then delete cart
-				if err := deleteRecord(cart); err != nil {
+				if err := s.repo.deleteCart(cart); err != nil {
 					return customerror.GormError(err, "Keranjang")
 				}
 
@@ -133,21 +153,21 @@ func addCartService(user *models.User, body *addCartScheme) error {
 	}
 }
 
-func getOrderService(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
+func (s *service) getOrder(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
 	result := pagination.New(models.Order{})
 
-	if err := findOrder(result, userId, query); err != nil {
+	if err := s.repo.findOrder(result, userId, query); err != nil {
 		return nil, customerror.GormError(err, "Pesanan")
 	}
 
 	return result, nil
 }
 
-func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
+func (s *service) order(body *orderScheme, user *models.User) (*models.Order, error) {
 	var cart models.Cart
 
 	// Find cart
-	if err := findCartById(body.CartId, &cart, *user.Id, true); err != nil {
+	if err := s.repo.findCartById(body.CartId, &cart, *user.Id, true); err != nil {
 		return nil, customerror.GormError(err, "Keranjang")
 	}
 
@@ -213,17 +233,17 @@ func orderService(body *orderScheme, user *models.User) (*models.Order, error) {
 		user.Wallet.Balance -= transaction.Amount
 	}
 
-	if err := orderRepo(user, &cart, &order); err != nil {
+	if err := s.repo.createOrder(user.Wallet, &cart, &order); err != nil {
 		return nil, customerror.New("Gagal saat memproses pesanan", 500)
 	}
 
 	return &order, nil
 }
 
-func updateOrderService(body *updateOrderScheme, id string, user *models.User) error {
+func (s *service) updateOrder(body *updateOrderScheme, id string, user *models.User) error {
 	var order models.Order
 
-	if err := findOrderById(&order, id, *user.Id, []string{"Transaction", "Restaurant.Owner.Wallet"}); err != nil {
+	if err := s.repo.findOrderById(&order, id, *user.Id, []string{"Transaction", "Restaurant.Owner.Wallet"}); err != nil {
 		return customerror.GormError(err, "Pesanan")
 	}
 
@@ -237,7 +257,7 @@ func updateOrderService(body *updateOrderScheme, id string, user *models.User) e
 			// Return balance to user
 			user.Wallet.Balance += order.Transaction.Amount
 
-			if err := updateOrderTransaction(&order, user.Wallet); err != nil {
+			if err := s.repo.updateOrderTransaction(&order, user.Wallet); err != nil {
 				return customerror.GormError(err, "Pesanan")
 			}
 
@@ -254,7 +274,7 @@ func updateOrderService(body *updateOrderScheme, id string, user *models.User) e
 			// Release balance to resto
 			order.Restaurant.Owner.Wallet.Balance += order.Transaction.Amount
 
-			if err := updateOrderTransaction(&order, order.Restaurant.Owner.Wallet); err != nil {
+			if err := s.repo.updateOrderTransaction(&order, order.Restaurant.Owner.Wallet); err != nil {
 				return customerror.GormError(err, "Pesanan")
 			}
 
@@ -267,9 +287,9 @@ func updateOrderService(body *updateOrderScheme, id string, user *models.User) e
 	return customerror.New("Pesanan gagal diperbarui", 400)
 }
 
-func postReviewService(body *postReviewScheme, id string, userId uint) error {
+func (s *service) postReview(body *postReviewScheme, id string, userId uint) error {
 	var order models.Order
-	if err := findOrderById(&order, id, userId, []string{"Review"}); err != nil {
+	if err := s.repo.findOrderById(&order, id, userId, []string{"Review"}); err != nil {
 		return customerror.GormError(err, "Pesanan")
 	}
 
@@ -294,7 +314,7 @@ func postReviewService(body *postReviewScheme, id string, userId uint) error {
 		Comment: body.Comment,
 	}
 
-	if err := create(&review); err != nil {
+	if err := s.repo.createReview(&review); err != nil {
 		return customerror.GormError(err, "Ulasan")
 	}
 

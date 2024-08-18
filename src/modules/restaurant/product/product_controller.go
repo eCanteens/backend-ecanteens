@@ -7,7 +7,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func handleCreateProduct(ctx *gin.Context) {
+type Controller interface {
+	createProduct(ctx *gin.Context)
+	getAllProducts(ctx *gin.Context)
+	updateProduct(ctx *gin.Context)
+	deleteProduct(ctx *gin.Context)
+}
+
+type controller struct {
+	service Service
+}
+
+func NewController(service Service) Controller {
+	return &controller{
+		service: service,
+	}
+}
+
+func (c *controller) createProduct(ctx *gin.Context) {
 	var body createProduct
 
 	if isValid := validation.Bind(ctx, &body); !isValid {
@@ -17,7 +34,7 @@ func handleCreateProduct(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := createProductService(&_user, &body); err != nil {
+	if err := c.service.createProduct(&_user, &body); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -25,7 +42,7 @@ func handleCreateProduct(ctx *gin.Context) {
 	response.Success(ctx, 201, gin.H{"message": "Menu berhasil ditambahkan"})
 }
 
-func handleGetAllProduct(ctx *gin.Context) {
+func (c *controller) getAllProducts(ctx *gin.Context) {
 	var query productQs
 
 	ctx.ShouldBindQuery(&query)
@@ -33,7 +50,7 @@ func handleGetAllProduct(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	data, err := getAllProductService(&query, &_user)
+	data, err := c.service.getAllProducts(&query, &_user)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -43,7 +60,7 @@ func handleGetAllProduct(ctx *gin.Context) {
 	ctx.JSON(200, data)
 }
 
-func handleUpdateProduct(ctx *gin.Context) {
+func (c *controller) updateProduct(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var body updateProduct
 
@@ -54,7 +71,7 @@ func handleUpdateProduct(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := updateProductService(&_user, &body, id); err != nil {
+	if err := c.service.updateProduct(&_user, &body, id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -62,12 +79,12 @@ func handleUpdateProduct(ctx *gin.Context) {
 	response.Success(ctx, 200, gin.H{"message": "Menu berhasil diupdate"})
 }
 
-func handleDeleteProduct(ctx *gin.Context) {
+func (c *controller) deleteProduct(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 	id := ctx.Param("id")
 
-	if err := deleteProductService(&_user, id); err != nil {
+	if err := c.service.deleteProduct(&_user, id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}

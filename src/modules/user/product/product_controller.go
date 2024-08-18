@@ -7,7 +7,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func addFeedback(ctx *gin.Context) {
+type Controller interface {
+	addFeedback(ctx *gin.Context)
+	removeFeedback(ctx *gin.Context)
+	getFavorite(ctx *gin.Context)
+	addFavorite(ctx *gin.Context)
+	removeFavorite(ctx *gin.Context)
+}
+
+type controller struct {
+	service Service
+}
+
+func NewController(service Service) Controller {
+	return &controller{
+		service: service,
+	}
+}
+
+func (c *controller) addFeedback(ctx *gin.Context) {
 	var body feedbackScheme
 	id := ctx.Param("id")
 
@@ -18,7 +36,7 @@ func addFeedback(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := addFeedbackService(&body, *_user.Id, id); err != nil {
+	if err := c.service.addFeedback(&body, *_user.Id, id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -33,11 +51,11 @@ func addFeedback(ctx *gin.Context) {
 	response.Success(ctx, 200, gin.H{"message": msg})
 }
 
-func removeFeedback(ctx *gin.Context) {
+func (c *controller) removeFeedback(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
-	if err := removeFeedbackService(*user.(models.User).Id, id); err != nil {
+	if err := c.service.removeFeedback(*user.(models.User).Id, id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -45,13 +63,13 @@ func removeFeedback(ctx *gin.Context) {
 	response.Success(ctx, 200, gin.H{"message": "Produk berhasil diunlike/undislike"})
 }
 
-func getFavorite(ctx *gin.Context) {
+func (c *controller) getFavorite(ctx *gin.Context) {
 	var query paginationQS
 	user, _ := ctx.Get("user")
 
 	ctx.ShouldBindQuery(&query)
 
-	data, err := getFavoriteService(*user.(models.User).Id, &query)
+	data, err := c.service.getFavorite(*user.(models.User).Id, &query)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -61,11 +79,11 @@ func getFavorite(ctx *gin.Context) {
 	ctx.JSON(200, data)
 }
 
-func addFavorite(ctx *gin.Context) {
+func (c *controller) addFavorite(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
-	if err := addFavoriteService(*user.(models.User).Id, id); err != nil {
+	if err := c.service.addFavorite(*user.(models.User).Id, id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -73,11 +91,11 @@ func addFavorite(ctx *gin.Context) {
 	response.Success(ctx, 200, gin.H{"message": "Produk berhasil ditambahkan ke favorit"})
 }
 
-func removeFavorite(ctx *gin.Context) {
+func (c *controller) removeFavorite(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	id := ctx.Param("id")
 
-	if err := removeFavoriteService(*user.(models.User).Id, id); err != nil {
+	if err := c.service.removeFavorite(*user.(models.User).Id, id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}

@@ -1,13 +1,13 @@
 package admin
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/enums"
 	"github.com/eCanteens/backend-ecanteens/src/helpers"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
@@ -66,7 +66,7 @@ func (r *repository) topupWithdraw(amount uint, user *models.User, tipe string) 
 		user.Wallet.Balance += amount
 	} else if tipe == "WITHDRAW" {
 		if amount > user.Wallet.Balance {
-			return errors.New("saldo tidak mencukupi")
+			return customerror.New("Saldo tidak mencukupi", 400)
 		}
 		user.Wallet.Balance -= amount
 	}

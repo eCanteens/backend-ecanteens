@@ -5,23 +5,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	authRepo       = NewRepository()
+	authService    = NewService(authRepo)
+	authController = NewController(authService)
+)
+
 func Routes(router *gin.RouterGroup) {
-	router.POST("/register", handleRegister)
-	router.POST("/login", handleLogin)
-	router.POST("/logout", handleLogout)
-	router.POST("/google", handleGoogle)
-	router.POST("/refresh", handleRefresh)
-	router.POST("/forgot-password", handleForgot)
-	router.PUT("/new-password", handleReset)
+	router.POST("/register", authController.register)
+	router.POST("/login", authController.login)
+	router.POST("/logout", authController.logout)
+	router.POST("/google", authController.google)
+	router.POST("/refresh", authController.refresh)
+	router.POST("/forgot-password", authController.forgot)
+	router.PUT("/new-password", authController.reset)
 	
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.POST("/google/setup", handleSetup)
-		authorized.GET("/profile", handleProfile)
-		authorized.PUT("/profile", handleUpdateProfile)
-		authorized.PUT("/password", handleUpdatePassword)
-		authorized.POST("/check-pin", handleCheckPin)
-		authorized.PUT("/pin", handleUpdatePin)
+		authorized.POST("/google/setup", authController.setup)
+		authorized.GET("/profile", authController.profile)
+		authorized.PUT("/profile", authController.updateProfile)
+		authorized.PUT("/password", authController.updatePassword)
+		authorized.POST("/check-pin", authController.checkPin)
+		authorized.PUT("/pin", authController.updatePin)
 	}
 }

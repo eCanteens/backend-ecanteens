@@ -7,11 +7,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getCart(ctx *gin.Context) {
+type Controller interface {
+	getCart(ctx *gin.Context)
+	updateCart(ctx *gin.Context)
+	addCart(ctx *gin.Context)
+	getOrder(ctx *gin.Context)
+	createOrder(ctx *gin.Context)
+	postReview(ctx *gin.Context)
+	updateOrder(ctx *gin.Context)
+}
+
+type controller struct {
+	service Service
+}
+
+func NewController(service Service) Controller {
+	return &controller{
+		service: service,
+	}
+}
+
+func (c *controller) getCart(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	data, err := getCartService(&_user)
+	data, err := c.service.getCart(&_user)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -23,7 +43,7 @@ func getCart(ctx *gin.Context) {
 	})
 }
 
-func updateCart(ctx *gin.Context) {
+func (c *controller) updateCart(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var body updateCartNoteScheme
 
@@ -34,7 +54,7 @@ func updateCart(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := updateCartService(id, &body, *_user.Id); err != nil {
+	if err := c.service.updateCart(id, &body, *_user.Id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -42,7 +62,7 @@ func updateCart(ctx *gin.Context) {
 	response.Success(ctx, 200, gin.H{"message": "Catatan berhasil ditambahkan"})
 }
 
-func addCart(ctx *gin.Context) {
+func (c *controller) addCart(ctx *gin.Context) {
 	var body addCartScheme
 
 	if isValid := validation.Bind(ctx, &body); !isValid {
@@ -52,26 +72,26 @@ func addCart(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := addCartService(&_user, &body); err != nil {
+	if err := c.service.addCart(&_user, &body); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
 
 	if *body.Quantity == 0 {
 		response.Success(ctx, 200, gin.H{"message": "Produk berhasil dihapus dari keranjang"})
-		} else {
+	} else {
 		response.Success(ctx, 201, gin.H{"message": "Produk berhasil ditambahkan ke keranjang"})
 	}
 }
 
-func getOrder(ctx *gin.Context) {
+func (c *controller) getOrder(ctx *gin.Context) {
 	var query getOrderQS
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
 	ctx.ShouldBindQuery(&query)
 
-	data, err := getOrderService(*_user.Id, &query)
+	data, err := c.service.getOrder(*_user.Id, &query)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -81,7 +101,7 @@ func getOrder(ctx *gin.Context) {
 	ctx.JSON(200, data)
 }
 
-func handleOrder(ctx *gin.Context) {
+func (c *controller) createOrder(ctx *gin.Context) {
 	var body orderScheme
 
 	if isValid := validation.Bind(ctx, &body); !isValid {
@@ -91,7 +111,7 @@ func handleOrder(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	data, err := orderService(&body, &_user)
+	data, err := c.service.order(&body, &_user)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -100,11 +120,11 @@ func handleOrder(ctx *gin.Context) {
 
 	response.Success(ctx, 201, gin.H{
 		"message": "Pesanan berhasil dibuat",
-		"data": data,
+		"data":    data,
 	})
 }
 
-func handlePostReview(ctx *gin.Context) {
+func (c *controller) postReview(ctx *gin.Context) {
 	var body postReviewScheme
 	id := ctx.Param("id")
 
@@ -115,7 +135,7 @@ func handlePostReview(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := postReviewService(&body, id, *_user.Id); err != nil {
+	if err := c.service.postReview(&body, id, *_user.Id); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
@@ -123,7 +143,7 @@ func handlePostReview(ctx *gin.Context) {
 	response.Success(ctx, 200, gin.H{"message": "Ulasan berhasil dibuat"})
 }
 
-func handleUpdateOrder(ctx *gin.Context) {
+func (c *controller) updateOrder(ctx *gin.Context) {
 	var body updateOrderScheme
 	id := ctx.Param("id")
 
@@ -134,7 +154,7 @@ func handleUpdateOrder(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	if err := updateOrderService(&body, id, &_user); err != nil {
+	if err := c.service.updateOrder(&body, id, &_user); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}

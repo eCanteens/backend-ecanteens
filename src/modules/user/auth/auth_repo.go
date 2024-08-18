@@ -6,23 +6,32 @@ import (
 	"gorm.io/gorm"
 )
 
-func create[T any](data *T) error {
+type Repository interface {
+	createUser(data *models.User) error
+	checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User
+	findByEmail(user *models.User, email string) error
+	updateUser(model *models.User) error
+	updatePassword(id uint, user *models.User) error
+	updateWallet(user *models.Wallet) error
+
+	findToken(model *models.Token, token string) error
+	createToken(data *models.Token) error
+	updateToken(data *models.Token) error
+	deleteToken(token string) error
+	deleteTokenById(data *models.Token) error
+}
+
+type repository struct{}
+
+func NewRepository() Repository {
+	return &repository{}
+}
+
+func (r *repository) createUser(data *models.User) error {
 	return config.DB.Create(data).Error
 }
 
-func deleteById[T any](data *T) error {
-	return config.DB.Unscoped().Delete(data).Error
-}
-
-func deleteToken(token string) error {
-	if affected := config.DB.Unscoped().Where("token = ?", token).Delete(&models.Token{}).RowsAffected; affected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-
-	return nil
-}
-
-func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
+func (r *repository) checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 	var sameUser []models.User
 
 	query := config.DB.Where(
@@ -38,20 +47,44 @@ func checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {
 	return &sameUser
 }
 
-func findByEmail(user *models.User, email string) error {
+func (r *repository) findByEmail(user *models.User, email string) error {
 	return config.DB.Where("email = ?", email).Where("role_id = ?", 2).Preload("Wallet").First(user).Error
 }
 
-func findToken(model *models.Token, token string) error {
+func (r *repository) updateUser(data *models.User) error {
+	return config.DB.Save(data).Error
+}
+
+func (r *repository) updatePassword(id uint, user *models.User) error {
+	return config.DB.Select("password").Where("id = ?", id).Updates(user).Error
+}
+
+func (r *repository) updateWallet(data *models.Wallet) error {
+	return config.DB.Save(data).Error
+}
+
+func (r *repository) findToken(data *models.Token, token string) error {
 	return config.DB.Where("token = ?", token).Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Where("role_id = ?", 2)
-	}).First(model).Error
+	}).First(data).Error
 }
 
-func update[T any](model *T) error {
-	return config.DB.Save(model).Error
+func (r *repository) createToken(data *models.Token) error {
+	return config.DB.Create(data).Error
 }
 
-func updatePassword(id uint, user *models.User) error {
-	return config.DB.Select("password").Where("id = ?", id).Updates(user).Error
+func (r *repository) updateToken(data *models.Token) error {
+	return config.DB.Save(data).Error
+}
+
+func (r *repository) deleteToken(token string) error {
+	if affected := config.DB.Unscoped().Where("token = ?", token).Delete(&models.Token{}).RowsAffected; affected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (r *repository) deleteTokenById(data *models.Token) error {
+	return config.DB.Unscoped().Delete(data).Error
 }

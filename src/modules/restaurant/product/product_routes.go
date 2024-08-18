@@ -5,13 +5,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	productRepo       = NewRepository()
+	productService    = NewService(productRepo)
+	productController = NewController(productService)
+)
+
 func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("/")
 	authorized.Use(middleware.Resto)
 	{
-		authorized.POST("/", handleCreateProduct)
-		authorized.GET("/", handleGetAllProduct)
-		authorized.PUT("/:id", handleUpdateProduct)
-		authorized.DELETE("/:id", handleDeleteProduct)
+		authorized.POST("/", productController.createProduct)
+		authorized.GET("/", productController.getAllProducts)
+		authorized.PUT("/:id", productController.updateProduct)
+		authorized.DELETE("/:id", productController.deleteProduct)
 	}
 }

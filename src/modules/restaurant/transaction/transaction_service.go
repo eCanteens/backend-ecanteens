@@ -8,20 +8,35 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func getOrderService(restaurantId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
+type Service interface {
+	getOrder(restaurantId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error)
+	updateOrder(id string, user *models.User, body *updateOrderScheme) error
+}
+
+type service struct {
+	repo Repository
+}
+
+func NewService(repo Repository) Service {
+	return &service{
+		repo: repo,
+	}
+}
+
+func (s *service) getOrder(restaurantId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
 	var result = pagination.New(models.Order{})
 
-	if err := findOrder(result, restaurantId, query); err != nil {
+	if err := s.repo.findOrder(result, restaurantId, query); err != nil {
 		return nil, customerror.GormError(err, "Pesanan")
 	}
 
 	return result, nil
 }
 
-func updateOrderService(id string, user *models.User, body *updateOrderScheme) error {
+func (s *service) updateOrder(id string, user *models.User, body *updateOrderScheme) error {
 	var order models.Order
 
-	if err := findOrderById(id, *user.Restaurant.Id, &order); err != nil {
+	if err := s.repo.findOrderById(id, *user.Restaurant.Id, &order); err != nil {
 		return customerror.GormError(err, "Pesanan")
 	}
 
@@ -29,7 +44,7 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	case "INPROGRESS":
 		if order.Status == "WAITING" {
 			order.Status = enums.OrderStatusInProgress
-			if err := update(&order); err != nil {
+			if err := s.repo.updateOrder(&order); err != nil {
 				return customerror.GormError(err, "Pesanan")
 			}
 
@@ -38,7 +53,7 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 	case "READY":
 		if order.Status == "INPROGRESS" {
 			order.Status = enums.OrderStatusReady
-			if err := update(&order); err != nil {
+			if err := s.repo.updateOrder(&order); err != nil {
 				return customerror.GormError(err, "Pesanan")
 			}
 
@@ -52,14 +67,14 @@ func updateOrderService(id string, user *models.User, body *updateOrderScheme) e
 			order.Transaction.Status = enums.TrxStatusCanceled
 
 			if order.Transaction.PaymentMethod == enums.TrxPaymentEcanteensPay {
-				if err := updateOrderWithReturn(&order); err != nil {
+				if err := s.repo.updateOrderWithReturn(&order); err != nil {
 					return customerror.GormError(err, "Pesanan")
 				}
 
 				return nil
 			}
 
-			if err := updateOrderTransaction(&order); err != nil {
+			if err := s.repo.updateOrderTransaction(&order); err != nil {
 				return customerror.GormError(err, "Pesanan")
 			}
 

@@ -8,93 +8,113 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
-func getFavoriteService(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
+type Service interface {
+	getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
+	getAll(query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
+	getReviews(id string, query *reviewQS) (*[]models.Review, error)
+	getDetail(id string) (*models.Restaurant, error)
+	getRestosProducts(id string, query *paginationQS) (*pagination.Pagination[models.Product], error)
+	addFavorite(userId uint, restaurantId string) error
+	removeFavorite(userId uint, restaurantId string) error
+}
+
+type service struct {
+	repo Repository
+}
+
+func NewService(repo Repository) Service {
+	return &service{
+		repo: repo,
+	}
+}
+
+func (s *service) getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
 	var result = pagination.New(models.Restaurant{})
 
-	if err := findFavorite(result, userId, query); err != nil {
+	if err := s.repo.findFavorite(result, userId, query); err != nil {
 		return nil, customerror.GormError(err, "Restoran")
 	}
 
 	return result, nil
 }
 
-func getAllService(query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
+func (s *service) getAll(query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
 	var result = pagination.New(models.Restaurant{})
 
-	if err := find(result, query); err != nil {
+	if err := s.repo.find(result, query); err != nil {
 		return nil, customerror.GormError(err, "Restoran")
 	}
 
 	return result, nil
 }
 
-func getReviewsService(id string, query *reviewQS) (*[]models.Review, error) {
+func (s *service) getReviews(id string, query *reviewQS) (*[]models.Review, error) {
 	var reviews []models.Review
 
-	if err := findReviews(&reviews, id, query); err != nil {
+	if err := s.repo.findReviews(&reviews, id, query); err != nil {
 		return nil, customerror.GormError(err, "Restoran")
 	}
 
 	return &reviews, nil
 }
 
-func getDetailService(id string) (*models.Restaurant, error) {
+func (s *service) getDetail(id string) (*models.Restaurant, error) {
 	var restaurant models.Restaurant
 
-	if err := findOne(&restaurant, id); err != nil {
+	if err := s.repo.findOne(&restaurant, id); err != nil {
 		return nil, customerror.GormError(err, "Restoran")
 	}
 
 	return &restaurant, nil
 }
 
-func getRestosProductsService(id string, query *paginationQS) (*pagination.Pagination[models.Product], error) {
+func (s *service) getRestosProducts(id string, query *paginationQS) (*pagination.Pagination[models.Product], error) {
 	var result = pagination.New(models.Product{})
 
-	if err := findRestosProducts(result, id, query); err != nil {
+	if err := s.repo.findRestosProducts(result, id, query); err != nil {
 		return nil, customerror.GormError(err, "Restoran")
 	}
 
 	return result, nil
 }
 
-func addFavoriteService(userId uint, restaurantId string) error {
+func (s *service) addFavorite(userId uint, restaurantId string) error {
 	id, err := strconv.ParseUint(restaurantId, 10, 32)
 	if err != nil {
 		return customerror.New("Id restoran tidak valid", 400)
 	}
 
-	favorites := checkFavorite(userId, uint(id))
+	favorites := s.repo.checkFavorite(userId, uint(id))
 
 	if len(*favorites) > 0 {
 		return customerror.New("Restoran sudah di dalam list favorit anda", 400)
 	}
 
 	favorite := &models.FavoriteRestaurant{
-		UserId: userId,
+		UserId:       userId,
 		RestaurantId: uint(id),
 	}
 
-	if err := createFavorite(favorite); err != nil {
+	if err := s.repo.createFavorite(favorite); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 
 	return nil
 }
 
-func removeFavoriteService(userId uint, restaurantId string) error {
+func (s *service) removeFavorite(userId uint, restaurantId string) error {
 	id, err := strconv.ParseUint(restaurantId, 10, 32)
 	if err != nil {
 		return customerror.New("Id restoran tidak valid", 400)
 	}
 
-	favorites := checkFavorite(userId, uint(id))
+	favorites := s.repo.checkFavorite(userId, uint(id))
 
 	if len(*favorites) == 0 {
 		return customerror.New("Restoran tidak ada di dalam list favorit anda", 400)
 	}
 
-	if err := deleteFavorite(userId, uint(id)); err != nil {
+	if err := s.repo.deleteFavorite(userId, uint(id)); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 

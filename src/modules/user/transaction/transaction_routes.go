@@ -5,16 +5,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	transactionRepo       = NewRepository()
+	transactionService    = NewService(transactionRepo)
+	transactionController = NewController(transactionService)
+)
+
 func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("/")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.GET("/carts", getCart)
-		authorized.PUT("/carts/:id", updateCart)
-		authorized.POST("/carts", addCart)
-		authorized.GET("/orders", getOrder)
-		authorized.POST("/orders", handleOrder)
-		authorized.POST("/orders/:id/review", handlePostReview)
-		authorized.PUT("/orders/:id", handleUpdateOrder)
+		authorized.GET("/carts", transactionController.getCart)
+		authorized.PUT("/carts/:id", transactionController.updateCart)
+		authorized.POST("/carts", transactionController.addCart)
+		authorized.GET("/orders", transactionController.getOrder)
+		authorized.POST("/orders", transactionController.createOrder)
+		authorized.POST("/orders/:id/review", transactionController.postReview)
+		authorized.PUT("/orders/:id", transactionController.updateOrder)
 	}
 }

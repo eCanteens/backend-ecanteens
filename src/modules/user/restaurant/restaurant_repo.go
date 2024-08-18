@@ -7,7 +7,24 @@ import (
 	"gorm.io/gorm"
 )
 
-func findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {
+type Repository interface {
+	findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error
+	find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error
+	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
+	findOne(restaurant *models.Restaurant, id string) error
+	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS) error
+	checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant
+	createFavorite(favorite *models.FavoriteRestaurant) error
+	deleteFavorite(userId uint, restaurantId uint) error
+}
+
+type repository struct{}
+
+func NewRepository() Repository {
+	return &repository{}
+}
+
+func (r *repository) findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {
 	q := config.DB.Table("restaurants").
 		Joins("JOIN favorite_restaurants fr ON fr.restaurant_id = restaurants.id").
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
@@ -27,7 +44,7 @@ func findFavorite(result *pagination.Pagination[models.Restaurant], userId uint,
 	})
 }
 
-func find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error {
+func (r *repository) find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error {
 	q := config.DB.Table("restaurants").
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
 		Joins("JOIN reviews ON reviews.order_id = orders.id").
@@ -45,7 +62,7 @@ func find(result *pagination.Pagination[models.Restaurant], query *paginationQS)
 	})
 }
 
-func findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error {
+func (r *repository) findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error {
 	tx := config.DB.
 		Joins("JOIN orders ON orders.id = reviews.order_id").
 		Preload("Order", func(db *gorm.DB) *gorm.DB {
@@ -63,7 +80,7 @@ func findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS)
 	return tx.Find(reviews).Error
 }
 
-func findOne(restaurant *models.Restaurant, id string) error {
+func (r *repository) findOne(restaurant *models.Restaurant, id string) error {
 	return config.DB.Table("restaurants").
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
 		Joins("JOIN reviews ON reviews.order_id = orders.id").
@@ -77,7 +94,7 @@ func findOne(restaurant *models.Restaurant, id string) error {
 		First(restaurant).Error
 }
 
-func findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS) error {
+func (r *repository) findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS) error {
 	q := config.DB.Table("products").
 		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
 		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
@@ -95,7 +112,7 @@ func findRestosProducts(result *pagination.Pagination[models.Product], id string
 	})
 }
 
-func checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant {
+func (r *repository) checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant {
 	var favorites []models.FavoriteRestaurant
 
 	config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Find(&favorites)
@@ -103,10 +120,10 @@ func checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant 
 	return &favorites
 }
 
-func createFavorite(favorite *models.FavoriteRestaurant) error {
+func (r *repository) createFavorite(favorite *models.FavoriteRestaurant) error {
 	return config.DB.Create(favorite).Error
 }
 
-func deleteFavorite(userId uint, restaurantId uint) error {
+func (r *repository) deleteFavorite(userId uint, restaurantId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Delete(&models.FavoriteRestaurant{}).Error
 }

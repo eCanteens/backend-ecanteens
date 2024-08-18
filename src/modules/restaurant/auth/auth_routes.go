@@ -5,19 +5,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	authRepo       = NewRepository()
+	authService    = NewService(authRepo)
+	authController = NewController(authService)
+)
+
 func Routes(router *gin.RouterGroup) {
-	router.POST("/register/check", handleCheckRegister)
-	router.POST("/register", handleRegister)
-	router.POST("/login", handleLogin)
-	router.POST("/logout", handleLogout)
-	router.POST("/refresh", handleRefresh)
+	router.POST("/register/check", authController.checkRegister)
+	router.POST("/register", authController.register)
+	router.POST("/login", authController.login)
+	router.POST("/logout", authController.logout)
+	router.POST("/refresh", authController.refresh)
 
 	authorized := router.Group("/")
 	authorized.Use(middleware.Resto)
 	{
-		authorized.GET("/profile", handleProfile)
-		authorized.PUT("/profile", handleUpdateProfile)
-		authorized.PUT("/restaurant", handleUpdateResto)
-		authorized.PUT("/password", handleUpdatePassword)
+		authorized.GET("/profile", authController.profile)
+		authorized.PUT("/profile", authController.updateProfile)
+		authorized.PUT("/restaurant", authController.updateResto)
+		authorized.PUT("/password", authController.updatePassword)
 	}
 }
