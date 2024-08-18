@@ -36,7 +36,7 @@ func main() {
 	router.Static("/.well-known", "./.well-known")
 
 	router.GET("/api", func(c *gin.Context) {
-		c.Redirect(301, "https://documenter.getpostman.com/view/34881046/2sA3JNb1JV")
+		c.Redirect(301, "https://documenter.getpostman.com/view/34881046/2sA3s9CTPU")
 	})
 
 	user := router.Group("/api/user")
