@@ -15,7 +15,7 @@ func Routes(router *gin.RouterGroup) {
 	// auth
 	router.POST("/login", adminController.adminLogin)
 
-	authorized := router.Group("/")
+	authorized := router.Group("")
 	authorized.Use(middleware.Admin)
 
 	{

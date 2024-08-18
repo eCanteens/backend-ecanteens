@@ -18,7 +18,7 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/logout", authController.logout)
 	router.POST("/refresh", authController.refresh)
 
-	authorized := router.Group("/")
+	authorized := router.Group("")
 	authorized.Use(middleware.Resto)
 	{
 		authorized.GET("/profile", authController.profile)

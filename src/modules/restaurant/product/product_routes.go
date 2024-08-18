@@ -12,11 +12,11 @@ var (
 )
 
 func Routes(router *gin.RouterGroup) {
-	authorized := router.Group("/")
+	authorized := router.Group("")
 	authorized.Use(middleware.Resto)
 	{
-		authorized.POST("/", productController.createProduct)
-		authorized.GET("/", productController.getAllProducts)
+		authorized.POST("", productController.createProduct)
+		authorized.GET("", productController.getAllProducts)
 		authorized.PUT("/:id", productController.updateProduct)
 		authorized.DELETE("/:id", productController.deleteProduct)
 	}

@@ -12,7 +12,7 @@ var (
 )
 
 func Routes(router *gin.RouterGroup) {
-	authorized := router.Group("/")
+	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
 		authorized.GET("/carts", transactionController.getCart)

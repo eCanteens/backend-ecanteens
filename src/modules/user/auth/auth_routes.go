@@ -20,7 +20,7 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/forgot-password", authController.forgot)
 	router.PUT("/new-password", authController.reset)
 	
-	authorized := router.Group("/")
+	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
 		authorized.POST("/google/setup", authController.setup)
