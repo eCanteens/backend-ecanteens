@@ -7,5 +7,5 @@ type Wallet struct {
 	Timestamps
 
 	// Extra
-	IsPinSet bool `gorm:"-:migration;->"`
+	IsPinSet bool `gorm:"-:migration;->" json:"is_pin_set"`
 }
