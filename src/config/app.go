@@ -39,7 +39,7 @@ var App = config{
 		Burst: 30,
 	},
 	Auth: &auth{
-		AccessTokenExpiresIn:  time.Hour,          // 1 hour
+		AccessTokenExpiresIn:  time.Hour * 5,      // 5 hour
 		RefreshTokenExpiresIn: time.Hour * 24 * 5, // 5 days
 	},
 }
