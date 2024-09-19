@@ -12,10 +12,12 @@ type Repository interface {
 	find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error
 	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
 	findOne(restaurant *models.Restaurant, id string) error
-	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS) error
+	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint) error
 	checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant
 	createFavorite(favorite *models.FavoriteRestaurant) error
 	deleteFavorite(userId uint, restaurantId uint) error
+
+	findProductCategories(categories *[]models.ProductCategory, categoryId string) error
 }
 
 type repository struct{}
@@ -25,7 +27,7 @@ func NewRepository() Repository {
 }
 
 func (r *repository) findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {
-	q := config.DB.Table("restaurants").
+	q := config.DB.
 		Joins("JOIN favorite_restaurants fr ON fr.restaurant_id = restaurants.id").
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
 		Joins("JOIN reviews ON reviews.order_id = orders.id").
@@ -45,7 +47,7 @@ func (r *repository) findFavorite(result *pagination.Pagination[models.Restauran
 }
 
 func (r *repository) find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error {
-	q := config.DB.Table("restaurants").
+	q := config.DB.
 		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
 		Joins("JOIN reviews ON reviews.order_id = orders.id").
 		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
@@ -94,11 +96,12 @@ func (r *repository) findOne(restaurant *models.Restaurant, id string) error {
 		First(restaurant).Error
 }
 
-func (r *repository) findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS) error {
-	q := config.DB.Table("products").
+func (r *repository) findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint) error {
+	q := config.DB.
 		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
 		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
 		Where("products.restaurant_id = ?", id).
+		Where("products.category_id = ?", categoryId).
 		Where("products.name ILIKE ?", "%"+query.Search+"%").
 		Group("products.id").
 		Preload("Category")
@@ -126,4 +129,12 @@ func (r *repository) createFavorite(favorite *models.FavoriteRestaurant) error {
 
 func (r *repository) deleteFavorite(userId uint, restaurantId uint) error {
 	return config.DB.Unscoped().Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Delete(&models.FavoriteRestaurant{}).Error
+}
+
+func (r *repository) findProductCategories(categories *[]models.ProductCategory, categoryId string) error {
+	if(categoryId == "") {
+		return config.DB.Find(categories).Error
+	} else {
+		return config.DB.Where("id = ?", categoryId).Find(categories).Error
+	}
 }

@@ -90,7 +90,7 @@ func (c *controller) getDetail(ctx *gin.Context) {
 
 func (c *controller) getRestosProducts(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var query paginationQS
+	var query getProductsQS
 
 	ctx.ShouldBindQuery(&query)
 
