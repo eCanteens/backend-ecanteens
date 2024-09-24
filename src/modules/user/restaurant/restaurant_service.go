@@ -82,18 +82,19 @@ func (s *service) getRestosProducts(id string, query *getProductsQS) (*GetProduc
 			Name: category.Name,
 		}
 
-		responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
-
 		var result = pagination.New(models.Product{})
 
 		if err := s.repo.findRestosProducts(result, id, &query.paginationQS, *category.Id); err != nil {
 			return nil, customerror.GormError(err, "Restoran")
 		}
 
-		responseDto.Data = append(responseDto.Data, &CategoryProductsDTO{
-			Category:   &categoryDto,
-			Pagination: result,
-		})
+		if len(*result.Data) > 0 {
+			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
+			responseDto.Data = append(responseDto.Data, &CategoryProductsDTO{
+				Category:   &categoryDto,
+				Pagination: result,
+			})
+		}
 	}
 
 	return &responseDto, nil
