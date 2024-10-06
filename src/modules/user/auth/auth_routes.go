@@ -19,11 +19,12 @@ func Routes(router *gin.RouterGroup) {
 	router.POST("/refresh", authController.refresh)
 	router.POST("/forgot-password", authController.forgot)
 	router.PUT("/new-password", authController.reset)
-	
+
 	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
 		authorized.POST("/google/setup", authController.setup)
+		authorized.GET("/wallet", authController.wallet)
 		authorized.GET("/profile", authController.profile)
 		authorized.PUT("/profile", authController.updateProfile)
 		authorized.PUT("/password", authController.updatePassword)

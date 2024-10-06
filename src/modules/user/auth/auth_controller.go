@@ -17,6 +17,7 @@ type Controller interface {
 	forgot(ctx *gin.Context)
 	reset(ctx *gin.Context)
 	profile(ctx *gin.Context)
+	wallet(ctx *gin.Context)
 	updateProfile(ctx *gin.Context)
 	updatePassword(ctx *gin.Context)
 	checkPin(ctx *gin.Context)
@@ -211,7 +212,7 @@ func (c *controller) updateProfile(ctx *gin.Context) {
 
 	response.Success(ctx, 200, gin.H{
 		"message": "Profil berhasil diperbarui",
-		"data":      _user,
+		"data":    _user,
 	})
 }
 
@@ -272,5 +273,14 @@ func (c *controller) updatePin(ctx *gin.Context) {
 
 	response.Success(ctx, 200, gin.H{
 		"message": "Pin berhasil diperbarui",
+	})
+}
+
+func (c *controller) wallet(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	ctx.JSON(200, gin.H{
+		"data": _user.Wallet,
 	})
 }
