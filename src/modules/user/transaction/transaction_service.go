@@ -201,7 +201,7 @@ func (s *service) order(body *orderScheme, user *models.User) (*models.Order, er
 	order := models.Order{
 		UserId:          cart.UserId,
 		RestaurantId:    cart.RestaurantId,
-		Notes:           cart.Notes,
+		Notes:           body.Notes,
 		Status:          enums.OrderStatusWaiting,
 		IsPreorder:      *body.IsPreorder,
 		FullfilmentDate: fullfilmentDate,

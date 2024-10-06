@@ -14,6 +14,7 @@ type orderScheme struct {
 	PaymentMethod   string `binding:"required,oneof=CASH ECANTEENSPAY" json:"payment_method"`
 	IsPreorder      *bool  `binding:"required" json:"is_preorder"`
 	FullfilmentDate string `binding:"required_if=IsPreorder true" json:"fullfilment_date"`
+	Notes           string `json:"notes"`
 }
 
 type updateOrderScheme struct {
