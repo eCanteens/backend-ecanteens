@@ -189,7 +189,7 @@ func (s *service) order(body *orderScheme, user *models.User) (*models.Order, er
 
 	// Validate fullfilment date if preorder
 	if *body.IsPreorder {
-		date, err := time.Parse(time.RFC3339, body.FullfilmentDate)
+		date, err := time.Parse(time.DateTime, body.FullfilmentDate)
 		if err != nil {
 			return nil, customerror.New("Format waktu tidak valid", 400)
 		}
