@@ -15,7 +15,8 @@ func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.GET("/carts", transactionController.getCart)
+		authorized.GET("/cart", transactionController.getRestaurantCart)
+		authorized.GET("/carts", transactionController.getCarts)
 		authorized.PUT("/carts/:id", transactionController.updateCart)
 		authorized.POST("/carts", transactionController.addCart)
 		authorized.GET("/orders", transactionController.getOrder)

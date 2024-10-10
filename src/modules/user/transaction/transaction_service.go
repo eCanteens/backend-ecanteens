@@ -13,7 +13,8 @@ import (
 )
 
 type Service interface {
-	getCart(user *models.User) (*[]models.Cart, error)
+	getCarts(user *models.User) (*[]models.Cart, error)
+	getRestaurantCart(restaurantId uint, user *models.User) (*models.Cart, error)
 	updateCart(id string, body *updateCartNoteScheme, userId uint) error
 	addCart(user *models.User, body *addCartScheme) error
 	getOrder(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error)
@@ -32,7 +33,7 @@ func NewService(repo Repository) Service {
 	}
 }
 
-func (s *service) getCart(user *models.User) (*[]models.Cart, error) {
+func (s *service) getCarts(user *models.User) (*[]models.Cart, error) {
 	var carts []models.Cart
 
 	if err := s.repo.findCart(*user.Id, &carts, true); err != nil {
@@ -40,6 +41,15 @@ func (s *service) getCart(user *models.User) (*[]models.Cart, error) {
 	}
 
 	return &carts, nil
+}
+func (s *service) getRestaurantCart(restaurantId uint, user *models.User) (*models.Cart, error) {
+	var cart models.Cart
+
+	if err := s.repo.findCartByRestoId(restaurantId, &cart, *user.Id, true); err != nil {
+		return nil, customerror.GormError(err, "Keranjang")
+	}
+
+	return &cart, nil
 }
 
 func (s *service) updateCart(id string, body *updateCartNoteScheme, userId uint) error {

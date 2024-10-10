@@ -35,3 +35,7 @@ type getOrderQS struct {
 	Direction string `form:"direction"`
 	Filter    string `form:"filter"`
 }
+
+type restaurantCartQS struct {
+	RestaurantId uint `form:"restaurant_id"`
+}

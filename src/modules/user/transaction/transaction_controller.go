@@ -8,7 +8,8 @@ import (
 )
 
 type Controller interface {
-	getCart(ctx *gin.Context)
+	getCarts(ctx *gin.Context)
+	getRestaurantCart(ctx *gin.Context)
 	updateCart(ctx *gin.Context)
 	addCart(ctx *gin.Context)
 	getOrder(ctx *gin.Context)
@@ -27,11 +28,11 @@ func NewController(service Service) Controller {
 	}
 }
 
-func (c *controller) getCart(ctx *gin.Context) {
+func (c *controller) getCarts(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	data, err := c.service.getCart(&_user)
+	data, err := c.service.getCarts(&_user)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -40,6 +41,25 @@ func (c *controller) getCart(ctx *gin.Context) {
 
 	ctx.JSON(200, gin.H{
 		"data": data,
+	})
+}
+func (c *controller) getRestaurantCart(ctx *gin.Context) {
+	var query restaurantCartQS
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	ctx.ShouldBindQuery(&query)
+
+	cart, err := c.service.getRestaurantCart(query.RestaurantId, &_user)
+
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": cart,
 	})
 }
 
@@ -64,6 +84,7 @@ func (c *controller) updateCart(ctx *gin.Context) {
 
 func (c *controller) addCart(ctx *gin.Context) {
 	var body addCartScheme
+	var query restaurantCartQS
 
 	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
@@ -72,15 +93,25 @@ func (c *controller) addCart(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
+	ctx.ShouldBindQuery(&query)
+
 	if err := c.service.addCart(&_user, &body); err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
 
+	cart, _ := c.service.getRestaurantCart(query.RestaurantId, &_user)
+
 	if *body.Quantity == 0 {
-		response.Success(ctx, 200, gin.H{"message": "Produk berhasil dihapus dari keranjang"})
+		response.Success(ctx, 200, gin.H{
+			"message": "Produk berhasil dihapus dari keranjang",
+			"data":    cart,
+		})
 	} else {
-		response.Success(ctx, 201, gin.H{"message": "Produk berhasil ditambahkan ke keranjang"})
+		response.Success(ctx, 201, gin.H{
+			"message": "Produk berhasil ditambahkan ke keranjang",
+			"data":    cart,
+		})
 	}
 }
 

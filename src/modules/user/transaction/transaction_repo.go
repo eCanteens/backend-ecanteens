@@ -19,6 +19,7 @@ type Repository interface {
 
 	findCart(userId uint, cart *[]models.Cart, preload bool) error
 	findCartById(id uint, cart *models.Cart, userId uint, preload bool) error
+	findCartByRestoId(id uint, cart *models.Cart, userId uint, preload bool) error
 	createCart(data *models.Cart) error
 	updateCartNote(id string, userId uint, notes string) error
 	deleteCart(data *models.Cart) error
@@ -139,6 +140,15 @@ func (r *repository) findCart(userId uint, cart *[]models.Cart, preload bool) er
 
 func (r *repository) findCartById(id uint, cart *models.Cart, userId uint, preload bool) error {
 	tx := config.DB.Where("id = ?", id).Where("user_id = ?", userId).Preload("Items")
+	if preload {
+		tx.Preload("Restaurant.Category").Preload("Restaurant.Owner.Wallet").Preload("Items.Product")
+	}
+
+	return tx.First(cart).Error
+}
+
+func (r *repository) findCartByRestoId(id uint, cart *models.Cart, userId uint, preload bool) error {
+	tx := config.DB.Where("restaurant_id = ?", id).Where("user_id = ?", userId).Preload("Items")
 	if preload {
 		tx.Preload("Restaurant.Category").Preload("Restaurant.Owner.Wallet").Preload("Items.Product")
 	}

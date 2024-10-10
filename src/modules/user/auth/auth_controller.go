@@ -8,11 +8,12 @@ import (
 )
 
 type Controller interface {
+	setup(ctx *gin.Context)
 	register(ctx *gin.Context)
 	login(ctx *gin.Context)
 	logout(ctx *gin.Context)
 	google(ctx *gin.Context)
-	setup(ctx *gin.Context)
+	googleSetup(ctx *gin.Context)
 	refresh(ctx *gin.Context)
 	forgot(ctx *gin.Context)
 	reset(ctx *gin.Context)
@@ -109,7 +110,7 @@ func (c *controller) google(ctx *gin.Context) {
 	})
 }
 
-func (c *controller) setup(ctx *gin.Context) {
+func (c *controller) googleSetup(ctx *gin.Context) {
 	var body setupScheme
 
 	if isValid := validation.Bind(ctx, &body); !isValid {
@@ -282,5 +283,11 @@ func (c *controller) wallet(ctx *gin.Context) {
 
 	ctx.JSON(200, gin.H{
 		"data": _user.Wallet,
+	})
+}
+
+func (c *controller) setup(ctx *gin.Context) {
+	ctx.JSON(200, gin.H{
+		"success": true,
 	})
 }

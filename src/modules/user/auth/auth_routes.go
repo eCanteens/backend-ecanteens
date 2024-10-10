@@ -23,7 +23,8 @@ func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.POST("/google/setup", authController.setup)
+		authorized.GET("/setup", authController.setup)
+		authorized.POST("/google/setup", authController.googleSetup)
 		authorized.GET("/wallet", authController.wallet)
 		authorized.GET("/profile", authController.profile)
 		authorized.PUT("/profile", authController.updateProfile)
