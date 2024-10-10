@@ -1,15 +1,21 @@
 package response
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gookit/goutil"
+)
 
 func Success(ctx *gin.Context, statusCode int, data ...gin.H) {
 	var response = gin.H{
-		"status":  "success",
+		"status": "success",
 	}
 
 	if len(data) > 0 {
 		for key, value := range data[0] {
-			response[key] = value
+			if !goutil.IsEmpty(value) {
+				response[key] = value
+			}
+
 		}
 	}
 
