@@ -1,5 +1,7 @@
 package transaction
 
+import "github.com/eCanteens/backend-ecanteens/src/database/models"
+
 type addCartScheme struct {
 	ProductId uint  `binding:"required" json:"product_id"`
 	Quantity  *uint `binding:"required" json:"quantity"`
@@ -36,6 +38,23 @@ type getOrderQS struct {
 	Filter    string `form:"filter"`
 }
 
+type getTrxHistoryQS struct {
+	Page      string `form:"page"`
+	Limit     string `form:"limit"`
+	Order     string `form:"order"`
+	Direction string `form:"direction"`
+}
+
 type restaurantCartQS struct {
 	RestaurantId uint `form:"restaurant_id"`
+}
+
+type trxHistoryDataTo struct {
+	Avatar string `json:"avatar"`
+	Name   string `json:"name"`
+}
+
+type trxHistoryData struct {
+	*models.Transaction
+	To *trxHistoryDataTo `json:"to"`
 }

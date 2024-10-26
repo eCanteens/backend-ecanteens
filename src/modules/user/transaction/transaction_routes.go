@@ -6,22 +6,23 @@ import (
 )
 
 var (
-	transactionRepo       = NewRepository()
-	transactionService    = NewService(transactionRepo)
-	transactionController = NewController(transactionService)
+	trxRepo       = NewRepository()
+	trxService    = NewService(trxRepo)
+	trxController = NewController(trxService)
 )
 
 func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
-		authorized.GET("/cart", transactionController.getRestaurantCart)
-		authorized.GET("/carts", transactionController.getCarts)
-		authorized.PUT("/carts/:id", transactionController.updateCart)
-		authorized.POST("/carts", transactionController.addCart)
-		authorized.GET("/orders", transactionController.getOrder)
-		authorized.POST("/orders", transactionController.createOrder)
-		authorized.POST("/orders/:id/review", transactionController.postReview)
-		authorized.PUT("/orders/:id", transactionController.updateOrder)
+		authorized.GET("/cart", trxController.getRestaurantCart)
+		authorized.GET("/carts", trxController.getCarts)
+		authorized.PUT("/carts/:id", trxController.updateCart)
+		authorized.POST("/carts", trxController.addCart)
+		authorized.GET("/orders", trxController.getOrder)
+		authorized.POST("/orders", trxController.createOrder)
+		authorized.POST("/orders/:id/review", trxController.postReview)
+		authorized.PUT("/orders/:id", trxController.updateOrder)
+		authorized.GET("/history", trxController.getTrxHistory)
 	}
 }

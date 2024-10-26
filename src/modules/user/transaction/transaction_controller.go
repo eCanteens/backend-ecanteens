@@ -16,6 +16,7 @@ type Controller interface {
 	createOrder(ctx *gin.Context)
 	postReview(ctx *gin.Context)
 	updateOrder(ctx *gin.Context)
+	getTrxHistory(ctx *gin.Context)
 }
 
 type controller struct {
@@ -200,4 +201,21 @@ func (c *controller) updateOrder(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, 200, gin.H{"message": msg})
+}
+
+func (c *controller) getTrxHistory(ctx *gin.Context) {
+	var query getTrxHistoryQS
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	ctx.ShouldBindQuery(&query)
+
+	data, err := c.service.getTrxHistory(*_user.Id, &query)
+
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+
+	ctx.JSON(200, data)
 }

@@ -13,7 +13,7 @@ import (
 func TransactionSeeder() {
 	var transactions []*models.Transaction
 
-	for i := 0; i < 17; i++ {
+	for i := 0; i < 19; i++ {
 		for j := 0; j < 2; j++ {
 			transactions = append(transactions, &models.Transaction{
 				TransactionCode: fmt.Sprintf("EC-%d-%d", gofakeit.DateRange(time.Now(), time.Now().AddDate(0, 0, 1)).Unix(), i+1),

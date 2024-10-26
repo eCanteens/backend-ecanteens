@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"os"
 	"strconv"
 	"time"
 
@@ -21,6 +22,7 @@ type Service interface {
 	order(body *orderScheme, user *models.User) (*models.Order, error)
 	updateOrder(body *updateOrderScheme, id string, user *models.User) error
 	postReview(body *postReviewScheme, id string, userId uint) error
+	getTrxHistory(userId uint, qs *getTrxHistoryQS) (*pagination.Pagination[trxHistoryData], error)
 }
 
 type service struct {
@@ -329,4 +331,42 @@ func (s *service) postReview(body *postReviewScheme, id string, userId uint) err
 	}
 
 	return nil
+}
+
+func (s *service) getTrxHistory(userId uint, qs *getTrxHistoryQS) (*pagination.Pagination[trxHistoryData], error) {
+	result := pagination.New(models.Transaction{})
+
+	if err := s.repo.findTrxHistory(result, userId, qs); err != nil {
+		return nil, err
+	}
+
+	historyPagination := pagination.New(trxHistoryData{})
+
+	historyData := helpers.Map(result.Data, func(t *models.Transaction) *trxHistoryData {
+		if(t.Order != nil) {
+			to := trxHistoryDataTo{
+				Name: t.Order.Restaurant.Name,
+				Avatar: t.Order.Restaurant.Avatar,
+			}
+			t.Order = nil
+
+			return &trxHistoryData{
+				Transaction: t,
+				To: &to,
+			}
+		} else {
+			return &trxHistoryData{
+				Transaction: t,
+				To: &trxHistoryDataTo{
+					Avatar: os.Getenv("BASE_URL") + "/public/assets/logo.png",
+					Name: "Admin",
+				},
+			}
+		}
+	})
+
+	historyPagination.Meta = result.Meta
+	historyPagination.Data = historyData
+
+	return historyPagination, nil
 }
