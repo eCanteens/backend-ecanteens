@@ -47,7 +47,7 @@ func UserSeeder() {
 
 	users = append(users, fakeUsers...)
 
-	for i := 0; i < 9; i++ {
+	for i := 0; i < 10; i++ {
 		users = append(users, &models.User{
 			Name:     gofakeit.Name(),
 			Email:    gofakeit.Email(),

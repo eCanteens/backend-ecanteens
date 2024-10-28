@@ -9,6 +9,7 @@ require (
 	github.com/go-playground/mold/v4 v4.5.0
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/gookit/goutil v0.6.17
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.23.0
 	golang.org/x/time v0.5.0
@@ -47,7 +48,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.4 // indirect
-	github.com/gookit/goutil v0.6.17 // indirect
 	github.com/gosimple/slug v1.14.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

@@ -30,6 +30,8 @@ type Repository interface {
 
 	createReview(data *models.Review) error
 	findOneProduct(product *models.Product, id uint) error
+
+	findTrxHistory(data *pagination.Pagination[models.Transaction], userId uint, qs *getTrxHistoryQS) error
 }
 
 type repository struct{}
@@ -192,4 +194,27 @@ func (r *repository) findOneProduct(product *models.Product, id uint) error {
 
 func (r *repository) createReview(data *models.Review) error {
 	return config.DB.Create(data).Error
+}
+
+func (r *repository) findTrxHistory(data *pagination.Pagination[models.Transaction], userId uint, qs *getTrxHistoryQS) error {
+	tx := config.DB.Preload("Order.Restaurant").
+		Where("user_id = ?", userId).
+		Where(
+			config.DB.Where("status = ?", "SUCCESS").Or("status = ?", "CANCELED"),
+		).
+		Where(
+			config.DB.Where("payment_method = ?", "ECANTEENSPAY").
+				Or(
+					config.DB.Where("type = ?", "TOPUP").
+						Or("type = ?", "WITHDRAW"),
+				),
+		)
+
+	return data.Execute(&pagination.Params{
+		Query:     tx,
+		Page:      qs.Page,
+		Limit:     qs.Limit,
+		Order:     qs.Order,
+		Direction: qs.Direction,
+	})
 }
