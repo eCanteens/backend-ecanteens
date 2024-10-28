@@ -51,16 +51,12 @@ func (c *controller) getRestaurantCart(ctx *gin.Context) {
 
 	ctx.ShouldBindQuery(&query)
 
-	cart, err := c.service.getRestaurantCart(query.RestaurantId, &_user)
+	cart, _ := c.service.getRestaurantCart(query.RestaurantId, &_user)
 
-	if err != nil {
-		response.ServiceError(ctx, err)
-		return
-	}
-
-	ctx.JSON(200, gin.H{
+	response.Success(ctx, 200, gin.H{
 		"data": cart,
 	})
+
 }
 
 func (c *controller) updateCart(ctx *gin.Context) {
