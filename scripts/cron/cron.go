@@ -21,7 +21,7 @@ func main() {
 
 		// Perbarui semua token yang kedaluwarsa
 		config.DB.Unscoped().
-			Where("last_used < ?", now.Add(-config.App.Auth.AccessTokenExpiresIn)).
+			Where("last_used < ?", now.Add(-config.App.Auth.RefreshTokenExpiresIn)).
 			Delete(&models.Token{})
 
 		log.Println("Cleanup: expired tokens deactivated")
