@@ -18,7 +18,8 @@ type Service interface {
 	getRestaurantCart(restaurantId uint, user *models.User) (*models.Cart, error)
 	updateCart(id string, body *updateCartNoteScheme, userId uint) error
 	addCart(user *models.User, body *addCartScheme) error
-	getOrder(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error)
+	getOrders(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error)
+	getOneOrder(id string, userId uint) (*models.Order, error)
 	order(body *orderScheme, user *models.User) (*models.Order, error)
 	updateOrder(body *updateOrderScheme, id string, user *models.User) error
 	postReview(body *postReviewScheme, id string, userId uint) error
@@ -165,7 +166,7 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 	}
 }
 
-func (s *service) getOrder(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
+func (s *service) getOrders(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error) {
 	result := pagination.New(models.Order{})
 
 	if err := s.repo.findOrder(result, userId, query); err != nil {
@@ -173,6 +174,16 @@ func (s *service) getOrder(userId uint, query *getOrderQS) (*pagination.Paginati
 	}
 
 	return result, nil
+}
+
+func (s *service) getOneOrder(id string, userId uint) (*models.Order, error) {
+	var order models.Order
+
+	if err := s.repo.findOrderById(&order, id, userId, []string{}); err != nil {
+		return nil, customerror.GormError(err, "Pesanan")
+	}
+
+	return &order, nil
 }
 
 func (s *service) order(body *orderScheme, user *models.User) (*models.Order, error) {

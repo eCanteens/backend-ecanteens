@@ -12,7 +12,8 @@ type Controller interface {
 	getRestaurantCart(ctx *gin.Context)
 	updateCart(ctx *gin.Context)
 	addCart(ctx *gin.Context)
-	getOrder(ctx *gin.Context)
+	getOrders(ctx *gin.Context)
+	getOneOrder(ctx *gin.Context)
 	createOrder(ctx *gin.Context)
 	postReview(ctx *gin.Context)
 	updateOrder(ctx *gin.Context)
@@ -112,14 +113,14 @@ func (c *controller) addCart(ctx *gin.Context) {
 	}
 }
 
-func (c *controller) getOrder(ctx *gin.Context) {
+func (c *controller) getOrders(ctx *gin.Context) {
 	var query getOrderQS
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
 	ctx.ShouldBindQuery(&query)
 
-	data, err := c.service.getOrder(*_user.Id, &query)
+	data, err := c.service.getOrders(*_user.Id, &query)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -127,6 +128,22 @@ func (c *controller) getOrder(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, data)
+}
+
+func (c *controller) getOneOrder(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	data, err := c.service.getOneOrder(ctx.Param("id"), *_user.Id)
+
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+
+	ctx.JSON(200, gin.H{
+		"data": data,
+	})
 }
 
 func (c *controller) createOrder(ctx *gin.Context) {
