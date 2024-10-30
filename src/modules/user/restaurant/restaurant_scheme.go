@@ -22,21 +22,32 @@ type getProductsQS struct {
 	CategoryId string `form:"category_id"`
 }
 
-type productCategoryDTO struct {
+type categoryProductsDTO struct {
+	Category *categoryDTO `json:"category"`
+	*pagination.Pagination[models.Product]
+}
+
+type getProductsResponse struct {
+	Meta struct {
+		Categories []*categoryDTO `json:"categories"`
+	} `json:"meta"`
+	Data []*categoryProductsDTO `json:"data"`
+}
+
+type categoryDTO struct {
 	Id   uint   `json:"id"`
 	Name string `json:"name"`
 }
 
-// CategoryProductsDTO represents the paginated products for a specific category.
-type CategoryProductsDTO struct {
-	Category *productCategoryDTO `json:"category"`
-	*pagination.Pagination[models.Product]
+type categoryRestosDTO struct {
+	Category *categoryDTO `json:"category"`
+	*pagination.Pagination[models.Restaurant]
 }
 
 // MainResponseDTO represents the main response containing categories and data.
-type GetProductsResponse struct {
+type getRestosResponse struct {
 	Meta struct {
-		Categories []*productCategoryDTO `json:"categories"`
+		Categories []*categoryDTO `json:"categories"`
 	} `json:"meta"`
-	Data []*CategoryProductsDTO `json:"data"`
+	Data []*categoryRestosDTO `json:"data"`
 }

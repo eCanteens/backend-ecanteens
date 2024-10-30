@@ -10,10 +10,10 @@ import (
 
 type Service interface {
 	getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
-	getAll(query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
+	getAll(query *paginationQS) (*getRestosResponse, error)
 	getReviews(id string, query *reviewQS) (*[]models.Review, error)
 	getDetail(id string) (*models.Restaurant, error)
-	getRestosProducts(id string, query *getProductsQS) (*GetProductsResponse, error)
+	getRestosProducts(id string, query *getProductsQS) (*getProductsResponse, error)
 	addFavorite(userId uint, restaurantId string) error
 	removeFavorite(userId uint, restaurantId string) error
 }
@@ -38,14 +38,39 @@ func (s *service) getFavorite(userId uint, query *paginationQS) (*pagination.Pag
 	return result, nil
 }
 
-func (s *service) getAll(query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
-	var result = pagination.New(models.Restaurant{})
+func (s *service) getAll(query *paginationQS) (*getRestosResponse, error) {
+	var categories []models.RestaurantCategory
 
-	if err := s.repo.find(result, query); err != nil {
-		return nil, customerror.GormError(err, "Restoran")
+	var responseDto getRestosResponse
+	responseDto.Meta.Categories = []*categoryDTO{};
+	responseDto.Data = []*categoryRestosDTO{}
+
+	if err := s.repo.findRestoCategories(&categories, ""); err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	for _, category := range categories {
+		var categoryDto = categoryDTO{
+			Id:   *category.Id,
+			Name: category.Name,
+		}
+
+		var result = pagination.New(models.Restaurant{})
+
+		if err := s.repo.find(result, query); err != nil {
+			return nil, customerror.GormError(err, "Restoran")
+		}
+
+		if len(*result.Data) > 0 {
+			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
+			responseDto.Data = append(responseDto.Data, &categoryRestosDTO{
+				Category:   &categoryDto,
+				Pagination: result,
+			})
+		}
+	}
+
+	return &responseDto, nil
 }
 
 func (s *service) getReviews(id string, query *reviewQS) (*[]models.Review, error) {
@@ -68,16 +93,19 @@ func (s *service) getDetail(id string) (*models.Restaurant, error) {
 	return &restaurant, nil
 }
 
-func (s *service) getRestosProducts(id string, query *getProductsQS) (*GetProductsResponse, error) {
+func (s *service) getRestosProducts(id string, query *getProductsQS) (*getProductsResponse, error) {
 	var categories []models.ProductCategory
-	var responseDto GetProductsResponse
+
+	var responseDto getProductsResponse
+	responseDto.Meta.Categories = []*categoryDTO{};
+	responseDto.Data = []*categoryProductsDTO{}
 
 	if err := s.repo.findProductCategories(&categories, query.CategoryId); err != nil {
 		return nil, err
 	}
 
 	for _, category := range categories {
-		var categoryDto = productCategoryDTO{
+		var categoryDto = categoryDTO{
 			Id:   *category.Id,
 			Name: category.Name,
 		}
@@ -85,12 +113,12 @@ func (s *service) getRestosProducts(id string, query *getProductsQS) (*GetProduc
 		var result = pagination.New(models.Product{})
 
 		if err := s.repo.findRestosProducts(result, id, &query.paginationQS, *category.Id); err != nil {
-			return nil, customerror.GormError(err, "Restoran")
+			return nil, customerror.GormError(err, "Produk")
 		}
 
 		if len(*result.Data) > 0 {
 			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
-			responseDto.Data = append(responseDto.Data, &CategoryProductsDTO{
+			responseDto.Data = append(responseDto.Data, &categoryProductsDTO{
 				Category:   &categoryDto,
 				Pagination: result,
 			})

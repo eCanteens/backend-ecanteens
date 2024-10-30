@@ -18,6 +18,7 @@ type Repository interface {
 	deleteFavorite(userId uint, restaurantId uint) error
 
 	findProductCategories(categories *[]models.ProductCategory, categoryId string) error
+	findRestoCategories(categories *[]models.RestaurantCategory, categoryId string) error
 }
 
 type repository struct{}
@@ -132,6 +133,14 @@ func (r *repository) deleteFavorite(userId uint, restaurantId uint) error {
 }
 
 func (r *repository) findProductCategories(categories *[]models.ProductCategory, categoryId string) error {
+	if(categoryId == "") {
+		return config.DB.Find(categories).Error
+	} else {
+		return config.DB.Where("id = ?", categoryId).Find(categories).Error
+	}
+}
+
+func (r *repository) findRestoCategories(categories *[]models.RestaurantCategory, categoryId string) error {
 	if(categoryId == "") {
 		return config.DB.Find(categories).Error
 	} else {
