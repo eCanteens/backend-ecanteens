@@ -145,8 +145,8 @@ func (c *controller) refresh(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"data": token,
+	response.Success(ctx, 200, gin.H{
+		"token": token,
 	})
 }
 
