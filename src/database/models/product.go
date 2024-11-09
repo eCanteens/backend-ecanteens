@@ -18,6 +18,7 @@ type Product struct {
 	Category   *ProductCategory `gorm:"foreignKey:category_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"category,omitempty"`
 
 	// Extra
-	Like    int64 `gorm:"-:migration;->" json:"like"`
-	Dislike int64 `gorm:"-:migration;->" json:"dislike"`
+	Like       int64 `gorm:"-:migration;->" json:"like"`
+	Dislike    int64 `gorm:"-:migration;->" json:"dislike"`
+	IsLiked    *bool  `gorm:"-:migration;->" json:"is_liked"`
 }

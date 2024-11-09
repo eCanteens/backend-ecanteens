@@ -96,7 +96,7 @@ func (r *repository) findMutasi(result *pagination.Pagination[models.Transaction
 	direction := query.Direction
 
 	db := config.DB.Model(&models.Transaction{}).
-		Joins("JOIN users ON users.id = transactions.user_id").
+		Joins("LEFT JOIN users ON users.id = transactions.user_id").
 		Preload("User.Wallet")
 
 	if search != "" {

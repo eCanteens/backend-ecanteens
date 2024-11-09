@@ -17,4 +17,5 @@ type Restaurant struct {
 	// Extra
 	RatingAvg   float32 `gorm:"-:migration;->" json:"rating_avg"`
 	RatingCount int64   `gorm:"-:migration;->" json:"rating_count"`
+	IsFavorited *bool   `gorm:"-:migration;->" json:"is_favorited,omitempty"`
 }

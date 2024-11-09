@@ -12,8 +12,8 @@ type Service interface {
 	getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
 	getAll(query *paginationQS) (*getRestosResponse, error)
 	getReviews(id string, query *reviewQS) (*[]models.Review, error)
-	getDetail(id string) (*models.Restaurant, error)
-	getRestosProducts(id string, query *getProductsQS) (*getProductsResponse, error)
+	getDetail(id string, userId uint) (*models.Restaurant, error)
+	getRestosProducts(id string, query *getProductsQS, userId uint) (*getProductsResponse, error)
 	addFavorite(userId uint, restaurantId string) error
 	removeFavorite(userId uint, restaurantId string) error
 }
@@ -83,17 +83,17 @@ func (s *service) getReviews(id string, query *reviewQS) (*[]models.Review, erro
 	return &reviews, nil
 }
 
-func (s *service) getDetail(id string) (*models.Restaurant, error) {
+func (s *service) getDetail(id string, userId uint) (*models.Restaurant, error) {
 	var restaurant models.Restaurant
 
-	if err := s.repo.findOne(&restaurant, id); err != nil {
+	if err := s.repo.findOne(&restaurant, id, userId); err != nil {
 		return nil, customerror.GormError(err, "Restoran")
 	}
 
 	return &restaurant, nil
 }
 
-func (s *service) getRestosProducts(id string, query *getProductsQS) (*getProductsResponse, error) {
+func (s *service) getRestosProducts(id string, query *getProductsQS, userId uint) (*getProductsResponse, error) {
 	var categories []models.ProductCategory
 
 	var responseDto getProductsResponse
@@ -112,7 +112,7 @@ func (s *service) getRestosProducts(id string, query *getProductsQS) (*getProduc
 
 		var result = pagination.New(models.Product{})
 
-		if err := s.repo.findRestosProducts(result, id, &query.paginationQS, *category.Id); err != nil {
+		if err := s.repo.findRestosProducts(result, id, &query.paginationQS, *category.Id, userId); err != nil {
 			return nil, customerror.GormError(err, "Produk")
 		}
 

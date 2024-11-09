@@ -47,8 +47,8 @@ func (r *repository) deleteFeedback(userId uint, productId uint) error {
 
 func (r *repository) findFavorite(result *pagination.Pagination[models.Product], userId uint, query *paginationQS) error {
 	q := config.DB.Table("products").
-		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
-		Joins("JOIN favorite_products fp ON fp.product_id = products.id").
+		Joins("LEFT JOIN product_feedbacks pf ON pf.product_id = products.id").
+		Joins("LEFT JOIN favorite_products fp ON fp.product_id = products.id").
 		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
 		Group("products.id").
 		Where("products.name ILIKE ?", "%"+query.Search+"%").

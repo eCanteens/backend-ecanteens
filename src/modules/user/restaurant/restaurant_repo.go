@@ -11,8 +11,8 @@ type Repository interface {
 	findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error
 	find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error
 	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
-	findOne(restaurant *models.Restaurant, id string) error
-	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint) error
+	findOne(restaurant *models.Restaurant, id string, userId uint) error
+	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint, userId uint) error
 	checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant
 	createFavorite(favorite *models.FavoriteRestaurant) error
 	deleteFavorite(userId uint, restaurantId uint) error
@@ -29,9 +29,9 @@ func NewRepository() Repository {
 
 func (r *repository) findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {
 	q := config.DB.
-		Joins("JOIN favorite_restaurants fr ON fr.restaurant_id = restaurants.id").
-		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
-		Joins("JOIN reviews ON reviews.order_id = orders.id").
+		Joins("LEFT JOIN favorite_restaurants fr ON fr.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
 		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
 		Group("restaurants.id").
 		Where("fr.user_id", userId).
@@ -49,8 +49,8 @@ func (r *repository) findFavorite(result *pagination.Pagination[models.Restauran
 
 func (r *repository) find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error {
 	q := config.DB.
-		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
-		Joins("JOIN reviews ON reviews.order_id = orders.id").
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
 		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
 		Group("restaurants.id").
 		Where("restaurants.name ILIKE ?", "%"+query.Search+"%").
@@ -67,7 +67,7 @@ func (r *repository) find(result *pagination.Pagination[models.Restaurant], quer
 
 func (r *repository) findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error {
 	tx := config.DB.
-		Joins("JOIN orders ON orders.id = reviews.order_id").
+		Joins("LEFT JOIN orders ON orders.id = reviews.order_id").
 		Preload("Order", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, created_at, user_id")
 		}).
@@ -83,13 +83,15 @@ func (r *repository) findReviews(reviews *[]models.Review, restaurantId string, 
 	return tx.Find(reviews).Error
 }
 
-func (r *repository) findOne(restaurant *models.Restaurant, id string) error {
+func (r *repository) findOne(restaurant *models.Restaurant, id string, userId uint) error {
 	return config.DB.Table("restaurants").
-		Joins("JOIN orders ON orders.restaurant_id = restaurants.id").
-		Joins("JOIN reviews ON reviews.order_id = orders.id").
-		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
+		Joins("LEFT JOIN favorite_restaurants fr ON fr.restaurant_id = restaurants.id AND fr.user_id = ?", userId).
+		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count, (fr.id IS NOT NULL) AS is_favorited").
 		Where("restaurants.id = ?", id).
 		Group("restaurants.id").
+		Group("fr.id").
 		Preload("Category").
 		Preload("Owner", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, name, email, phone")
@@ -97,10 +99,14 @@ func (r *repository) findOne(restaurant *models.Restaurant, id string) error {
 		First(restaurant).Error
 }
 
-func (r *repository) findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint) error {
+func (r *repository) findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint, userId uint) error {
 	q := config.DB.
-		Joins("JOIN product_feedbacks pf ON pf.product_id = products.id").
-		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
+		Joins("LEFT JOIN product_feedbacks pf ON pf.product_id = products.id").
+		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike, "+
+			"(SELECT CASE "+
+			"WHEN EXISTS (SELECT 1 FROM product_feedbacks WHERE product_id = products.id AND user_id = ? AND is_like = TRUE) THEN TRUE "+
+			"WHEN EXISTS (SELECT 1 FROM product_feedbacks WHERE product_id = products.id AND user_id = ? AND is_like = FALSE) THEN FALSE "+
+			"ELSE NULL END) AS is_liked", userId, userId).
 		Where("products.restaurant_id = ?", id).
 		Where("products.category_id = ?", categoryId).
 		Where("products.name ILIKE ?", "%"+query.Search+"%").
@@ -133,7 +139,7 @@ func (r *repository) deleteFavorite(userId uint, restaurantId uint) error {
 }
 
 func (r *repository) findProductCategories(categories *[]models.ProductCategory, categoryId string) error {
-	if(categoryId == "") {
+	if categoryId == "" {
 		return config.DB.Find(categories).Error
 	} else {
 		return config.DB.Where("id = ?", categoryId).Find(categories).Error
@@ -141,7 +147,7 @@ func (r *repository) findProductCategories(categories *[]models.ProductCategory,
 }
 
 func (r *repository) findRestoCategories(categories *[]models.RestaurantCategory, categoryId string) error {
-	if(categoryId == "") {
+	if categoryId == "" {
 		return config.DB.Find(categories).Error
 	} else {
 		return config.DB.Where("id = ?", categoryId).Find(categories).Error

@@ -75,8 +75,9 @@ func (c *controller) getReviews(ctx *gin.Context) {
 
 func (c *controller) getDetail(ctx *gin.Context) {
 	id := ctx.Param("id")
+	user, _ := ctx.Get("user")
 
-	data, err := c.service.getDetail(id)
+	data, err := c.service.getDetail(id, *user.(models.User).Id)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
@@ -92,9 +93,11 @@ func (c *controller) getRestosProducts(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var query getProductsQS
 
+	user, _ := ctx.Get("user")
+
 	ctx.ShouldBindQuery(&query)
 
-	data, err := c.service.getRestosProducts(id, &query)
+	data, err := c.service.getRestosProducts(id, &query, *user.(models.User).Id)
 
 	if err != nil {
 		response.ServiceError(ctx, err)
