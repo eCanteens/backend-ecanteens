@@ -43,7 +43,7 @@ func (c *controller) getFavorite(ctx *gin.Context) {
 }
 
 func (c *controller) getAll(ctx *gin.Context) {
-	var query paginationQS
+	var query getProductsQS
 
 	ctx.ShouldBindQuery(&query)
 

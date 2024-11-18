@@ -20,7 +20,7 @@ func OrderSeeder() {
 	// Loop user
 	for _, user := range users {
 		// Loop Order
-		for i := 0; i < 20; i++ {
+		for i := 0; i < 50; i++ {
 			restaurantId := gofakeit.RandomUint([]uint{1, 2, 3, 4, 5})
 			var ordItems []models.OrderItem
 			var products []models.Product

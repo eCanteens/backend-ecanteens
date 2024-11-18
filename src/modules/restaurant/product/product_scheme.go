@@ -1,6 +1,19 @@
 package product
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+
+	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
+)
+
+type paginationQS struct {
+	Page      string `form:"page"`
+	Search    string `form:"search" mod:"trim"`
+	Limit     string `form:"limit"`
+	Order     string `form:"order"`
+	Direction string `form:"direction"`
+}
 
 type createProduct struct {
 	Image       *multipart.FileHeader `binding:"required" form:"image"`
@@ -21,9 +34,23 @@ type updateProduct struct {
 }
 
 type productQs struct {
-	Page      string `form:"page"`
-	Search    string `form:"search" mod:"trim"`
-	Limit     string `form:"limit"`
-	Order     string `form:"order"`
-	Direction string `form:"direction"`
+	paginationQS
+	CategoryId string `form:"category_id"`
+}
+
+type categoryProductsDTO struct {
+	Category *categoryDTO `json:"category"`
+	*pagination.Pagination[models.Product]
+}
+
+type categoryDTO struct {
+	Id   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
+type getProductsResponse struct {
+	Meta struct {
+		Categories []*categoryDTO `json:"categories"`
+	} `json:"meta"`
+	Data []*categoryProductsDTO `json:"data"`
 }

@@ -9,7 +9,7 @@ import (
 
 type Repository interface {
 	findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error
-	find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error
+	find(result *pagination.Pagination[models.Restaurant], query *paginationQS, categoryId uint) error
 	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
 	findOne(restaurant *models.Restaurant, id string, userId uint) error
 	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint, userId uint) error
@@ -47,14 +47,14 @@ func (r *repository) findFavorite(result *pagination.Pagination[models.Restauran
 	})
 }
 
-func (r *repository) find(result *pagination.Pagination[models.Restaurant], query *paginationQS) error {
+func (r *repository) find(result *pagination.Pagination[models.Restaurant], query *paginationQS, categoryId uint) error {
 	q := config.DB.
 		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
 		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
 		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
 		Group("restaurants.id").
 		Where("restaurants.name ILIKE ?", "%"+query.Search+"%").
-		Preload("Category")
+		Where("restaurants.category_id = ?", categoryId)
 
 	return result.Execute(&pagination.Params{
 		Query:     q,
@@ -110,8 +110,7 @@ func (r *repository) findRestosProducts(result *pagination.Pagination[models.Pro
 		Where("products.restaurant_id = ?", id).
 		Where("products.category_id = ?", categoryId).
 		Where("products.name ILIKE ?", "%"+query.Search+"%").
-		Group("products.id").
-		Preload("Category")
+		Group("products.id")
 
 	return result.Execute(&pagination.Params{
 		Query:     q,

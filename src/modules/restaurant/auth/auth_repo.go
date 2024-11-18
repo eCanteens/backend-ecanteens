@@ -36,7 +36,7 @@ func (r *repository) updateResto(data *models.Restaurant) error {
 }
 
 func (r *repository) findByEmail(user *models.User, email string) error {
-	return config.DB.Where("email = ?", email).Where("role_id = ?", 3).Preload("Wallet").First(user).Error
+	return config.DB.Where("email = ?", email).Where("role_id = ?", 3).Preload("Wallet").Preload("Restaurant").First(user).Error
 }
 
 func (r *repository) checkEmailAndPhone(email string, phone string, id ...uint) *[]models.User {

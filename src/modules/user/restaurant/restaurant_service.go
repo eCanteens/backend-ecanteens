@@ -10,7 +10,7 @@ import (
 
 type Service interface {
 	getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
-	getAll(query *paginationQS) (*getRestosResponse, error)
+	getAll(query *getProductsQS) (*getRestosResponse, error)
 	getReviews(id string, query *reviewQS) (*[]models.Review, error)
 	getDetail(id string, userId uint) (*models.Restaurant, error)
 	getRestosProducts(id string, query *getProductsQS, userId uint) (*getProductsResponse, error)
@@ -38,14 +38,14 @@ func (s *service) getFavorite(userId uint, query *paginationQS) (*pagination.Pag
 	return result, nil
 }
 
-func (s *service) getAll(query *paginationQS) (*getRestosResponse, error) {
+func (s *service) getAll(query *getProductsQS) (*getRestosResponse, error) {
 	var categories []models.RestaurantCategory
 
 	var responseDto getRestosResponse
 	responseDto.Meta.Categories = []*categoryDTO{};
 	responseDto.Data = []*categoryRestosDTO{}
 
-	if err := s.repo.findRestoCategories(&categories, ""); err != nil {
+	if err := s.repo.findRestoCategories(&categories, query.CategoryId); err != nil {
 		return nil, err
 	}
 
@@ -57,11 +57,11 @@ func (s *service) getAll(query *paginationQS) (*getRestosResponse, error) {
 
 		var result = pagination.New(models.Restaurant{})
 
-		if err := s.repo.find(result, query); err != nil {
+		if err := s.repo.find(result, &query.paginationQS, *category.Id); err != nil {
 			return nil, customerror.GormError(err, "Restoran")
 		}
 
-		if len(*result.Data) > 0 {
+		if len(*result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
 			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
 			responseDto.Data = append(responseDto.Data, &categoryRestosDTO{
 				Category:   &categoryDto,
@@ -116,7 +116,7 @@ func (s *service) getRestosProducts(id string, query *getProductsQS, userId uint
 			return nil, customerror.GormError(err, "Produk")
 		}
 
-		if len(*result.Data) > 0 {
+		if len(*result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
 			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
 			responseDto.Data = append(responseDto.Data, &categoryProductsDTO{
 				Category:   &categoryDto,

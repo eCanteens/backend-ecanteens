@@ -12,11 +12,13 @@ import (
 )
 
 func restaurantCategorySeeder() {
-	restaurantCategory := models.RestaurantCategory{
-		Name: "Jajanan",
+	restaurantCategories := []*models.RestaurantCategory{
+		{ Name: "Makanan" },
+		{ Name: "Minuman" },
+		{ Name: "Jajanan" },
 	}
 
-	config.DB.Create(&restaurantCategory)
+	config.DB.Create(&restaurantCategories)
 }
 
 func RestaurantSeeder() {
@@ -41,12 +43,12 @@ func RestaurantSeeder() {
 		},
 	})
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 20; i++ {
 		restaurants = append(restaurants, &models.Restaurant{
 			Name:       gofakeit.AppName(),
 			Avatar:     os.Getenv("BASE_URL") + "/public/dummy/avatar-resto.png",
 			Banner:     os.Getenv("BASE_URL") + "/public/dummy/banner.jpeg",
-			CategoryId: 1,
+			CategoryId: gofakeit.UintRange(1, 3),
 			IsOpen:     true,
 			Owner: &models.User{
 				Name:     gofakeit.Name(),

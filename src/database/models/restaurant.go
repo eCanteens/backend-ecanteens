@@ -15,7 +15,7 @@ type Restaurant struct {
 	Category *RestaurantCategory `gorm:"foreignKey:category_id;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"category,omitempty"`
 
 	// Extra
-	RatingAvg   float32 `gorm:"-:migration;->" json:"rating_avg"`
-	RatingCount int64   `gorm:"-:migration;->" json:"rating_count"`
+	RatingAvg   *float32 `gorm:"-:migration;->" json:"rating_avg,omitempty"`
+	RatingCount *int64   `gorm:"-:migration;->" json:"rating_count,omitempty"`
 	IsFavorited *bool   `gorm:"-:migration;->" json:"is_favorited,omitempty"`
 }

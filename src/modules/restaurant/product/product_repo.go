@@ -9,9 +9,11 @@ import (
 
 type Repository interface {
 	create(product *models.Product) error
-	findAll(result *pagination.Pagination[models.Product], query *productQs, user *models.User) error
+	find(result *pagination.Pagination[models.Product], query *paginationQS, categoryId uint, restoId uint) error
 	update(product *models.Product, id string) error
 	delete(productId uint, restaurantId uint) error
+
+	findProductCategories(categories *[]models.ProductCategory, categoryId string) error
 }
 
 type repository struct{}
@@ -24,20 +26,14 @@ func (r *repository) create(product *models.Product) error {
 	return config.DB.Create(product).Error
 }
 
-func (r *repository) findAll(result *pagination.Pagination[models.Product], query *productQs, user *models.User) error {
-	likeCountSubquery := config.DB.Table("product_feedbacks").
-		Select("COUNT(*)").
-		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = TRUE")
-
-	dislikeCountSubquery := config.DB.Table("product_feedbacks").
-		Select("COUNT(*)").
-		Where("product_feedbacks.product_id = products.id AND product_feedbacks.is_like = FALSE")
-
-	q := config.DB.Table("products").
-		Select("products.*, (?) AS like, (?) AS dislike", likeCountSubquery, dislikeCountSubquery).
-		Where("products.restaurant_id = ?", user.Restaurant.Id).
+func (r *repository) find(result *pagination.Pagination[models.Product], query *paginationQS, categoryId uint, restoId uint) error {
+	q := config.DB.
+		Joins("LEFT JOIN product_feedbacks pf ON pf.product_id = products.id").
+		Select("products.*, SUM(CASE WHEN pf.is_like = TRUE THEN 1 ELSE 0 END) AS like, SUM(CASE WHEN pf.is_like = FALSE THEN 1 ELSE 0 END) AS dislike").
+		Where("products.restaurant_id = ?", restoId).
+		Where("products.category_id = ?", categoryId).
 		Where("products.name ILIKE ?", "%"+query.Search+"%").
-		Preload("Category")
+		Group("products.id")
 
 	return result.Execute(&pagination.Params{
 		Query:     q,
@@ -59,4 +55,12 @@ func (r *repository) delete(productId uint, restaurantId uint) error {
 		return customerror.New("Menu tidak ditemukan", 404)
 	}
 	return nil
+}
+
+func (r *repository) findProductCategories(categories *[]models.ProductCategory, categoryId string) error {
+	if categoryId == "" {
+		return config.DB.Find(categories).Error
+	} else {
+		return config.DB.Where("id = ?", categoryId).Find(categories).Error
+	}
 }

@@ -43,8 +43,6 @@ type categoryRestosDTO struct {
 	Category *categoryDTO `json:"category"`
 	*pagination.Pagination[models.Restaurant]
 }
-
-// MainResponseDTO represents the main response containing categories and data.
 type getRestosResponse struct {
 	Meta struct {
 		Categories []*categoryDTO `json:"categories"`
