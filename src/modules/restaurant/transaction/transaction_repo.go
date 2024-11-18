@@ -32,7 +32,7 @@ func (r *repository) findOrder(result *pagination.Pagination[models.Order], rest
 		Preload("Items").
 		Preload("Transaction").
 		Preload("User", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id, name, phone")
+			return db.Select("id, name")
 		})
 
 	if query.Filter == "1" {

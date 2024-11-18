@@ -5,6 +5,7 @@ import (
 	restoAuth "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/auth"
 	restoProduct "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/product"
 	restoTransaction "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/transaction"
+	restoDashboard "github.com/eCanteens/backend-ecanteens/src/modules/restaurant/dashboard"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/auth"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/product"
 	"github.com/eCanteens/backend-ecanteens/src/modules/user/restaurant"
@@ -29,5 +30,6 @@ func Apiv1(router *gin.RouterGroup) {
 		restoAuth.Routes(resto.Group("/auth"))
 		restoProduct.Routes(resto.Group("/products"))
 		restoTransaction.Routes(resto.Group("/transactions"))
+		restoDashboard.Routes(resto.Group("/dashboard"))
 	}
 }
