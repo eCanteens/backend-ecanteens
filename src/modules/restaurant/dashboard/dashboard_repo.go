@@ -37,6 +37,7 @@ func (r *repository) latestHistory(result *models.Order, restoId uint) error {
 	return config.DB.Where("restaurant_id = ?", restoId).
 		Where("status = ?", "SUCCESS").
 		Where("DATE(updated_at) = ?", time.Now().Format("2006-01-02")).
+		Order("updated_at DESC").
 		Preload("Items").
 		Preload("Transaction").
 		Preload("User", func(db *gorm.DB) *gorm.DB {
