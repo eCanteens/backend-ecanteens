@@ -2,7 +2,7 @@ package models
 
 type Wallet struct {
 	PK
-	Pin     string `gorm:"type:varchar(255)" json:"pin,omitempty"`
+	Pin     string `gorm:"type:varchar(255)" json:"-"`
 	Balance uint   `gorm:"type:int" json:"balance"`
 	Timestamps
 

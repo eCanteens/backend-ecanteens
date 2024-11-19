@@ -58,8 +58,6 @@ func (s *service) adminLogin(body *adminLoginScheme) (*models.User, *string, err
 		return nil, nil, err
 	}
 
-	user.Password = ""
-
 	return &user, &tokenString, nil
 }
 
@@ -161,8 +159,6 @@ func (s *service) updateAdminProfile(user *models.User, body *updateAdminProfile
 	if err := s.repo.save(user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
-
-	user.Password = ""
 
 	return nil
 }

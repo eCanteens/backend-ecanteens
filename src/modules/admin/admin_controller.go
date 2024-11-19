@@ -77,9 +77,6 @@ func (c *controller) checkWallet(ctx *gin.Context) {
 		return
 	}
 
-	data.Password = ""
-	data.Wallet.Pin = ""
-
 	ctx.JSON(200, gin.H{
 		"data": data,
 	})
@@ -165,7 +162,6 @@ func (c *controller) mutasi(ctx *gin.Context) {
 func (c *controller) adminProfile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
-	_user.Password = ""
 
 	ctx.JSON(200, gin.H{
 		"data": _user,

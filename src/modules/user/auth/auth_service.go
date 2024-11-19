@@ -121,9 +121,7 @@ func (s *service) login(body *loginScheme) (*models.User, *jwt.UserToken, error)
 		LastUsed: time.Now(),
 	})
 
-	user.Password = ""
 	user.Wallet.IsPinSet = user.Wallet.Pin != ""
-	user.Wallet.Pin = ""
 
 	return &user, token, nil
 }
@@ -171,9 +169,6 @@ func (s *service) google(body *googleScheme) (*models.User, *jwt.UserToken, erro
 		LastUsed: time.Now(),
 	})
 
-	user.Password = ""
-	user.Wallet.Pin = ""
-
 	return &user, token, nil
 }
 
@@ -189,9 +184,6 @@ func (s *service) setupGoogle(body *setupScheme, user *models.User) error {
 	if err := s.repo.updateUser(user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
-
-	user.Password = ""
-	user.Wallet.Pin = ""
 
 	return nil
 }
@@ -290,9 +282,6 @@ func (s *service) updateProfile(user *models.User, body *updateScheme) error {
 	if err := s.repo.updateUser(user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
-
-	user.Password = ""
-	user.Wallet.Pin = ""
 
 	return nil
 }

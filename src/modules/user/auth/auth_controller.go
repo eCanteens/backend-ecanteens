@@ -187,9 +187,7 @@ func (c *controller) reset(ctx *gin.Context) {
 func (c *controller) profile(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
-	_user.Password = ""
 	_user.Wallet.IsPinSet = _user.Wallet.Pin != ""
-	_user.Wallet.Pin = ""
 
 	ctx.JSON(200, gin.H{
 		"data": _user,
@@ -280,6 +278,7 @@ func (c *controller) updatePin(ctx *gin.Context) {
 func (c *controller) wallet(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
+	_user.Wallet.IsPinSet = _user.Wallet.Pin != ""
 
 	ctx.JSON(200, gin.H{
 		"data": _user.Wallet,

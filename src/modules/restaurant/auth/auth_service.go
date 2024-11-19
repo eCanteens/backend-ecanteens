@@ -147,9 +147,6 @@ func (s *service) login(body *loginScheme) (*models.User, *jwt.UserToken, error)
 		LastUsed: time.Now(),
 	})
 
-	user.Password = ""
-	user.Wallet.Pin = ""
-
 	return &user, token, nil
 }
 
@@ -212,9 +209,6 @@ func (s *service) updateProfile(body *updateProfileScheme, user *models.User) er
 	if err := s.repo.updateUser(user); err != nil {
 		return customerror.GormError(err, "Pengguna")
 	}
-
-	user.Password = ""
-	user.Wallet.Pin = ""
 
 	return nil
 }
