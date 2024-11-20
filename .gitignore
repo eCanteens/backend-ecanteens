@@ -1,4 +1,5 @@
 .env
+.env.production
 gin-bin.exe
 /tmp
 /public/uploads
