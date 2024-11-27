@@ -26,7 +26,7 @@ func ProductSeeder() {
 
 	var products []*models.Product
 
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 100; i++ {
 		randomInt := gofakeit.IntRange(0, 5)
 		productName := []string{gofakeit.Breakfast(), gofakeit.Lunch(), gofakeit.Drink(), gofakeit.Snack(), gofakeit.Fruit(), gofakeit.Dessert()}
 		var category uint = 1
@@ -42,7 +42,7 @@ func ProductSeeder() {
 		}
 
 		products = append(products, &models.Product{
-			RestaurantId: gofakeit.UintRange(1, 6),
+			RestaurantId: gofakeit.UintRange(1, 21),
 			Name:         productName[randomInt],
 			Description:  gofakeit.ProductDescription(),
 			Image:        os.Getenv("BASE_URL") + "/public/dummy/product.png",
