@@ -26,7 +26,7 @@ func ProductSeeder() {
 
 	var products []*models.Product
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 200; i++ {
 		randomInt := gofakeit.IntRange(0, 5)
 		productName := []string{gofakeit.Breakfast(), gofakeit.Lunch(), gofakeit.Drink(), gofakeit.Snack(), gofakeit.Fruit(), gofakeit.Dessert()}
 		var category uint = 1

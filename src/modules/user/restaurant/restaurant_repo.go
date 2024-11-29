@@ -110,6 +110,7 @@ func (r *repository) findRestosProducts(result *pagination.Pagination[models.Pro
 		Where("products.restaurant_id = ?", id).
 		Where("products.category_id = ?", categoryId).
 		Where("products.name ILIKE ?", "%"+query.Search+"%").
+		Where("products.is_active = ?", true).
 		Group("products.id")
 
 	return result.Execute(&pagination.Params{
