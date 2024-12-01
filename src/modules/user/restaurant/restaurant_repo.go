@@ -1,6 +1,8 @@
 package restaurant
 
 import (
+	"errors"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
@@ -16,7 +18,7 @@ type Repository interface {
 	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
 	findOne(restaurant *models.Restaurant, id string, userId uint) error
 	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint, userId uint) error
-	checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant
+	checkFavorite(userId uint, restaurantId uint) (*models.FavoriteRestaurant, error)
 	createFavorite(favorite *models.FavoriteRestaurant) error
 	deleteFavorite(userId uint, restaurantId uint) error
 
@@ -147,12 +149,18 @@ func (r *repository) findRestosProducts(result *pagination.Pagination[models.Pro
 	})
 }
 
-func (r *repository) checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant {
-	var favorites []models.FavoriteRestaurant
+func (r *repository) checkFavorite(userId uint, restaurantId uint) (*models.FavoriteRestaurant, error) {
+	var favorites models.FavoriteRestaurant
 
-	config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Find(&favorites)
+	if err := config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).First(&favorites).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 
-	return &favorites
+		return nil, err
+	}
+
+	return &favorites, nil
 }
 
 func (r *repository) createFavorite(favorite *models.FavoriteRestaurant) error {

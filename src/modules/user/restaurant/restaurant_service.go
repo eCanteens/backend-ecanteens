@@ -175,18 +175,22 @@ func (s *service) addFavorite(userId uint, restaurantId string) error {
 		return customerror.New("Id restoran tidak valid", 400)
 	}
 
-	favorites := s.repo.checkFavorite(userId, uint(id))
+	favorite, err := s.repo.checkFavorite(userId, uint(id))
 
-	if len(*favorites) > 0 {
+	if err != nil {
+		return customerror.GormError(err, "Restoran")
+	}
+
+	if favorite != nil {
 		return customerror.New("Restoran sudah di dalam list favorit anda", 400)
 	}
 
-	favorite := &models.FavoriteRestaurant{
+	newFavorite := &models.FavoriteRestaurant{
 		UserId:       userId,
 		RestaurantId: uint(id),
 	}
 
-	if err := s.repo.createFavorite(favorite); err != nil {
+	if err := s.repo.createFavorite(newFavorite); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 
@@ -199,9 +203,13 @@ func (s *service) removeFavorite(userId uint, restaurantId string) error {
 		return customerror.New("Id restoran tidak valid", 400)
 	}
 
-	favorites := s.repo.checkFavorite(userId, uint(id))
+	favorite, err := s.repo.checkFavorite(userId, uint(id))
 
-	if len(*favorites) == 0 {
+	if err != nil {
+		return customerror.GormError(err, "Restoran")
+	}
+
+	if favorite == nil {
 		return customerror.New("Restoran tidak ada di dalam list favorit anda", 400)
 	}
 
