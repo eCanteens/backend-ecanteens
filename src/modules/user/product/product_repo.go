@@ -1,18 +1,21 @@
 package product
 
 import (
+	"errors"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
+	"gorm.io/gorm"
 )
 
 type Repository interface {
-	checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, error)
+	checkFeedback(userId uint, productId uint) (*models.ProductFeedback, error)
 	updateFeedback(id uint, body *feedbackScheme) error
 	createFeedback(feedback *models.ProductFeedback) error
 	deleteFeedback(userId uint, productId uint) error
 	findFavorite(result *pagination.Pagination[models.Product], userId uint, query *paginationQS) error
-	checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct
+	checkFavorite(userId uint, ProductId uint) (*models.FavoriteProduct, error)
 	createFavorite(favorite *models.FavoriteProduct) error
 	deleteFavorite(userId uint, productId uint) error
 }
@@ -23,10 +26,14 @@ func NewRepository() Repository {
 	return &repository{}
 }
 
-func (r *repository) checkFeedback(userId uint, productId uint) (*[]models.ProductFeedback, error) {
-	var feedbacks []models.ProductFeedback
+func (r *repository) checkFeedback(userId uint, productId uint) (*models.ProductFeedback, error) {
+	var feedbacks models.ProductFeedback
 
-	if err := config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).Find(&feedbacks).Error; err != nil {
+	if err := config.DB.Where("user_id = ?", userId).Where("product_id = ?", productId).First(&feedbacks).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 
@@ -34,7 +41,7 @@ func (r *repository) checkFeedback(userId uint, productId uint) (*[]models.Produ
 }
 
 func (r *repository) updateFeedback(id uint, body *feedbackScheme) error {
-	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.IsLike).Error
+	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.IsLiked).Error
 }
 
 func (r *repository) createFeedback(feedback *models.ProductFeedback) error {
@@ -64,12 +71,18 @@ func (r *repository) findFavorite(result *pagination.Pagination[models.Product],
 	})
 }
 
-func (r *repository) checkFavorite(userId uint, ProductId uint) *[]models.FavoriteProduct {
-	var favorites []models.FavoriteProduct
+func (r *repository) checkFavorite(userId uint, ProductId uint) (*models.FavoriteProduct, error) {
+	var favorites models.FavoriteProduct
 
-	config.DB.Where("user_id = ?", userId).Where("product_id = ?", ProductId).Find(&favorites)
+	if err := config.DB.Where("user_id = ?", userId).Where("product_id = ?", ProductId).First(&favorites).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 
-	return &favorites
+		return nil, err
+	}
+
+	return &favorites, nil
 }
 
 func (r *repository) createFavorite(favorite *models.FavoriteProduct) error {

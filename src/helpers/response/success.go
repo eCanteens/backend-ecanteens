@@ -2,7 +2,6 @@ package response
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gookit/goutil"
 )
 
 func Success(ctx *gin.Context, statusCode int, data ...gin.H) {
@@ -12,10 +11,7 @@ func Success(ctx *gin.Context, statusCode int, data ...gin.H) {
 
 	if len(data) > 0 {
 		for key, value := range data[0] {
-			if !goutil.IsEmpty(value) {
-				response[key] = value
-			}
-
+			response[key] = value
 		}
 	}
 

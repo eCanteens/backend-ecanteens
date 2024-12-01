@@ -50,3 +50,22 @@ func Map[T any, Y any](slice *[]T, test func(*T) *Y) *[]Y {
 func GenerateTrxCode(userId uint) string {
     return fmt.Sprintf("EC-%d-%d", time.Now().Unix(), userId)
 }
+
+func RemoveDuplicates[T any, K comparable](items *[]T, keySelector func(*T) K, limit int) []T {
+	uniqueMap := make(map[K]bool)
+	var result []T
+
+	for _, item := range *items {
+        if len(result) >= limit && limit != 0 {
+            break
+        }
+
+		key := keySelector(&item)
+		if !uniqueMap[key] {
+			uniqueMap[key] = true
+			result = append(result, item)
+		}
+	}
+
+	return result
+}

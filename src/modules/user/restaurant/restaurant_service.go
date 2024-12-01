@@ -4,11 +4,13 @@ import (
 	"strconv"
 
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
+	"github.com/eCanteens/backend-ecanteens/src/helpers"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 )
 
 type Service interface {
+	getPopular(userId uint) (*[]models.Restaurant, error)
 	getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error)
 	getAll(query *getProductsQS) (*getRestosResponse, error)
 	getReviews(id string, query *reviewQS) (*[]models.Review, error)
@@ -28,6 +30,45 @@ func NewService(repo Repository) Service {
 	}
 }
 
+func (s *service) getPopular(userId uint) (*[]models.Restaurant, error) {
+	type result struct {
+		data *[]models.Restaurant
+		err  error
+	}
+
+	recentChan := make(chan result, 1)
+	popularChan := make(chan result, 1)
+
+	go func() {
+		var res []models.Restaurant
+		err := s.repo.findRecentResto(&res, userId)
+		recentChan <- result{data: &res, err: err}
+	}()
+
+	go func() {
+		var res []models.Restaurant
+		err := s.repo.findPopular(&res)
+		popularChan <- result{data: &res, err: err}
+	}()
+
+	recentResult := <-recentChan
+	popularResult := <-popularChan
+
+	if recentResult.err != nil {
+		return nil, customerror.GormError(recentResult.err, "Restoran")
+	}
+	if popularResult.err != nil {
+		return nil, customerror.GormError(popularResult.err, "Restoran")
+	}
+
+	allRestaurants := append(*recentResult.data, *popularResult.data...)
+	allRestaurants = helpers.RemoveDuplicates(&allRestaurants, func(resto *models.Restaurant) uint {
+		return *resto.Id
+	}, 5)
+
+	return &allRestaurants, nil
+}
+
 func (s *service) getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Restaurant], error) {
 	var result = pagination.New(models.Restaurant{})
 
@@ -42,7 +83,7 @@ func (s *service) getAll(query *getProductsQS) (*getRestosResponse, error) {
 	var categories []models.RestaurantCategory
 
 	var responseDto getRestosResponse
-	responseDto.Meta.Categories = []*categoryDTO{};
+	responseDto.Meta.Categories = []*categoryDTO{}
 	responseDto.Data = []*categoryRestosDTO{}
 
 	if err := s.repo.findRestoCategories(&categories, query.CategoryId); err != nil {
@@ -97,7 +138,7 @@ func (s *service) getRestosProducts(id string, query *getProductsQS, userId uint
 	var categories []models.ProductCategory
 
 	var responseDto getProductsResponse
-	responseDto.Meta.Categories = []*categoryDTO{};
+	responseDto.Meta.Categories = []*categoryDTO{}
 	responseDto.Data = []*categoryProductsDTO{}
 
 	if err := s.repo.findProductCategories(&categories, query.CategoryId); err != nil {
@@ -134,18 +175,22 @@ func (s *service) addFavorite(userId uint, restaurantId string) error {
 		return customerror.New("Id restoran tidak valid", 400)
 	}
 
-	favorites := s.repo.checkFavorite(userId, uint(id))
+	favorite, err := s.repo.checkFavorite(userId, uint(id))
 
-	if len(*favorites) > 0 {
+	if err != nil {
+		return customerror.GormError(err, "Restoran")
+	}
+
+	if favorite != nil {
 		return customerror.New("Restoran sudah di dalam list favorit anda", 400)
 	}
 
-	favorite := &models.FavoriteRestaurant{
+	newFavorite := &models.FavoriteRestaurant{
 		UserId:       userId,
 		RestaurantId: uint(id),
 	}
 
-	if err := s.repo.createFavorite(favorite); err != nil {
+	if err := s.repo.createFavorite(newFavorite); err != nil {
 		return customerror.GormError(err, "Restoran")
 	}
 
@@ -158,9 +203,13 @@ func (s *service) removeFavorite(userId uint, restaurantId string) error {
 		return customerror.New("Id restoran tidak valid", 400)
 	}
 
-	favorites := s.repo.checkFavorite(userId, uint(id))
+	favorite, err := s.repo.checkFavorite(userId, uint(id))
 
-	if len(*favorites) == 0 {
+	if err != nil {
+		return customerror.GormError(err, "Restoran")
+	}
+
+	if favorite == nil {
 		return customerror.New("Restoran tidak ada di dalam list favorit anda", 400)
 	}
 

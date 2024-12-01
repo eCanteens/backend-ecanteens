@@ -1,6 +1,8 @@
 package restaurant
 
 import (
+	"errors"
+
 	"github.com/eCanteens/backend-ecanteens/src/config"
 	"github.com/eCanteens/backend-ecanteens/src/database/models"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
@@ -8,12 +10,15 @@ import (
 )
 
 type Repository interface {
+	findPopular(result *[]models.Restaurant) error
+	findRecentResto(result *[]models.Restaurant, userId uint) error
+
 	findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error
 	find(result *pagination.Pagination[models.Restaurant], query *paginationQS, categoryId uint) error
 	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
 	findOne(restaurant *models.Restaurant, id string, userId uint) error
 	findRestosProducts(result *pagination.Pagination[models.Product], id string, query *paginationQS, categoryId uint, userId uint) error
-	checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant
+	checkFavorite(userId uint, restaurantId uint) (*models.FavoriteRestaurant, error)
 	createFavorite(favorite *models.FavoriteRestaurant) error
 	deleteFavorite(userId uint, restaurantId uint) error
 
@@ -25,6 +30,28 @@ type repository struct{}
 
 func NewRepository() Repository {
 	return &repository{}
+}
+
+func (r *repository) findPopular(result *[]models.Restaurant) error {
+	return config.DB.
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
+		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
+		Group("restaurants.id").
+		Order("COUNT(orders.id) desc").
+		Limit(5).
+		Find(result).Error;
+}
+
+func (r *repository) findRecentResto(result *[]models.Restaurant, userId uint) error {
+	return config.DB.
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
+		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.id) AS rating_count, SUM(CASE WHEN orders.user_id = ? THEN 1 ELSE 0 END) AS user_order_count", userId).
+		Group("restaurants.id").
+		Order("user_order_count DESC").
+		Limit(2).
+		Find(result).Error;
 }
 
 func (r *repository) findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {
@@ -122,12 +149,18 @@ func (r *repository) findRestosProducts(result *pagination.Pagination[models.Pro
 	})
 }
 
-func (r *repository) checkFavorite(userId uint, restaurantId uint) *[]models.FavoriteRestaurant {
-	var favorites []models.FavoriteRestaurant
+func (r *repository) checkFavorite(userId uint, restaurantId uint) (*models.FavoriteRestaurant, error) {
+	var favorites models.FavoriteRestaurant
 
-	config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).Find(&favorites)
+	if err := config.DB.Where("user_id = ?", userId).Where("restaurant_id = ?", restaurantId).First(&favorites).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 
-	return &favorites
+		return nil, err
+	}
+
+	return &favorites, nil
 }
 
 func (r *repository) createFavorite(favorite *models.FavoriteRestaurant) error {
