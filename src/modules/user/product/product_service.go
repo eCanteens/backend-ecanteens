@@ -9,6 +9,7 @@ import (
 )
 
 type Service interface {
+	checkFeedback(userId uint, productId string) (*bool, error)
 	addFeedback(body *feedbackScheme, userId uint, productId string) error
 	removeFeedback(userId uint, productId string) error
 	getFavorite(userId uint, query *paginationQS) (*pagination.Pagination[models.Product], error)
@@ -58,6 +59,25 @@ func (s *service) addFeedback(body *feedbackScheme, userId uint, productId strin
 
 		return nil
 	}
+}
+
+func (s *service) checkFeedback(userId uint, productId string) (*bool, error) {
+	id, err := strconv.ParseUint(productId, 10, 32)
+
+	if err != nil {
+		return nil, customerror.New("Id produk tidak valid", 400)
+	}
+
+	feedbacks, err := s.repo.checkFeedback(userId, uint(id))
+	if err != nil {
+		return nil, customerror.GormError(err, "Produk")
+	}
+
+	if len(*feedbacks) > 0 {
+		return &(*feedbacks)[0].IsLike, nil
+	}
+
+	return nil, nil
 }
 
 func (s *service) removeFeedback(userId uint, productId string) error {

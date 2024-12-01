@@ -152,7 +152,7 @@ func (r *repository) findCartById(id uint, cart *models.Cart, userId uint, prelo
 func (r *repository) findCartByRestoId(id uint, cart *models.Cart, userId uint, preload bool) error {
 	tx := config.DB.Where("restaurant_id = ?", id).Where("user_id = ?", userId).Preload("Items")
 	if preload {
-		tx.Preload("Restaurant.Category").Preload("Restaurant.Owner.Wallet").Preload("Items.Product")
+		tx.Preload("Items.Product")
 	}
 
 	return tx.First(cart).Error

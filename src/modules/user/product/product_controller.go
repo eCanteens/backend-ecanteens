@@ -8,6 +8,7 @@ import (
 )
 
 type Controller interface {
+	checkFeedback(ctx *gin.Context)
 	addFeedback(ctx *gin.Context)
 	removeFeedback(ctx *gin.Context)
 	getFavorite(ctx *gin.Context)
@@ -23,6 +24,22 @@ func NewController(service Service) Controller {
 	return &controller{
 		service: service,
 	}
+}
+
+func (c *controller) checkFeedback(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	user, _ := ctx.Get("user")
+	_user := user.(models.User)
+
+	feedback, err := c.service.checkFeedback(*_user.Id, id)
+
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+
+	response.Success(ctx, 200, gin.H{"is_like": feedback})
 }
 
 func (c *controller) addFeedback(ctx *gin.Context) {
