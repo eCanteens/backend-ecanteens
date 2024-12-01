@@ -39,7 +39,7 @@ func (c *controller) checkFeedback(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, 200, gin.H{"is_like": feedback})
+	response.Success(ctx, 200, gin.H{"is_liked": feedback})
 }
 
 func (c *controller) addFeedback(ctx *gin.Context) {
