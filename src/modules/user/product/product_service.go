@@ -39,7 +39,7 @@ func (s *service) addFeedback(body *feedbackScheme, userId uint, productId strin
 		return customerror.GormError(err, "Ulasan")
 	}
 
-	if body.IsLike == nil {
+	if body.IsLiked == nil {
 		// Remove feedback
 		if feedback == nil {
 			return customerror.New("Produk belum dilike/didislike", 400)
@@ -48,13 +48,13 @@ func (s *service) addFeedback(body *feedbackScheme, userId uint, productId strin
 		if err := s.repo.deleteFeedback(userId, uint(id)); err != nil {
 			return customerror.GormError(err, "Ulasan")
 		}
-	
+
 		return nil
 	}
 
-	if feedback != nil { 
+	if feedback != nil {
 		// Update feedback
-		if feedback.IsLike == *body.IsLike {
+		if feedback.IsLike == *body.IsLiked {
 			msg := "Produk sudah di"
 			if feedback.IsLike {
 				msg += "like"
@@ -75,7 +75,7 @@ func (s *service) addFeedback(body *feedbackScheme, userId uint, productId strin
 		feedback := &models.ProductFeedback{
 			UserId:    userId,
 			ProductId: uint(id),
-			IsLike:    *body.IsLike,
+			IsLike:    *body.IsLiked,
 		}
 
 		if err := s.repo.createFeedback(feedback); err != nil {

@@ -41,7 +41,7 @@ func (r *repository) checkFeedback(userId uint, productId uint) (*models.Product
 }
 
 func (r *repository) updateFeedback(id uint, body *feedbackScheme) error {
-	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.IsLike).Error
+	return config.DB.Model(&models.ProductFeedback{}).Where("id = ?", id).Update("is_like", *body.IsLiked).Error
 }
 
 func (r *repository) createFeedback(feedback *models.ProductFeedback) error {

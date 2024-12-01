@@ -58,11 +58,11 @@ func (c *controller) addFeedback(ctx *gin.Context) {
 	}
 
 	msg := "Produk berhasil di"
-	if body.IsLike == nil {
+	if body.IsLiked == nil {
 		msg += "unlike/undislike"
-	} else if *body.IsLike {
+	} else if *body.IsLiked {
 		msg += "like"
-	} else if !*body.IsLike {
+	} else if !*body.IsLiked {
 		msg += "dislike"
 	}
 
