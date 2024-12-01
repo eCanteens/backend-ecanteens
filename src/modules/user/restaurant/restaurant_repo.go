@@ -8,6 +8,9 @@ import (
 )
 
 type Repository interface {
+	findPopular(result *[]models.Restaurant) error
+	findRecentResto(result *[]models.Restaurant, userId uint) error
+
 	findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error
 	find(result *pagination.Pagination[models.Restaurant], query *paginationQS, categoryId uint) error
 	findReviews(reviews *[]models.Review, restaurantId string, query *reviewQS) error
@@ -25,6 +28,28 @@ type repository struct{}
 
 func NewRepository() Repository {
 	return &repository{}
+}
+
+func (r *repository) findPopular(result *[]models.Restaurant) error {
+	return config.DB.
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
+		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.*) AS rating_count").
+		Group("restaurants.id").
+		Order("COUNT(orders.id) desc").
+		Limit(5).
+		Find(result).Error;
+}
+
+func (r *repository) findRecentResto(result *[]models.Restaurant, userId uint) error {
+	return config.DB.
+		Joins("LEFT JOIN orders ON orders.restaurant_id = restaurants.id").
+		Joins("LEFT JOIN reviews ON reviews.order_id = orders.id").
+		Select("restaurants.*, COALESCE(AVG(reviews.rating), 0) AS rating_avg, COUNT(reviews.id) AS rating_count, SUM(CASE WHEN orders.user_id = ? THEN 1 ELSE 0 END) AS user_order_count", userId).
+		Group("restaurants.id").
+		Order("user_order_count DESC").
+		Limit(2).
+		Find(result).Error;
 }
 
 func (r *repository) findFavorite(result *pagination.Pagination[models.Restaurant], userId uint, query *paginationQS) error {

@@ -15,6 +15,7 @@ func Routes(router *gin.RouterGroup) {
 	authorized := router.Group("")
 	authorized.Use(middleware.Auth)
 	{
+		authorized.GET("/popular", restaurantController.getPopular)
 		authorized.GET("/favorites", restaurantController.getFavorite)
 		authorized.GET("", restaurantController.getAll)
 		authorized.GET("/:id/reviews", restaurantController.getReviews)

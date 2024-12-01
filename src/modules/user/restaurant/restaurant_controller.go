@@ -7,6 +7,7 @@ import (
 )
 
 type Controller interface {
+	getPopular(ctx *gin.Context)
 	getFavorite(ctx *gin.Context)
 	getAll(ctx *gin.Context)
 	getReviews(ctx *gin.Context)
@@ -24,6 +25,19 @@ func NewController(service Service) Controller {
 	return &controller{
 		service: service,
 	}
+}
+
+func (c *controller) getPopular(ctx *gin.Context) {
+	user, _ := ctx.Get("user")
+
+	data, err := c.service.getPopular(*user.(models.User).Id)
+
+	if err != nil {
+		response.ServiceError(ctx, err)
+		return
+	}
+
+	ctx.JSON(200, data)
 }
 
 func (c *controller) getFavorite(ctx *gin.Context) {
