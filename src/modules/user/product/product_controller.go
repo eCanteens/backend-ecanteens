@@ -10,7 +10,6 @@ import (
 type Controller interface {
 	checkFeedback(ctx *gin.Context)
 	addFeedback(ctx *gin.Context)
-	removeFeedback(ctx *gin.Context)
 	getFavorite(ctx *gin.Context)
 	addFavorite(ctx *gin.Context)
 	removeFavorite(ctx *gin.Context)
@@ -59,25 +58,15 @@ func (c *controller) addFeedback(ctx *gin.Context) {
 	}
 
 	msg := "Produk berhasil di"
-	if *body.IsLike {
+	if body.IsLike == nil {
+		msg += "unlike/undislike"
+	} else if *body.IsLike {
 		msg += "like"
-	} else {
+	} else if !*body.IsLike {
 		msg += "dislike"
 	}
 
 	response.Success(ctx, 200, gin.H{"message": msg})
-}
-
-func (c *controller) removeFeedback(ctx *gin.Context) {
-	user, _ := ctx.Get("user")
-	id := ctx.Param("id")
-
-	if err := c.service.removeFeedback(*user.(models.User).Id, id); err != nil {
-		response.ServiceError(ctx, err)
-		return
-	}
-
-	response.Success(ctx, 200, gin.H{"message": "Produk berhasil diunlike/undislike"})
 }
 
 func (c *controller) getFavorite(ctx *gin.Context) {

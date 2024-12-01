@@ -19,7 +19,6 @@ func Routes(router *gin.RouterGroup) {
 
 		authorized.GET("/:id/feedback", productController.checkFeedback)
 		authorized.POST("/:id/feedback", productController.addFeedback)
-		authorized.DELETE("/:id/feedback", productController.removeFeedback)
 
 		authorized.POST("/:id/favorite", productController.addFavorite)
 		authorized.DELETE("/:id/favorite", productController.removeFavorite)

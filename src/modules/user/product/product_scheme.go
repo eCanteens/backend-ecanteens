@@ -1,7 +1,7 @@
 package product
 
 type feedbackScheme struct {
-	IsLike *bool `binding:"required" json:"is_like"`
+	IsLike *bool `json:"is_like"`
 }
 
 type paginationQS struct {
