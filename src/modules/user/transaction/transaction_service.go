@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"errors"
 	"os"
 	"strconv"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/eCanteens/backend-ecanteens/src/helpers/customerror"
 	"github.com/eCanteens/backend-ecanteens/src/helpers/pagination"
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type Service interface {
@@ -45,6 +47,7 @@ func (s *service) getCarts(user *models.User) (*[]models.Cart, error) {
 
 	return &carts, nil
 }
+
 func (s *service) getRestaurantCart(restaurantId uint, user *models.User) (*models.Cart, error) {
 	var cart models.Cart
 
@@ -65,7 +68,7 @@ func (s *service) updateCart(id string, body *updateCartNoteScheme, userId uint)
 
 func (s *service) addCart(user *models.User, body *addCartScheme) error {
 	var product models.Product
-	var carts []models.Cart
+	var cart models.Cart
 
 	if err := s.repo.findOneProduct(&product, body.ProductId); err != nil {
 		return customerror.GormError(err, "produk")
@@ -79,19 +82,17 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 		return customerror.New("Restoran sedang tutup", 400)
 	}
 
-	if err := s.repo.findCart(*user.Id, &carts, false); err != nil {
-		return customerror.GormError(err, "Keranjang")
+	if err := s.repo.findCartByRestoId(product.RestaurantId, &cart, *user.Id, false); err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return customerror.GormError(err, "Keranjang")
+		}
 	}
 
-	cart := helpers.Find(&carts, func(cart *models.Cart) bool {
-		return cart.RestaurantId == product.RestaurantId
-	})
-
-	if cart == nil {
+	if cart.Id == nil {
 		// if cart not found
 		if *body.Quantity > 0 {
 			// and quantity not 0 then create cart and cart item
-			cart = &models.Cart{
+			newCart := &models.Cart{
 				UserId:       *user.Id,
 				RestaurantId: product.RestaurantId,
 				Items: []models.CartItem{
@@ -102,7 +103,7 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 				},
 			}
 
-			if err := s.repo.createCart(cart); err != nil {
+			if err := s.repo.createCart(newCart); err != nil {
 				return customerror.GormError(err, "Keranjang")
 			}
 
@@ -156,7 +157,7 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 				return nil
 			} else {
 				// if cart items just 1 then delete cart
-				if err := s.repo.deleteCart(cart); err != nil {
+				if err := s.repo.deleteCart(&cart); err != nil {
 					return customerror.GormError(err, "Keranjang")
 				}
 

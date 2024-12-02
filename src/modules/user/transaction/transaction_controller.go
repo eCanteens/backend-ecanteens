@@ -55,7 +55,7 @@ func (c *controller) getRestaurantCart(ctx *gin.Context) {
 
 	cart, _ := c.service.getRestaurantCart(query.RestaurantId, &_user)
 
-	response.Success(ctx, 200, gin.H{
+	ctx.JSON(200, gin.H{
 		"data": cart,
 	})
 
