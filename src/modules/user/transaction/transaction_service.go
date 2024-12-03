@@ -19,7 +19,7 @@ type Service interface {
 	getCarts(user *models.User) (*[]models.Cart, error)
 	getRestaurantCart(restaurantId uint, user *models.User) (*models.Cart, error)
 	updateCart(id string, body *updateCartNoteScheme, userId uint) error
-	addCart(user *models.User, body *addCartScheme) error
+	addCart(user *models.User, body *addCartScheme) (*models.Cart , error)
 	getOrders(userId uint, query *getOrderQS) (*pagination.Pagination[models.Order], error)
 	getOneOrder(id string, userId uint) (*models.Order, error)
 	order(body *orderScheme, user *models.User) (*models.Order, error)
@@ -66,25 +66,25 @@ func (s *service) updateCart(id string, body *updateCartNoteScheme, userId uint)
 	return nil
 }
 
-func (s *service) addCart(user *models.User, body *addCartScheme) error {
+func (s *service) addCart(user *models.User, body *addCartScheme) (*models.Cart, error) {
 	var product models.Product
 	var cart models.Cart
 
 	if err := s.repo.findOneProduct(&product, body.ProductId); err != nil {
-		return customerror.GormError(err, "produk")
+		return nil, customerror.GormError(err, "produk")
 	}
 
 	if product.Stock == 0 {
-		return customerror.New("Stok produk habis", 400)
+		return nil, customerror.New("Stok produk habis", 400)
 	}
 
 	if !product.Restaurant.IsOpen {
-		return customerror.New("Restoran sedang tutup", 400)
+		return nil, customerror.New("Restoran sedang tutup", 400)
 	}
 
 	if err := s.repo.findCartByRestoId(product.RestaurantId, &cart, *user.Id, false); err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return customerror.GormError(err, "Keranjang")
+			return nil, customerror.GormError(err, "Keranjang")
 		}
 	}
 
@@ -92,7 +92,7 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 		// if cart not found
 		if *body.Quantity > 0 {
 			// and quantity not 0 then create cart and cart item
-			newCart := &models.Cart{
+			newCart := models.Cart{
 				UserId:       *user.Id,
 				RestaurantId: product.RestaurantId,
 				Items: []models.CartItem{
@@ -103,18 +103,18 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 				},
 			}
 
-			if err := s.repo.createCart(newCart); err != nil {
-				return customerror.GormError(err, "Keranjang")
+			if err := s.repo.createCart(&newCart); err != nil {
+				return nil, customerror.GormError(err, "Keranjang")
 			}
 
-			return nil
+			return &newCart, nil
 		}
 
 		// but quantity is 0 then return error
-		return customerror.New("Produk tidak ditemukan di keranjang", 404)
+		return nil, customerror.New("Produk tidak ditemukan di keranjang", 404)
 	}
 
-	cartItem := helpers.Find(&cart.Items, func(item *models.CartItem) bool {
+	cartItem, cartItemIdx := helpers.Find(cart.Items, func(item *models.CartItem) bool {
 		return item.ProductId == body.ProductId
 	})
 
@@ -129,39 +129,45 @@ func (s *service) addCart(user *models.User, body *addCartScheme) error {
 			}
 
 			if err := s.repo.createCartItem(cartItem); err != nil {
-				return customerror.GormError(err, "Keranjang")
+				return nil, customerror.GormError(err, "Keranjang")
 			}
-			return nil
+
+			cart.Items = append(cart.Items, *cartItem)
+			return &cart, nil
 		}
 
 		// and quantity is 0 then return error
-		return customerror.New("Produk tidak ditemukan di keranjang", 404)
+		return nil, customerror.New("Produk tidak ditemukan di keranjang", 404)
 	} else {
 		// if cart & cart item found
 		if *body.Quantity > 0 {
 			// if quantity not 0 then update cart item
-			cartItem.Quantity = *body.Quantity
-			if err := s.repo.updateCartItem(cartItem); err != nil {
-				return customerror.GormError(err, "Keranjang")
+			cart.Items[cartItemIdx].Quantity = *body.Quantity
+			if err := s.repo.updateCartItem(&cart.Items[cartItemIdx]); err != nil {
+				return nil, customerror.GormError(err, "Keranjang")
 			}
 
-			return nil
+			return &cart, nil
 		} else {
 			// if quantity is 0
 			if len(cart.Items) > 1 {
 				// if cart items more than 1 then delete cart item
 				if err := s.repo.deleteCartItem(cartItem); err != nil {
-					return customerror.GormError(err, "Keranjang")
+					return nil, customerror.GormError(err, "Keranjang")
 				}
 
-				return nil
+				cart.Items = helpers.RemoveItem(cart.Items, func(t *models.CartItem) bool {
+					return *t.Id == *cartItem.Id
+				})
+
+				return &cart, nil
 			} else {
 				// if cart items just 1 then delete cart
 				if err := s.repo.deleteCart(&cart); err != nil {
-					return customerror.GormError(err, "Keranjang")
+					return nil, customerror.GormError(err, "Keranjang")
 				}
 
-				return nil
+				return nil, nil
 			}
 		}
 	}

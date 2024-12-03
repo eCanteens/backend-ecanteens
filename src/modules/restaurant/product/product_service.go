@@ -77,7 +77,7 @@ func (s *service) getAllProducts(query *productQs, user *models.User) (*getProdu
 			return nil, customerror.GormError(err, "Produk")
 		}
 
-		if len(*result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
+		if len(result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
 			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
 			responseDto.Data = append(responseDto.Data, &categoryProductsDTO{
 				Category:   &categoryDto,

@@ -62,7 +62,7 @@ func (s *service) getPopular(userId uint) (*[]models.Restaurant, error) {
 	}
 
 	allRestaurants := append(*recentResult.data, *popularResult.data...)
-	allRestaurants = helpers.RemoveDuplicates(&allRestaurants, func(resto *models.Restaurant) uint {
+	allRestaurants = helpers.RemoveDuplicates(allRestaurants, func(resto *models.Restaurant) uint {
 		return *resto.Id
 	}, 5)
 
@@ -102,7 +102,7 @@ func (s *service) getAll(query *getProductsQS) (*getRestosResponse, error) {
 			return nil, customerror.GormError(err, "Restoran")
 		}
 
-		if len(*result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
+		if len(result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
 			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
 			responseDto.Data = append(responseDto.Data, &categoryRestosDTO{
 				Category:   &categoryDto,
@@ -157,7 +157,7 @@ func (s *service) getRestosProducts(id string, query *getProductsQS, userId uint
 			return nil, customerror.GormError(err, "Produk")
 		}
 
-		if len(*result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
+		if len(result.Data) > 0 || query.CategoryId == strconv.Itoa(int(*category.Id)) {
 			responseDto.Meta.Categories = append(responseDto.Meta.Categories, &categoryDto)
 			responseDto.Data = append(responseDto.Data, &categoryProductsDTO{
 				Category:   &categoryDto,

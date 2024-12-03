@@ -12,7 +12,7 @@ import (
 func Cors(ctx *gin.Context) {
 	origin := ctx.Request.Header.Get("Origin")
 
-	exist := helpers.Find(&config.App.Cors.AllowOrigin, func(t *string) bool {
+	exist, _ := helpers.Find(config.App.Cors.AllowOrigin, func(t *string) bool {
 		return *t == origin || *t == "*"
 	})
 

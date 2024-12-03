@@ -28,15 +28,15 @@ func OrderSeeder() {
 
 			config.DB.Where("restaurant_id = ?", restaurantId).Find(&products)
 
-			productIds := helpers.Map(&products, func(p *models.Product) *uint {
+			productIds := helpers.Map(products, func(p *models.Product) *uint {
 				return p.Id
 			})
 
 			// Loop Order Item
 			for j := 0; j < 3; j++ {
-				productId := gofakeit.RandomUint(*productIds)
+				productId := gofakeit.RandomUint(productIds)
 				quantity := gofakeit.UintRange(1, 5)
-				product := helpers.Find(&products, func(t *models.Product) bool {
+				product, _ := helpers.Find(products, func(t *models.Product) bool {
 					return *t.Id == productId
 				})
 

@@ -82,7 +82,6 @@ func (c *controller) updateCart(ctx *gin.Context) {
 
 func (c *controller) addCart(ctx *gin.Context) {
 	var body addCartScheme
-	var query restaurantCartQS
 
 	if isValid := validation.Bind(ctx, &body); !isValid {
 		return
@@ -91,24 +90,22 @@ func (c *controller) addCart(ctx *gin.Context) {
 	user, _ := ctx.Get("user")
 	_user := user.(models.User)
 
-	ctx.ShouldBindQuery(&query)
+	data, err := c.service.addCart(&_user, &body)
 
-	if err := c.service.addCart(&_user, &body); err != nil {
+	if err != nil {
 		response.ServiceError(ctx, err)
 		return
 	}
 
-	cart, _ := c.service.getRestaurantCart(query.RestaurantId, &_user)
-
 	if *body.Quantity == 0 {
 		response.Success(ctx, 200, gin.H{
 			"message": "Produk berhasil dihapus dari keranjang",
-			"data":    cart,
+			"data":    data,
 		})
 	} else {
 		response.Success(ctx, 201, gin.H{
 			"message": "Produk berhasil ditambahkan ke keranjang",
-			"data":    cart,
+			"data":    data,
 		})
 	}
 }

@@ -17,7 +17,7 @@ type meta struct {
 
 type Pagination[T any] struct {
 	Meta meta `json:"meta"`
-	Data *[]T `json:"data"`
+	Data []T `json:"data"`
 }
 
 type Params struct {
@@ -29,7 +29,7 @@ type Params struct {
 }
 
 func New[T any](model T) *Pagination[T] {
-	return &Pagination[T]{Data: &[]T{}}
+	return &Pagination[T]{Data: []T{}}
 }
 
 func (pagination *Pagination[any]) Execute(params *Params) error {
@@ -64,5 +64,5 @@ func (pagination *Pagination[any]) Execute(params *Params) error {
 	pagination.Meta.Total = totalData
 	pagination.Meta.LastPage = int(math.Ceil(float64(totalData) / float64(pagination.Meta.PerPage)))
 
-	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(pagination.Data).Error
+	return params.Query.Offset(offset).Limit(pagination.Meta.PerPage).Order(params.Order + " " + params.Direction).Find(&pagination.Data).Error
 }
