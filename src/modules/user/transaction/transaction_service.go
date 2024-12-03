@@ -82,7 +82,7 @@ func (s *service) addCart(user *models.User, body *addCartScheme) (*models.Cart,
 		return nil, customerror.New("Restoran sedang tutup", 400)
 	}
 
-	if err := s.repo.findCartByRestoId(product.RestaurantId, &cart, *user.Id, false); err != nil {
+	if err := s.repo.findCartByRestoId(product.RestaurantId, &cart, *user.Id, true); err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, customerror.GormError(err, "Keranjang")
 		}
