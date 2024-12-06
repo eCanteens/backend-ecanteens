@@ -41,7 +41,7 @@ func NewRepository() Repository {
 }
 
 func (r *repository) findOrder(result *pagination.Pagination[models.Order], userId uint, query *getOrderQS) error {
-	tx := config.DB.Where("user_id = ?", userId).Preload("Items").Preload("Transaction").Preload("Restaurant")
+	tx := config.DB.Where("user_id = ?", userId).Preload("Items").Preload("Items.Product").Preload("Transaction").Preload("Restaurant")
 
 	if query.Filter == "1" {
 		// Berlangsung
