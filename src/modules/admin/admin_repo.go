@@ -111,7 +111,7 @@ func (r *repository) findMutasi(result *pagination.Pagination[models.Transaction
 
 	if query.Type == "" {
 		db.Where(
-			config.DB.Where("transactions.type = TOPUP").Or("transactions.type = WITHDRAW"),
+			config.DB.Where("transactions.type = ?", "TOPUP").Or("transactions.type = ?", "WITHDRAW"),
 		)
 	} else {
 		typeFilter := strings.ToUpper(query.Type)
