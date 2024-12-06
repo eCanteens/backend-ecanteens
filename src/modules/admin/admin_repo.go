@@ -101,7 +101,7 @@ func (r *repository) findMutasi(result *pagination.Pagination[models.Transaction
 
 	if search != "" {
 		searchPattern := "%" + search + "%"
-		db = db.Where(
+		db.Where(
 			config.DB.Where("users.name ILIKE ?", searchPattern).
 				Or("users.email ILIKE ?", searchPattern).
 				Or("CAST(transactions.amount AS TEXT) ILIKE ?", searchPattern).
@@ -109,9 +109,13 @@ func (r *repository) findMutasi(result *pagination.Pagination[models.Transaction
 		)
 	}
 
-	if query.Type != "" {
+	if query.Type == "" {
+		db.Where(
+			config.DB.Where("transactions.type = TOPUP").Or("transactions.type = WITHDRAW"),
+		)
+	} else {
 		typeFilter := strings.ToUpper(query.Type)
-		db = db.Where("transactions.type = ?", typeFilter)
+		db.Where("transactions.type = ?", typeFilter)
 	}
 
 	params := &pagination.Params{
