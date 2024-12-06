@@ -76,8 +76,14 @@ func (s *service) verifyGoogleToken(idToken string) (*idtoken.Payload, error) {
 	ctx := context.Background()
 	payload, err := idtoken.Validate(ctx, idToken, os.Getenv("GOOGLE_CLIENT_ID"))
 	if err != nil {
-		return nil, customerror.New(err.Error(), 400)
+		payload, err := idtoken.Validate(ctx, idToken, os.Getenv("GOOGLE_CLIENT_ID_LEARN"))
+		if err != nil {
+			return nil, customerror.New(err.Error(), 400)
+		}
+
+		return payload, nil
 	}
+
 	return payload, nil
 }
 

@@ -189,7 +189,7 @@ func (r *repository) deleteCartItem(data *models.CartItem) error {
 }
 
 func (r *repository) findOneProduct(product *models.Product, id uint) error {
-	return config.DB.Where("id = ?", id).First(product).Error
+	return config.DB.Where("id = ?", id).Preload("Restaurant").First(product).Error
 }
 
 func (r *repository) createReview(data *models.Review) error {

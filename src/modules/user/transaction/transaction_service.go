@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -88,6 +89,8 @@ func (s *service) addCart(user *models.User, body *addCartScheme) (*models.Cart,
 		}
 	}
 
+	fmt.Println("1")
+
 	if cart.Id == nil {
 		// if cart not found
 		if *body.Quantity > 0 {
@@ -106,6 +109,8 @@ func (s *service) addCart(user *models.User, body *addCartScheme) (*models.Cart,
 			if err := s.repo.createCart(&newCart); err != nil {
 				return nil, customerror.GormError(err, "Keranjang")
 			}
+
+			s.repo.findCartById(*newCart.Id, &newCart, *user.Id, true)
 
 			return &newCart, nil
 		}
@@ -131,6 +136,10 @@ func (s *service) addCart(user *models.User, body *addCartScheme) (*models.Cart,
 			if err := s.repo.createCartItem(cartItem); err != nil {
 				return nil, customerror.GormError(err, "Keranjang")
 			}
+
+			cartItem.Product = &models.Product{}
+			s.repo.findOneProduct(cartItem.Product, cartItem.ProductId)
+			cartItem.Product.Restaurant = nil;
 
 			cart.Items = append(cart.Items, *cartItem)
 			return &cart, nil
